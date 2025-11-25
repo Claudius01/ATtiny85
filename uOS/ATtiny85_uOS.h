@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.h,v 1.3 2025/11/25 18:10:44 administrateur Exp $"
+; "$Id: ATtiny85_uOS.h,v 1.4 2025/11/25 18:30:47 administrateur Exp $"
 
 #define	USE_PROGRAM_ADDON				0
 
@@ -107,7 +107,6 @@
 #define	FLG_0_PERIODE_1MS_MSK				MSK_BIT0
 #define	FLG_0_PERIODE_1MS_IDX				IDX_BIT0
 
-#if 1
 ; Gestion de l'UART
 ; -----------------
 ; - FLG_0_UART_DETECT_LINE_IDLE: Passage a 1 si ligne RXD a l'etat haut durant au moins 10 bits;
@@ -168,7 +167,6 @@
 #define	FLG_1_UART_FIFO_TX_FULL_IDX			IDX_BIT5
 #define	FLG_1_UART_FIFO_TX_TO_SEND_IDX		IDX_BIT6
 #define	FLG_1_LED_RED_ON_IDX						IDX_BIT7
-#endif
 
 ; Flags generaux G_FLAGS_2 (masques et index)
 #define	FLG_2_CONNECTED_MSK						MSK_BIT0		; Passage en mode connecte sur reception d'une donnee Rx

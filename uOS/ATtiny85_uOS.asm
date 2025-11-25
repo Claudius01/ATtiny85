@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.6 2025/11/25 17:29:59 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.7 2025/11/25 18:23:04 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -51,29 +51,6 @@ usi_ovf_isr:
 	rjmp		forever_2
 
 ; Fin: Its non supportees
-
-; ---------
-; Table des 16 vecteurs d'execution des taches timer
-; => Cf. 'NBR_TIMER' -> Nombre de taches d'execution definies
-; ---------
-vector_timers:
-	rjmp		exec_timer_0							; Timer #0
-	rjmp		exec_timer_1							; Timer #1
-	rjmp		exec_timer_2							; Timer #2
-	rjmp		exec_timer_3							; Timer #3
-	rjmp		exec_timer_4							; Timer #4
-	rjmp		exec_timer_5							; Timer #5
-	rjmp		exec_timer_6							; Timer #6
-	rjmp		exec_timer_7							; Timer #7
-	rjmp		exec_timer_8							; Timer #8
-	rjmp		exec_timer_9							; Timer #9
-	rjmp		exec_timer_connect					; Timer #10
-	rjmp		exec_timer_error						; Timer #11
-	rjmp		exec_timer_push_button_led			; Timer #12
-	rjmp		exec_timer_push_button_detect		; Timer #13
-	rjmp		exec_timer_anti_rebound				; Timer #14
-	rjmp		exec_timer_led_green					; Timer #15
-; ---------
 
 main:
    ;setTxdHigh							; TXD a l'etat haut le plus vite possible ;-)
@@ -149,7 +126,7 @@ main_loop_end:
 	rjmp		main_loop
 
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.6 $", CHAR_LF, CHAR_NULL, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.7 $", CHAR_LF, CHAR_NULL, CHAR_NULL
 
 .include		"ATtiny85_uOS_Macros.def"
 

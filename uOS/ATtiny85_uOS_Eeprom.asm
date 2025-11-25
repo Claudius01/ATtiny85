@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.3 2025/11/25 16:56:59 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.4 2025/11/25 18:30:47 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Eeprom.h"
 
@@ -50,6 +50,56 @@ eeprom_write_byte:
 eeprom_write_byte_wait:
 	sbic		EECR, EEPE
 	rjmp		eeprom_write_byte_wait
+
+	ret
+; ---------
+
+;--------------------
+; Lecture et impression des informations de l'EEPROM
+;--------------------
+set_infos_from_eeprom:
+	; => Prompt "### EEPROM..."
+	ldi		REG_TEMP_R18, 8
+	ldi		REG_Z_MSB, ((text_prompt_eeprom_version << 1) / 256)
+	ldi		REG_Z_LSB, ((text_prompt_eeprom_version << 1) % 256)
+	rcall		push_text_in_fifo_tx
+
+	; Lecture de la version de l'EEPROM definie dans l'EEPROM
+	ldi		REG_X_MSB, high(EEPROM_ADDR_VERSION)
+	ldi		REG_X_LSB, low(EEPROM_ADDR_VERSION)
+	rcall		push_text_in_fifo_tx_from_eeprom
+	rcall		print_line_feed
+
+	; => Prompt "### Type..."
+	ldi		REG_Z_MSB, ((text_prompt_type << 1) / 256)
+	ldi		REG_Z_LSB, ((text_prompt_type << 1) % 256)
+	rcall		push_text_in_fifo_tx
+
+	; Lecture du type de la platine defini dans l'EEPROM
+	ldi		REG_X_MSB, high(EEPROM_ADDR_TYPE);
+	ldi		REG_X_LSB, low(EEPROM_ADDR_TYPE);
+	rcall		eeprom_read_byte
+
+	sts		G_HEADER_TYPE_PLATINE, REG_TEMP_R16
+
+	rcall		convert_and_put_fifo_tx
+	rcall		print_line_feed
+
+	; => Prompt "### Id..."
+	ldi		REG_Z_MSB, ((text_prompt_id << 1) / 256)
+	ldi		REG_Z_LSB, ((text_prompt_id << 1) % 256)
+	rcall		push_text_in_fifo_tx
+	
+	; Lecture de l'Id de la palatine defini dans l'EEPROM
+	ldi		REG_X_MSB, high(EEPROM_ADDR_ID);
+	ldi		REG_X_LSB, low(EEPROM_ADDR_ID);
+	rcall		eeprom_read_byte
+
+	sts		G_HEADER_INDEX_PLATINE, REG_TEMP_R16
+
+	rcall		convert_and_put_fifo_tx
+	rcall		print_line_feed
+	; Fin: Preparation emission des prompts d'accueil
 
 	ret
 ; ---------
