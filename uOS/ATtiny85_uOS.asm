@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.3 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.6 2025/11/25 17:29:59 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -17,6 +17,7 @@
 
 .cseg
 .org	0x0000 
+	; Table des 15 vecteurs d'interruption
 	rjmp		main					; Vector:  1 - reset
 	rjmp		int0_isr				; Vector:  2 - int0_isr
 	rjmp		pcint0_isr			; Vector:  3 - pcint0_isr
@@ -33,10 +34,7 @@
 	rjmp		usi_start_isr		; Vector: 14 - usi_start_isr
 	rjmp		usi_ovf_isr			; Vector: 15 - usi_ovf_isr
 
-main:
-	rjmp		main_cont_d
-
-; Its non supportees
+; Its non supportees => Mise sur voie de garage
 int0_isr:
 tim1_ovf_isr:
 tim0_ovf_isr:
@@ -56,7 +54,7 @@ usi_ovf_isr:
 
 ; ---------
 ; Table des 16 vecteurs d'execution des taches timer
-; => 'NBR_TIMER' taches d'execution definies
+; => Cf. 'NBR_TIMER' -> Nombre de taches d'execution definies
 ; ---------
 vector_timers:
 	rjmp		exec_timer_0							; Timer #0
@@ -77,8 +75,8 @@ vector_timers:
 	rjmp		exec_timer_led_green					; Timer #15
 ; ---------
 
-main_cont_d:
-   setTxdHigh							; TXD a l'etat haut le plus vite possible ;-)
+main:
+   ;setTxdHigh							; TXD a l'etat haut le plus vite possible ;-)
 
 	rcall		init_sram_fill			; Initialisation de la SRAM
 	rcall		init_sram_values		; Initialisation de valeurs particulieres
@@ -92,12 +90,11 @@ main_cont_d:
 	rcall		start_timer
 
    ;setLedGreenOn			; Allumage de la Led GREEN durant 125mS
-	; Fin: Initialisation timer #7
 
 	sei						; Set all interrupts for send prompts
 
 	; Preparation emission des prompts d'accueil
-	; => Prompt d'accueil "### ..." avec '\n'
+	; => Prompt d'accueil
 	ldi		REG_Z_MSB, ((text_whoami << 1) / 256)
 	ldi		REG_Z_LSB, ((text_whoami << 1) % 256)
 	rcall		push_text_in_fifo_tx
@@ -151,77 +148,23 @@ main_loop_more:
 main_loop_end:
 	rjmp		main_loop
 
+text_whoami:
+.db	"### ATtiny85_uOS $Revision: 1.6 $", CHAR_LF, CHAR_NULL, CHAR_NULL
+
+.include		"ATtiny85_uOS_Macros.def"
+
+.include		"ATtiny85_uOS_Misc.asm"
 .include		"ATtiny85_uOS_Interrupts.asm"
 .include		"ATtiny85_uOS_Timers.asm"
 .include		"ATtiny85_uOS_Uart.asm"
 .include		"ATtiny85_uOS_Eeprom.asm"
 .include		"ATtiny85_uOS_Commands.asm"
 .include		"ATtiny85_uOS_Print.asm"
-.include		"ATtiny85_uOS_Misc.asm"
-
-; Constantes et textes definis naturellement (MSB:LSB et ordre naturel du texte)
-; => Remarque: Nombre pair de caracteres pour eviter le message:
-;              "Warning : A .DB segment with an odd number..."
-
-text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.3 $", CHAR_LF, CHAR_NULL, CHAR_NULL
-
-text_prompt_eeprom_version:
-.db	"### EEPROM: ", CHAR_NULL, CHAR_NULL
-
-text_prompt_type:
-.db	"### Type: ", CHAR_NULL, CHAR_NULL
-
-text_prompt_id:
-.db	"### Id: ", CHAR_NULL, CHAR_NULL
-
-text_appui_bouton:
-.db	"### Appui bouton [0x", CHAR_NULL, CHAR_NULL
-
-text_appui_bouton_value_hexa:
-.db	"] [0x", CHAR_NULL
-
-text_appui_bouton_value_ascii:
-.db	"] [", CHAR_NULL
-
-text_appui_bouton_end:
-.db	"] ", CHAR_LF, CHAR_NULL
-
-text_hexa_value:
-.db	"[0x", CHAR_NULL
-
-text_hexa_value_end:
-.db	"]", CHAR_NULL
-
-text_hexa_value_lf_end:
-.db	"]", CHAR_LF, CHAR_NULL, CHAR_NULL
-
-text_line_feed:
-.db	CHAR_LF, CHAR_NULL
-
-text_eeprom_error:
-.db	"Err: EEPROM at ", CHAR_NULL
-
-text_msk_table:
-.db	MSK_BIT0, MSK_BIT1, MSK_BIT2, MSK_BIT3
-.db	MSK_BIT4, MSK_BIT5, MSK_BIT6, MSK_BIT7
-
-text_convert_hex_to_maj_ascii_table:
-.db	"0123456789ABCDEF"
-
-text_convert_hex_to_min_ascii_table:
-.db	"0123456789abcdef"
-
-const_for_bauds_rate:
-.db	0x01, 0x02, 0x3C, 0x01	; 19200 bauds	; TODO: Erreur de reception cote cible non systematique
-.db	0x03, 0x04, 0x78, 0x02	;  9600 bauds
-.db	0x07, 0x08, 0xF0, 0x04	;  4800 bauds
-.db	0x0F, 0x11, 0xE0, 0x08	;  2400 bauds
-.db	0x1F, 0x23, 0xC0, 0x10	;  1200 bauds
-.db	0x3E, 0x47, 0x80, 0x20	;   600 bauds
-.db	0x7C, 0x8F, 0x00, 0x40	;   300 bauds
-const_for_bauds_rate_end:
 
 end_of_program:
 
+.dseg
+G_SRAM_END_OF_USE:					.byte		1
+
 ; End of file
+

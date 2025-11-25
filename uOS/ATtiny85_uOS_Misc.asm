@@ -1,5 +1,8 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.1 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.2 2025/11/25 16:56:59 administrateur Exp $"
 
+.include		"ATtiny85_uOS_Misc.h"
+
+.cseg
 ; ---------
 ; Initialisation de la SRAM
 ; - Pas d'initialisation des 2 derniers bytes (retour de la fonction)
@@ -284,4 +287,55 @@ forever_loop:
 	pop		REG_TEMP_R16
 	rjmp		forever_loop
 ; ---------
+
+; ---------
+; Calcul du CRC8-MAXIM
+;
+; Input:  G_CALC_CRC8 and REG_TEMP_R16
+; Output: G_CALC_CRC8 updated for retry
+; ---------
+calc_crc8_maxim:
+	push		REG_TEMP_R16
+	push		REG_TEMP_R17
+	push		REG_TEMP_R18
+	push		REG_TEMP_R19
+
+	mov		REG_TEMP_R17, REG_TEMP_R16
+	lds		REG_TEMP_R19, G_CALC_CRC8
+
+	ldi		REG_TEMP_R18, 8
+
+calc_crc8_maxim_loop_bit:
+	mov		REG_TEMP_R16, REG_TEMP_R19	; 'REG_TEMP_R19' contient le CRC8 calcule
+	eor		REG_TEMP_R16, REG_TEMP_R17	; 'REG_TEMP_R17' contient le byte a inserer dans le polynome
+	andi		REG_TEMP_R16, 0x01			; carry = ((crc ^ i__byte) & 0x01);
+
+	clt											; 'T' determine le report de la carry	
+	breq		calc_crc8_maxim_a
+	set
+
+calc_crc8_maxim_a:
+	lsr		REG_TEMP_R19					; crc >>= 1;
+	brtc		calc_crc8_maxim_b
+
+	ldi		REG_TEMP_R16, CRC8_POLYNOMIAL
+	eor		REG_TEMP_R19, REG_TEMP_R16					; crc ^= (carry ? CRC8_POLYNOMIAL: 0x00);
+
+calc_crc8_maxim_b:
+	sts		G_CALC_CRC8, REG_TEMP_R19
+
+	lsr		REG_TEMP_R17									; i__byte >>= 1
+
+	dec		REG_TEMP_R18
+	brne		calc_crc8_maxim_loop_bit
+
+	pop		REG_TEMP_R19
+	pop		REG_TEMP_R18
+	pop		REG_TEMP_R17
+	pop		REG_TEMP_R16
+
+	ret
+; ---------
+
+; End of file
 

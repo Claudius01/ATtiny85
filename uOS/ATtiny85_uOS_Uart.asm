@@ -1,5 +1,8 @@
-; "$Id: ATtiny85_uOS_Uart.asm,v 1.1 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Uart.asm,v 1.3 2025/11/25 16:56:59 administrateur Exp $"
 
+.include    "ATtiny85_uOS_Uart.h"
+
+.cseg
 ; ---------
 test_detect_line_idle:
 	sbrc		REG_FLAGS_0, FLG_0_UART_DETECT_LINE_IDLE_IDX
@@ -437,4 +440,16 @@ fifo_tx_to_send_sync_retry:
 fifo_tx_to_send_sync_rtn:
 	ret
 ; ---------
+
+const_for_bauds_rate:
+.db	0x01, 0x02, 0x3C, 0x01	; 19200 bauds	; TODO: Erreur de reception cote cible non systematique
+.db	0x03, 0x04, 0x78, 0x02	;  9600 bauds
+.db	0x07, 0x08, 0xF0, 0x04	;  4800 bauds
+.db	0x0F, 0x11, 0xE0, 0x08	;  2400 bauds
+.db	0x1F, 0x23, 0xC0, 0x10	;  1200 bauds
+.db	0x3E, 0x47, 0x80, 0x20	;   600 bauds
+.db	0x7C, 0x8F, 0x00, 0x40	;   300 bauds
+const_for_bauds_rate_end:
+
+; End of file
 

@@ -1,5 +1,8 @@
-; "$Id: ATtiny85_uOS_Print.asm,v 1.1 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Print.asm,v 1.4 2025/11/25 18:16:11 administrateur Exp $"
 
+.include		"ATtiny85_uOS_Print.h"
+
+.cseg
 ; ---------
 ; Allumage fugitif Led RED Externe si erreur
 ; => L'effacement des 2 'FLG_0_UART_RX_BYTE_START_ERROR' et 'FLG_0_UART_RX_BYTE_STOP_ERROR'
@@ -201,62 +204,6 @@ print_2_bytes_hexa:
 ; ---------
 
 ; ---------
-; Print du registre X
-; ---------
-print_x_reg_skip:
-	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-	ret
-
-print_x_reg:
-	push		REG_Z_MSB
-	push		REG_Z_LSB
-
-	rcall		print_2_bytes_hexa
-
-	pop		REG_Z_LSB
-	pop		REG_Z_MSB
-	ret
-; ---------
-
-; ---------
-; Print du registre X
-; ---------
-print_y_reg_skip:
-	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-	ret
-
-print_y_reg:
-	push		REG_X_MSB
-	push		REG_X_LSB
-
-	movw		REG_X_LSB, REG_Y_LSB
-	rcall		print_x_reg
-
-	pop		REG_X_LSB
-	pop		REG_X_MSB
-	ret
-; ---------
-
-; ---------
-; Print du registre z
-; ---------
-print_z_reg_skip:
-	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-	ret
-
-print_z_reg:
-	push		REG_X_MSB
-	push		REG_X_LSB
-
-	movw		REG_X_LSB, REG_Z_LSB
-	rcall		print_x_reg
-
-	pop		REG_X_LSB
-	pop		REG_X_MSB
-	ret
-; ---------
-
-; ---------
 ; Marquage traces
 ; ---------
 print_mark_skip:
@@ -339,4 +286,24 @@ set_infos_from_eeprom:
 
 	ret
 ; ---------
+
+text_hexa_value:
+.db	"[0x", CHAR_NULL
+
+text_hexa_value_end:
+.db	"]", CHAR_NULL
+
+text_hexa_value_lf_end:
+.db	"]", CHAR_LF, CHAR_NULL, CHAR_NULL
+
+text_line_feed:
+.db	CHAR_LF, CHAR_NULL
+
+text_convert_hex_to_maj_ascii_table:
+.db	"0123456789ABCDEF"
+
+text_convert_hex_to_min_ascii_table:
+.db	"0123456789abcdef"
+
+; End of file
 

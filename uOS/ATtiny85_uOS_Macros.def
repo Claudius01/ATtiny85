@@ -1,0 +1,70 @@
+; "$Id: ATtiny85_uOS_Macros.def,v 1.1 2025/11/25 17:29:59 administrateur Exp $
+
+.cseg
+; --------
+; Macros de pilotage du PORTB en sortie
+.macro setLedRedOff			; 0/1: On/Off
+	cbr		REG_FLAGS_1, FLG_1_LED_RED_ON_MSK	; Led RED Externe eteinte (Pulse --\_/--- possible)
+	sbr		REG_PORTB_OUT, MSK_BIT_LED_RED	
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setLedRedOn			; 0/1: On/Off
+	sbr		REG_FLAGS_1, FLG_1_LED_RED_ON_MSK	; Led RED Externe allumee (Pulse --\_/--- inhibee)
+	cbr		REG_PORTB_OUT, MSK_BIT_LED_RED
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setLedYellowOff		; 0/1: On/Off
+	sbr		REG_PORTB_OUT, MSK_BIT_LED_YELLOW	
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setLedYellowOn		; 0/1: On/Off
+	cbr		REG_PORTB_OUT, MSK_BIT_LED_YELLOW
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setLedGreenOff		; 0/1: On/Off
+	sbr		REG_PORTB_OUT, MSK_BIT_LED_GREEN
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setLedGreenOn			; 0/1: On/Off
+	cbr		REG_PORTB_OUT, MSK_BIT_LED_GREEN	
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setLedRedIntOn		; 0/1: Off/On
+	sbr		REG_PORTB_OUT, MSK_BIT_LED_RED_INT
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setLedRedIntOff		; 0/1: Off/On
+	cbr		REG_PORTB_OUT, MSK_BIT_LED_RED_INT
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setPulseItUp			; Sortie au niveau haut de la pulse It
+	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setPulseItDown		; Sortie au niveau bas de la pulse It
+	cbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setTxdLow				; 0: Low
+	cbr		REG_PORTB_OUT, MSK_BIT_TXD
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+
+.macro setTxdHigh				; 1: High
+	sbr		REG_PORTB_OUT, MSK_BIT_TXD
+	out		PORTB, REG_PORTB_OUT					; Raffraichissement du PORTB
+.endm
+; Fin: Macros de pilotage du PORTB en sortie
+
+; End of file
+

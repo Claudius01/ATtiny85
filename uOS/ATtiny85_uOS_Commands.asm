@@ -1,5 +1,8 @@
-; "$Id: ATtiny85_uOS_Commands.asm,v 1.1 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Commands.asm,v 1.2 2025/11/25 16:56:59 administrateur Exp $"
 
+.include		"ATtiny85_uOS_Commands.h"
+
+.cseg
 ; ---------
 ; Interpretation d'une commande de test
 ;
@@ -325,55 +328,6 @@ exec_command_A_rtn:
 ; ---------
 
 ; ---------
-; Calcul du CRC8-MAXIM
-;
-; Input:  G_CALC_CRC8 and REG_TEMP_R16
-; Output: G_CALC_CRC8 updated for retry
-; ---------
-calc_crc8_maxim:
-	push		REG_TEMP_R16
-	push		REG_TEMP_R17
-	push		REG_TEMP_R18
-	push		REG_TEMP_R19
-
-	mov		REG_TEMP_R17, REG_TEMP_R16
-	lds		REG_TEMP_R19, G_CALC_CRC8
-
-	ldi		REG_TEMP_R18, 8
-
-calc_crc8_maxim_loop_bit:
-	mov		REG_TEMP_R16, REG_TEMP_R19	; 'REG_TEMP_R19' contient le CRC8 calcule
-	eor		REG_TEMP_R16, REG_TEMP_R17	; 'REG_TEMP_R17' contient le byte a inserer dans le polynome
-	andi		REG_TEMP_R16, 0x01			; carry = ((crc ^ i__byte) & 0x01);
-
-	clt											; 'T' determine le report de la carry	
-	breq		calc_crc8_maxim_a
-	set
-
-calc_crc8_maxim_a:
-	lsr		REG_TEMP_R19					; crc >>= 1;
-	brtc		calc_crc8_maxim_b
-
-	ldi		REG_TEMP_R16, CRC8_POLYNOMIAL
-	eor		REG_TEMP_R19, REG_TEMP_R16					; crc ^= (carry ? CRC8_POLYNOMIAL: 0x00);
-
-calc_crc8_maxim_b:
-	sts		G_CALC_CRC8, REG_TEMP_R19
-
-	lsr		REG_TEMP_R17									; i__byte >>= 1
-
-	dec		REG_TEMP_R18
-	brne		calc_crc8_maxim_loop_bit
-
-	pop		REG_TEMP_R19
-	pop		REG_TEMP_R18
-	pop		REG_TEMP_R17
-	pop		REG_TEMP_R16
-
-	ret
-; ---------
-
-; ---------
 ; Execution de la commande 'B'
 ;
 ; Reprogrammation du Baud Rate
@@ -532,21 +486,19 @@ exec_command_type_s_write:
 	lds		REG_X_MSB, G_TEST_VALUE_MSB
 	lds		REG_X_LSB, G_TEST_VALUE_LSB
 
-#if 1
-	; Test de 'REG_X_MSB:REG_X_LSB' dans la plage [SRAM_START, ..., 'G_SRAM_END_OF_USE', ..., RAMEND]
-	; => Autorisation d'ecriture a l'adresse 'G_SRAM_END_OF_USE' ;-)
+	; Test de 'REG_X_MSB:REG_X_LSB' dans la plage [SRAM_START, ..., 'G_SRAM_END_OF_USE'[
+	; => Adresse 'G_SRAM_END_OF_USE' exclue de la plage ;-)
 	ldi		REG_TEMP_R16, low(SRAM_START)
 	cp			REG_X_LSB, REG_TEMP_R16
 	ldi		REG_TEMP_R16, high(SRAM_START)
 	cpc		REG_X_MSB, REG_TEMP_R16
 	brlo		exec_command_type_s_write_out_of_range		; Saut si X <= 'Adresse du 1er byte de la SRAM'
 
-	ldi		REG_TEMP_R16, low(G_SRAM_END_OF_USE + 1)
+	ldi		REG_TEMP_R16, low(G_SRAM_END_OF_USE)
 	cp			REG_X_LSB, REG_TEMP_R16
-	ldi		REG_TEMP_R16, high(G_SRAM_END_OF_USE + 1)
+	ldi		REG_TEMP_R16, high(G_SRAM_END_OF_USE)
 	cpc		REG_X_MSB, REG_TEMP_R16
 	brsh		exec_command_type_s_write_out_of_range		; Saut si X > 'Adresse du dernier byte utilise de la SRAM'
-#endif
 
 	rcall		print_command_ok			; Commande reconnue
 

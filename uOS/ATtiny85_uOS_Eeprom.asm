@@ -1,5 +1,8 @@
-; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.1 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.3 2025/11/25 16:56:59 administrateur Exp $"
 
+.include		"ATtiny85_uOS_Eeprom.h"
+
+.cseg
 ; ---------
 ; Lecture d'un byte de l'EEPROM a l'adresse 'REG_X_MSB:REG_X_LSB'
 ; => Valeur retournee dans 'REG_TEMP_R16'
@@ -50,4 +53,18 @@ eeprom_write_byte_wait:
 
 	ret
 ; ---------
+
+text_prompt_eeprom_version:
+.db	"### EEPROM: ", CHAR_NULL, CHAR_NULL
+
+text_prompt_type:
+.db	"### Type: ", CHAR_NULL, CHAR_NULL
+
+text_prompt_id:
+.db	"### Id: ", CHAR_NULL, CHAR_NULL
+
+text_eeprom_error:
+.db	"Err: EEPROM at ", CHAR_NULL
+
+; End of file
 

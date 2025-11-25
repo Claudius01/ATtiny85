@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.3 2025/11/24 16:09:00 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.4 2025/11/25 07:47:14 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:

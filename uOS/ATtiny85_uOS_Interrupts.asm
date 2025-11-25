@@ -1,5 +1,8 @@
-; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.1 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.2 2025/11/25 18:10:44 administrateur Exp $"
 
+.include		"ATtiny85_uOS_Interrupts.h"
+
+.cseg
 ; ---------
 ; tim1_compa_isr
 ;

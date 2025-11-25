@@ -1,5 +1,8 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.1 2025/11/25 13:33:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.3 2025/11/25 16:56:59 administrateur Exp $"
 
+.include		"ATtiny85_uOS_Timers.h"
+
+.cseg
 ; ---------
 ; Gestion des timers 16 bits; Durees [0, 1 mS, ..., ~65 Sec]
 ;
@@ -465,4 +468,18 @@ exec_timer_led_green_more:									; Ici, G_CHENILLARD_MSB<7> reflete la Carry
 
 	ret
 ; ---------
+
+text_appui_bouton:
+.db	"### Appui bouton [0x", CHAR_NULL, CHAR_NULL
+
+text_appui_bouton_value_hexa:
+.db	"] [0x", CHAR_NULL
+
+text_appui_bouton_value_ascii:
+.db	"] [", CHAR_NULL
+
+text_appui_bouton_end:
+.db	"] ", CHAR_LF, CHAR_NULL
+
+; End of file
 
