@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.4 2025/11/25 18:23:04 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.5 2025/11/25 20:00:31 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Timers.h"
 
@@ -333,10 +333,7 @@ exec_timer_9:
 ; ---------
 exec_timer_connect:
 	; Passage en mode connecte pour une presentation Led GREEN --\__/-----
-	lds		REG_TEMP_R16, G_FLAGS_2
-	cbr		REG_TEMP_R16, FLG_2_CONNECTED_MSK
-	sts		G_FLAGS_2, REG_TEMP_R16
-
+	cbr		REG_FLAGS_1, FLG_1_CONNECTED_MSK
 	cbr		REG_FLAGS_0, FLG_0_UART_RX_BYTE_START_ERROR_MSK		; Effacement erreur de reception
 	cbr		REG_FLAGS_0, FLG_0_UART_RX_BYTE_STOP_ERROR_MSK		; Effacement erreur de reception
 

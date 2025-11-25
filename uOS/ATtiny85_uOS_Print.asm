@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Print.asm,v 1.5 2025/11/25 18:30:47 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Print.asm,v 1.7 2025/11/25 20:05:41 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Print.h"
 
@@ -102,8 +102,7 @@ presentation_connexion_fifo_rx_not_empty:
 	; FIFO/Rx non vide
 	; Test si 'Non Connecte' ?
 	; => Si Oui: Changement chenillard
-	lds		REG_TEMP_R16, G_FLAGS_2
-	sbrc		REG_TEMP_R16, FLG_2_CONNECTED_IDX
+	sbrc		REG_FLAGS_1, FLG_1_CONNECTED_IDX
 	rjmp		presentation_connexion_reinit_timer
 
 	; Changement chenillard
@@ -119,8 +118,7 @@ presentation_connexion_reinit_timer:
 	rcall		restart_timer
 
 	; Passage en mode 'Connecte' pour une presentation Led GREEN --\__/-----
-	lds		REG_TEMP_R16, G_FLAGS_2
-	sbr		REG_TEMP_R16, FLG_2_CONNECTED_MSK
+	sbr		REG_FLAGS_1, FLG_1_CONNECTED_MSK
 	;rjmp		presentation_connexion_rtn
 
 presentation_connexion_fifo_rx_empty:
@@ -249,8 +247,10 @@ text_hexa_value_lf_end:
 text_line_feed:
 .db	CHAR_LF, CHAR_NULL
 
+#if 0		; Provision pour une conversion en majuscule
 text_convert_hex_to_maj_ascii_table:
 .db	"0123456789ABCDEF"
+#endif
 
 text_convert_hex_to_min_ascii_table:
 .db	"0123456789abcdef"

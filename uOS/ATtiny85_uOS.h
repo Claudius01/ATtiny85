@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.h,v 1.4 2025/11/25 18:30:47 administrateur Exp $"
+; "$Id: ATtiny85_uOS.h,v 1.6 2025/11/25 20:03:09 administrateur Exp $"
 
 #define	USE_PROGRAM_ADDON				0
 
@@ -103,10 +103,6 @@
 #define	FLG_BEHAVIOR_MARK_IN_PCINT0_IDX			IDX_BIT1	; Pulse --\__/--... en entree/sortie de l'It 'pcint0_isr'
 #define	FLG_BEHAVIOR_MARK_IN_RX_REC_BIT_IDX		IDX_BIT2	; Pulse --\__/--... en entree/sortie de 'tim1_compa_isr_rx_rec_bit'
 
-; Flags generaux FLG_0 (masques et index)
-#define	FLG_0_PERIODE_1MS_MSK				MSK_BIT0
-#define	FLG_0_PERIODE_1MS_IDX				IDX_BIT0
-
 ; Gestion de l'UART
 ; -----------------
 ; - FLG_0_UART_DETECT_LINE_IDLE: Passage a 1 si ligne RXD a l'etat haut durant au moins 10 bits;
@@ -131,7 +127,8 @@
 ;       - Donnee non attendue @ protocole
 ;       - A completer...
 ;
-; Flags generaux REG_FLAGS_1 (masques et index) defini dans la registre r24
+; Flags generaux REG_FLAGS_0 (masques et index) defini dans la registre r24
+#define	FLG_0_PERIODE_1MS_MSK					MSK_BIT0
 #define	FLG_0_UART_DETECT_LINE_IDLE_MSK		MSK_BIT1
 #define	FLG_0_UART_DETECT_BIT_START_MSK		MSK_BIT2
 #define	FLG_0_UART_RX_BYTE_RECEIVED_MSK		MSK_BIT3
@@ -140,6 +137,7 @@
 #define	FLG_0_UART_RX_BYTE_START_ERROR_MSK	MSK_BIT6
 #define	FLG_0_UART_RX_BYTE_STOP_ERROR_MSK	MSK_BIT7
 
+#define	FLG_0_PERIODE_1MS_IDX					IDX_BIT0
 #define	FLG_0_UART_DETECT_LINE_IDLE_IDX		IDX_BIT1
 #define	FLG_0_UART_DETECT_BIT_START_IDX		IDX_BIT2
 #define	FLG_0_UART_RX_BYTE_RECEIVED_IDX		IDX_BIT3
@@ -153,7 +151,7 @@
 #define	FLG_1_UART_FIFO_RX_NOT_EMPTY_MSK		MSK_BIT0
 #define	FLG_1_UART_FIFO_RX_FULL_MSK			MSK_BIT1
 #define	FLG_1_UART_RX_RECEIVE_MSK				MSK_BIT2		; Donnees Data/Rx recues
-#define	FLG_1_SPARE_3_MSK							MSK_BIT3
+#define	FLG_1_CONNECTED_MSK						MSK_BIT3
 #define	FLG_1_UART_FIFO_TX_NOT_EMPTY_MSK		MSK_BIT4
 #define	FLG_1_UART_FIFO_TX_FULL_MSK			MSK_BIT5
 #define	FLG_1_UART_FIFO_TX_TO_SEND_MSK		MSK_BIT6
@@ -162,30 +160,11 @@
 #define	FLG_1_UART_FIFO_RX_NOT_EMPTY_IDX		IDX_BIT0
 #define	FLG_1_UART_FIFO_RX_FULL_IDX			IDX_BIT1
 #define	FLG_1_UART_RX_RECEIVE_IDX				IDX_BIT2		; Donnees Data/Rx recues
-#define	FLG_1_SPARE_3_IDX							IDX_BIT3	
+#define	FLG_1_CONNECTED_IDX						IDX_BIT3	
 #define	FLG_1_UART_FIFO_TX_NOT_EMPTY_IDX		IDX_BIT4
 #define	FLG_1_UART_FIFO_TX_FULL_IDX			IDX_BIT5
 #define	FLG_1_UART_FIFO_TX_TO_SEND_IDX		IDX_BIT6
 #define	FLG_1_LED_RED_ON_IDX						IDX_BIT7
-
-; Flags generaux G_FLAGS_2 (masques et index)
-#define	FLG_2_CONNECTED_MSK						MSK_BIT0		; Passage en mode connecte sur reception d'une donnee Rx
-#define	FLG_2_SPARE_1_MSK							MSK_BIT1
-#define	FLG_2_SPARE_2_MSK							MSK_BIT2
-#define	FLG_2_SPARE_3_MSK							MSK_BIT3
-#define	FLG_2_SPARE_4_MSK							MSK_BIT4
-#define	FLG_2_SPARE_5_MSK							MSK_BIT5
-#define	FLG_2_SPARE_6_MSK							MSK_BIT6
-#define	FLG_2_SPARE_7_MSK							MSK_BIT7
-
-#define	FLG_2_CONNECTED_IDX						IDX_BIT0		; Passage en mode connecte sur reception d'une donnee Rx
-#define	FLG_2_SPARE_1_IDX							IDX_BIT1
-#define	FLG_2_SPARE_2_IDX							IDX_BIT2
-#define	FLG_2_SPARE_3_IDX							IDX_BIT3
-#define	FLG_2_SPARE_4_IDX							IDX_BIT4
-#define	FLG_2_SPARE_5_IDX							IDX_BIT5
-#define	FLG_2_SPARE_6_IDX							IDX_BIT6
-#define	FLG_2_SPARE_7_IDX							IDX_BIT7
 
 ; 1st adresse de la SRAM [0x60...0xFF]
 .dseg
@@ -201,8 +180,6 @@ G_CHENILLARD_LSB:				.byte		1		; au travers d'un mot de 16 bits (16 x 125mS = 2 
 
 G_NBR_VALUE_TRACE:			.byte		1
 G_NBR_ERRORS:					.byte		1
-
-G_FLAGS_2:						.byte		1		; Flags en memoire
 
 ; End of file
 
