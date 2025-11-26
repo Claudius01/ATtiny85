@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.2 2025/11/25 16:56:59 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.3 2025/11/26 15:12:02 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Misc.h"
 
@@ -32,9 +32,9 @@ init_sram_fill_loop_a:
 init_sram_fill_loop_b:
 	st			X, REG_TEMP_R16
 	sbiw		REG_X_LSB, 1
-	cpi		REG_X_MSB, high(SRAM_START)
+	cpi		REG_X_MSB, high(SRAM_START - 1)
 	brne		init_sram_fill_loop_b
-	cpi		REG_X_LSB, low(SRAM_START)	
+	cpi		REG_X_LSB, low(SRAM_START - 1)	
 	brne		init_sram_fill_loop_b
 
 	; Fin initialisation [SRAM_START, ..., (RAMEND - 2)]

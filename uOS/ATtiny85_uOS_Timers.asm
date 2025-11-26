@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.5 2025/11/25 20:00:31 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.6 2025/11/26 15:12:02 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Timers.h"
 
@@ -283,6 +283,9 @@ exec_timer_2:
 ; TIMER_SPARE
 ; ---------
 exec_timer_3:
+#if USE_DS18B20
+	rcall		exec_timer_3_ds18b20
+#endif
 	ret
 ; ---------
 

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.7 2025/11/25 18:23:04 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.11 2025/11/26 17:56:04 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -13,6 +13,7 @@
 ;
 
 .include		"tn85def.inc"              ; Labels and identifiers for tiny85
+
 .include		"ATtiny85_uOS.h"
 
 .cseg
@@ -52,9 +53,28 @@ usi_ovf_isr:
 
 ; Fin: Its non supportees
 
-main:
-   ;setTxdHigh							; TXD a l'etat haut le plus vite possible ;-)
+; Entree du programme
+; - Initialisation de la SRAM
+; - Initialisation materielle
+; - Test Leds
+; - Print du bandeau et des infos EEPROM
 
+; #1 Boucle avec:
+;   - Comptabilisation de 1 mS
+;   #2 Toutes les 1 mS    
+;     - Gestion des timers
+;     - Presentation
+;     - Interpretation de la commande recue
+;   #3 Sans attente de l'expiration de 1 mS
+;     - Test et emission eventuelle d'un caractere de la FIFO de transmission
+;     - Presentation des erreurs fugitives et persistante
+;   #4 Retour en #1
+;
+; Le "tick" de cadencement fixe a 26uS, la reception avec la mise en FIFO des
+; caracteres recus et la gestion du bouton sont effectues sous interruption
+; en // des traitements executes dans la boucle #1
+;
+main:
 	rcall		init_sram_fill			; Initialisation de la SRAM
 	rcall		init_sram_values		; Initialisation de valeurs particulieres
 	rcall		init_hard				; Initialisation du materiel
@@ -65,8 +85,6 @@ main:
 	ldi		REG_TEMP_R18, (125 % 256)
 	ldi		REG_TEMP_R19, (125 / 256)
 	rcall		start_timer
-
-   ;setLedGreenOn			; Allumage de la Led GREEN durant 125mS
 
 	sei						; Set all interrupts for send prompts
 
@@ -80,6 +98,11 @@ main:
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 	; Fin: Preparation emission du prompt d'accueil
+
+#if USE_DS18B20
+	call		ds18b20_init		; Duree de cadencement lue de l'EEPROM @ Id Platine
+	call		ds18b20_exec		; 1st appel a l'initialisation
+#endif
 
 main_loop:
 	; Gestion de l'attente expiration des 1ms
@@ -126,7 +149,7 @@ main_loop_end:
 	rjmp		main_loop
 
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.7 $", CHAR_LF, CHAR_NULL, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.11 $", CHAR_LF, CHAR_NULL
 
 .include		"ATtiny85_uOS_Macros.def"
 
@@ -138,10 +161,12 @@ text_whoami:
 .include		"ATtiny85_uOS_Commands.asm"
 .include		"ATtiny85_uOS_Print.asm"
 
+#if !USE_DS18B20
 end_of_program:
 
 .dseg
 G_SRAM_END_OF_USE:					.byte		1
+#endif
 
 ; End of file
 

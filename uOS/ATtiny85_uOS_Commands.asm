@@ -1,10 +1,11 @@
-; "$Id: ATtiny85_uOS_Commands.asm,v 1.2 2025/11/25 16:56:59 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Commands.asm,v 1.4 2025/11/26 17:55:14 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Commands.h"
 
 .cseg
+
 ; ---------
-; Interpretation d'une commande de test
+; Interpretation d'une commande recue
 ;
 ; Usage:
 ;		 rcall	interprete_command		; Lecture de la FIFO/Rx
@@ -218,10 +219,25 @@ exec_command_test_x:
 	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_X
 	brne		exec_command_ko
 	rjmp		exec_command_type_x
-	; Fin: Liste des commandes supportees
+	; Fin: Liste des commandes supportees par uOS
+
+#if USE_DS18B20
+exec_command_test_c:
+	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_C_MAJ
+	brne		exec_command_ko
+	rjmp		exec_command_type_C
+	; Fin: Liste des commandes supportees par DS18B20
+#endif
 
 exec_command_ko:
+	; La commande n'est pas supportee par uOS
+	; => Prolongement si module 'DS18B20' defini
+	;
+#if USE_DS18B20
+	rcall		exec_command_ds18b20
+#else
 	rcall		print_command_ko			; Commande non reconnue
+#endif
 
 	ret
 ; ---------
@@ -1087,4 +1103,6 @@ add_value_into_zone:
 
 	ret
 ; ---------
+
+; Endo of file
 
