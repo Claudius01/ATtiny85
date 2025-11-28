@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.3 2025/11/26 15:12:02 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.4 2025/11/28 14:03:22 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Misc.h"
 
@@ -81,6 +81,10 @@ init_sram_values:
 
 	ldi		REG_TEMP_R16, DURATION_WAIT_READ_BIT_START
 	sts		G_DURATION_WAIT_READ_BIT_START, REG_TEMP_R16
+
+	ldi		REG_TEMP_R16, CPT_CALIBRATION
+	sts		G_CALIBRATION, REG_TEMP_R16
+
 	ret
 ; ---------
 
@@ -188,13 +192,58 @@ delay_big_more_1:
 ; => Delai de 1uS
 ;
 delay_1uS:
-	nop				; 2 + 1 Cycles (rcall + nop) ou 3 + 1 Cycles (call + nop)
+	nop				; 4 + 1 Cycles (rcall ou call + nop)
 	nop				;   +	1
 	nop				;   + 1
 	nop				;   + 1
 	nop				;   + 1
 	nop				;   + 1
-	ret				;   + 2 = 10 Cycles = 1uS
+
+#if 1
+	nop				;   + 1
+	nop				;   + 1
+	nop				;   + 1
+#endif
+
+	ret				;   + 4 = xx Cycles = 1uS
+; ---------
+
+; ---------
+; delay_1uS avec un ATtiny85 20MHz
+; avec calibration...
+;
+; Warning: 'G_CALIBRATION' != 0
+;
+; Nbr de cycles @ 'REG_R5'
+; - REG_R1 = 1 -> 12 cycles
+; - REG_R1 = 2 -> 15 cycles (+3 cycles)  => Valeur mesuree de ~1uS ;-)
+; - REG_R1 = 3 -> 18 cycles (+3 cycles)
+; - etc.
+;
+uos_delay_1uS:
+	lds		REG_R5, G_CALIBRATION		;  4 (rcall ou call) + 2 cycles
+
+uos_delay_1uS_loop:
+	dec		REG_R5							; Content of 'REG_R5' x cycle(s)
+	brne		uos_delay_1uS_loop			; +2 ou +1 cycles
+
+	ret											; +4 cycles
+; ---------
+
+; ---------
+uos_delay_10uS:
+	rcall		uos_delay_1uS					; #0
+	rcall		uos_delay_1uS					; #1
+	rcall		uos_delay_1uS					; #2
+	rcall		uos_delay_1uS					; #3
+	rcall		uos_delay_1uS					; #4
+	rcall		uos_delay_1uS					; #5
+	rcall		uos_delay_1uS					; #6
+	rcall		uos_delay_1uS					; #7
+	rcall		uos_delay_1uS					; #8
+	rcall		uos_delay_1uS					; #9
+
+	ret
 ; ---------
 
 ; ---------

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.h,v 1.6 2025/11/25 20:03:09 administrateur Exp $"
+; "$Id: ATtiny85_uOS.h,v 1.7 2025/11/28 14:03:22 administrateur Exp $"
 
 #define	USE_PROGRAM_ADDON				0
 
@@ -9,8 +9,8 @@
 .def		REG_R2				= r2
 .def		REG_R3				= r3
 .def		REG_R4				= r4
-
-.def		REG_R6				= r6
+.def		REG_R4				= r4
+.def		REG_R5				= r5		; Registre dedie a 'uos_delay_1uS'
 .def		REG_R7				= r7
 .def		REG_R8				= r8
 .def		REG_R9				= r9
@@ -103,6 +103,9 @@
 #define	FLG_BEHAVIOR_MARK_IN_PCINT0_IDX			IDX_BIT1	; Pulse --\__/--... en entree/sortie de l'It 'pcint0_isr'
 #define	FLG_BEHAVIOR_MARK_IN_RX_REC_BIT_IDX		IDX_BIT2	; Pulse --\__/--... en entree/sortie de 'tim1_compa_isr_rx_rec_bit'
 
+#define	CPT_CALIBRATION								2
+#define	FLG_BEHAVIOR_CALIBRATION_1_uS				IDX_BIT7
+
 ; Gestion de l'UART
 ; -----------------
 ; - FLG_0_UART_DETECT_LINE_IDLE: Passage a 1 si ligne RXD a l'etat haut durant au moins 10 bits;
@@ -169,6 +172,7 @@
 ; 1st adresse de la SRAM [0x60...0xFF]
 .dseg
 G_BEHAVIOR:						.byte		1		; Pilotage du comportement (pas d'ajout de comportement si egal a 0)
+G_CALIBRATION:					.byte		1
 
 G_TICK_1MS:						.byte		1		; Compatbilisation des 1mS
 G_TICK_1MS_INIT:				.byte		1

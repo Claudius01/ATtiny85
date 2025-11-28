@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.2 2025/11/25 18:10:44 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.3 2025/11/28 14:03:22 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Interrupts.h"
 
@@ -304,6 +304,21 @@ tim1_compa_isr_cpt_1ms_end:
 	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
 	out		PORTB, REG_PORTB_OUT				; Raffraichissement du PORTB
 
+	; Qualification 'delay_1uS'
+	lds		REG_TEMP_R17, G_BEHAVIOR
+	sbrs		REG_TEMP_R17, FLG_BEHAVIOR_CALIBRATION_1_uS
+	rjmp		tim1_compa_isr_cpt_1ms_rtn
+
+	cbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	out		PORTB, REG_PORTB_OUT				; Raffraichissement du PORTB
+
+	rcall		uos_delay_10uS
+
+	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	out		PORTB, REG_PORTB_OUT				; Raffraichissement du PORTB
+	; Fin: Qualification 'delay_1uS'
+
+tim1_compa_isr_cpt_1ms_rtn:
 	pop		REG_TEMP_R22
 	pop		REG_TEMP_R21
 	pop		REG_TEMP_R20
