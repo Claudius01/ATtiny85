@@ -1,10 +1,9 @@
-; "$Id: ATtiny85_uOS+DS18B20_1_Wire.asm,v 1.2 2025/11/26 17:54:18 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_1_Wire.asm,v 1.3 2025/11/28 14:03:32 administrateur Exp $"
 
 ; ---------
 ; Emission d'un bit contenu dans la Carry
 ; ---------
 ds18b20_write_bit:
-	;cli
 	brcs		ds18b20_write_bit_1
 
 ds18b20_write_bit_0:							; Pulse --\____/--
@@ -28,7 +27,6 @@ ds18b20_write_bit_1:							; Pulse --\_/-----
 	rcall		delay_55uS
 
 ds18b20_write_bit_end:
-	;sei
 	ret
 ; ---------
 
@@ -38,12 +36,9 @@ ds18b20_write_bit_end:
 ; Chronograme
 ; - DDRB<2>:  ..../---------\_______/----------
 ; - PORTB<2>: ----\___/----------read----------
-;                  3uS       10uS       53uS
+;                  3uS       10uS       55uS
 ;
-; => Difference avec ("let pin float" apres la lecture)
-;    => Pas de diffence de comportement :-)
-;
-; Pseudo Code 'OneWire.cpp' (OneWire::read_bit())
+; Pseudo Code:
 ;
 ;       DIRECT_MODE_OUTPUT(reg, mask);
 ;       DIRECT_WRITE_LOW(reg, mask);
@@ -51,12 +46,10 @@ ds18b20_write_bit_end:
 ;       DIRECT_MODE_INPUT(reg, mask);   // let pin float, pull up will raise
 ;       delayMicroseconds(10);
 ;       r = DIRECT_READ(reg, mask);
-;       delayMicroseconds(53);
+;       delayMicroseconds(55);
 ;     
 ; ---------
 ds18b20_read_bit:
-	;cli
-
 	sbi		DDRB, IDX_BIT_1_WIRE			; <PORTB<2> en sortie
 
 	; Pulse --\_/---- durant 3uS
@@ -89,18 +82,17 @@ ds18b20_read_bit:
 ;           appelee par un 'call' pour garantire les temps d'attente de 1uS
 ; ---------
 delay_3uS:
-	call		delay_1uS
-	call		delay_1uS
-	call		delay_1uS
-	;call		delay_1uS		; TBC: Suppress this call ;-)
+	call		uos_delay_1uS
+	call		uos_delay_1uS
+	call		uos_delay_1uS
 	ret
 
 delay_5uS:
-	call		delay_1uS
-	call		delay_1uS
-	call		delay_1uS
-	call		delay_1uS
-	call		delay_1uS
+	call		uos_delay_1uS
+	call		uos_delay_1uS
+	call		uos_delay_1uS
+	call		uos_delay_1uS
+	call		uos_delay_1uS
 	ret
 
 delay_10uS:
