@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20_Commands.asm,v 1.2 2025/11/26 17:54:18 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_Commands.asm,v 1.8 2025/11/29 16:23:51 administrateur Exp $"
 
 ; Prolongation des commandes non supportees par uOS
 
@@ -7,9 +7,16 @@
 ; ---------
 exec_command_ds18b20:
 	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_C_MAJ
-	breq		exec_command_type_C
+	brne		exec_command_ds18b20_test_t_maj
+	rjmp		exec_command_type_C
 
-	rjmp    print_command_ko        ; Commande non reconnue
+exec_command_ds18b20_test_t_maj:
+	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_T_MAJ
+	brne		exec_command_ds18b20_ko
+	rjmp		exec_command_type_T
+
+exec_command_ds18b20_ko:
+	rjmp    uos_print_command_ko        ; Commande non reconnue
 ; ---------
 
 ; ---------
@@ -34,8 +41,10 @@ exec_command_ds18b20:
 ; - "<C0+19+22+3" -> Configuration de tous les capteurs
 ; ---------
 exec_command_type_C:
-	; Inhibition des traces
-	sbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
+	; Autorisation traces si 'G_DS18B20_FLAGS<FLG_DS18B20_TRACE>' a 1
+	lds      REG_TEMP_R16, G_DS18B20_FLAGS
+	sbrs     REG_TEMP_R16, FLG_DS18B20_TRACE_IDX
+	sbr      REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
 
 	; Prise des parametre de la commande
 	; => ie. "<C2+15+24+2" (#Id capteur + Tl + Th + Resolution)
@@ -45,22 +54,25 @@ exec_command_type_C:
 	brts		exec_command_type_C_ko
 
 exec_command_type_C_ok:
-	call		print_command_ok
+	rcall		uos_print_command_ok
 	rjmp		exec_command_type_C_print
 
 exec_command_type_C_ko:
-	call		print_command_ko
+	rcall		uos_print_command_ko
 
 exec_command_type_C_print:
 	lds		REG_X_LSB, (G_FRAME_ALL_INFOS + 0)
-	rcall		print_1_byte_hexa
+	rcall		uos_print_1_byte_hexa
 	lds		REG_X_LSB, (G_FRAME_ALL_INFOS + 1)
-	rcall		print_1_byte_hexa
+	rcall		uos_print_1_byte_hexa
 	lds		REG_X_LSB, (G_FRAME_ALL_INFOS + 2)
-	rcall		print_1_byte_hexa
+	rcall		uos_print_1_byte_hexa
 	lds		REG_X_LSB, (G_FRAME_ALL_INFOS + 3)
-	rcall		print_1_byte_hexa
-	rcall		print_line_feed
+	rcall		uos_print_1_byte_hexa
+	rcall		uos_print_line_feed
+
+	; Reactivation des traces
+	cbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
 
 	ret
 ; ---------
@@ -118,9 +130,9 @@ exec_command_type_C_this_capteur:
 	sts		(G_FRAME_ALL_INFOS + 0), REG_X_LSB
 
    ldi      REG_TEMP_R17, 'C'
-   rcall     print_mark_skip
-   rcall     print_2_bytes_hexa_skip
-   rcall     print_line_feed_skip
+   rcall    uos_print_mark_skip
+   rcall    uos_print_2_bytes_hexa_skip
+   rcall    uos_print_line_feed_skip
 
 	; 1st parametre (Tl)
 	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
@@ -143,8 +155,8 @@ exec_command_type_C_this_capteur:
 	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE + 4)
 	ldd		REG_X_LSB, Y+0
 
-   rcall     print_1_byte_hexa_skip
-   rcall     print_line_feed_skip
+   rcall    uos_print_1_byte_hexa_skip
+   rcall    uos_print_line_feed_skip
 
 	cpi		REG_X_LSB, (3 + 1)		; [0, 1, 2, 3] admis
 	brpl		exec_command_type_C_not_valid
@@ -155,7 +167,7 @@ exec_command_type_C_this_capteur:
 	sts		(G_FRAME_ALL_INFOS + 3), REG_X_LSB
 
 	ldi		REG_TEMP_R17, 'O'
-	call		print_mark_skip
+	rcall		uos_print_mark_skip
 
 	rcall		ds18b20_write_scratchpad_x
 
@@ -187,7 +199,7 @@ exec_command_type_C_convert_param:
 
 	ldd		REG_X_LSB, Y+0
 	ldd		REG_X_MSB, Y+1
-   rcall     print_2_bytes_hexa_skip
+   rcall    uos_print_2_bytes_hexa_skip
 
 	rcall		convert_val_for_ds18b20
 	brts		exec_command_type_C_wrong
@@ -195,18 +207,56 @@ exec_command_type_C_convert_param:
 
 exec_command_type_C_wrong:
 	ldi		REG_TEMP_R17, 'K'
-	rcall		print_mark_skip
+	rcall		uos_print_mark_skip
 	set									; Car 'T' est modifie par 'uart_fifo_tx_write'
 	rjmp		exec_command_type_C_more
 
 exec_command_type_C_valid:
 	ldi		REG_TEMP_R17, 'O'
-	rcall		print_mark_skip
-	rcall		print_1_byte_hexa_skip
-   rcall     print_line_feed_skip
+	rcall		uos_print_mark_skip
+	rcall		uos_print_1_byte_hexa_skip
+	rcall		uos_print_line_feed_skip
 	clt									; Car 'T' est modifie par 'uart_fifo_tx_write'
 
 exec_command_type_C_more:
 	ret
 ; ---------
+
+; ---------
+; Activation / deactivation traces de developpement
+; ---------
+exec_command_type_T:
+	; Prise du parametre de la commande
+	; => ie. "<T0" ou "<T1" (ou != 0)
+
+   clr      REG_X_MSB
+   lds      REG_X_LSB, G_TEST_VALUE_LSB
+	tst		REG_X_LSB
+
+	brne		exec_command_type_T_enable_traces
+
+exec_command_type_T_disable_traces:
+	lds		REG_TEMP_R16, G_DS18B20_FLAGS
+	cbr		REG_TEMP_R16, FLG_DS18B20_TRACE_MSK
+	sts		G_DS18B20_FLAGS, REG_TEMP_R16
+	rjmp		exec_command_type_T_ok
+
+exec_command_type_T_enable_traces:
+	lds		REG_TEMP_R16, G_DS18B20_FLAGS
+	sbr		REG_TEMP_R16, FLG_DS18B20_TRACE_MSK
+	sts		G_DS18B20_FLAGS, REG_TEMP_R16
+	rjmp		exec_command_type_T_ok
+
+exec_command_type_T_ko:
+	rcall		uos_print_command_ko
+	rjmp		exec_command_type_T_rtn
+
+exec_command_type_T_ok:
+	rcall		uos_print_command_ok
+
+exec_command_type_T_rtn:
+	ret
+; ----------
+
+; End of file
 

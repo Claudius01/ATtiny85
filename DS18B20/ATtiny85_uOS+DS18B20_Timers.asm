@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20_Timers.asm,v 1.1 2025/11/26 17:33:27 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_Timers.asm,v 1.3 2025/11/29 12:31:38 administrateur Exp $"
 
 .cseg
 
@@ -32,15 +32,15 @@ exec_timer_3_more:
 
 	; Execution de la decouverte des capteurs DS18B20 + emission de la trame
 exec_timer_3_send_trame_derivation:
-	call		ds18b20_exec
+	rcall		ds18b20_exec
 
 	; Fin: Cadencement de l'emission des trames DS18B20
 
 exec_timer_3_cont_d:
-	ldi      REG_TEMP_R17, DS18B20_TIMER_1_SEC
-	ldi      REG_TEMP_R18, (1000 % 256)
-	ldi      REG_TEMP_R19, (1000 / 256)
-	rcall    start_timer
+	ldi		REG_TEMP_R17, DS18B20_TIMER_1_SEC
+	ldi		REG_TEMP_R18, (1000 % 256)
+	ldi		REG_TEMP_R19, (1000 / 256)
+	call		start_timer
 
 	ret
 ; ---------

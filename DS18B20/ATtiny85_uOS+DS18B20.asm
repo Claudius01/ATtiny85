@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.3 2025/11/26 17:33:27 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.9 2025/11/29 16:23:51 administrateur Exp $"
 
 ; Programme de gestion des capteurs DS18B20
 ;
@@ -12,11 +12,221 @@
 .include		"ATtiny85_uOS.asm"
 .include		"ATtiny85_uOS+DS18B20.h"
 
-.include		"ATtiny85_uOS+DS18B20_Timers.asm"
-.include		"ATtiny85_uOS+DS18B20_Commands.asm"
-.include		"ATtiny85_uOS+DS18B20_1_Wire.asm"
-
 .cseg
+
+; ---------
+; Initialisation contextes
+; ---------
+ds18b20_begin:
+	; Prompt d'accueil
+	ldi		REG_Z_MSB, ((text_prompt_ds18b20 << 1) / 256)
+	ldi		REG_Z_LSB, ((text_prompt_ds18b20 << 1) % 256)
+	rcall		uos_push_text_in_fifo_tx
+
+	rcall		ds18b20_init	; Duree de cadencement lue de l'EEPROM @ Id Platine
+	rcall		ds18b20_exec	; 1st appel a l'initialisation
+
+	ret
+; ---------
+
+; ---------
+; Preparation du code a exporter dans le fichier 'DS18B20.asm' inclus dans le projet
+; - Recherche sur le bus des ROMs a concurence de 8 maximum
+; - Conversion pour la detection de depassement des seuils d'alarme Tl et Th
+;   et pour prise des temperatures Tc
+; - Recherche des ROMs en alarme @ aus seuils Tl et Th
+; - Prise des temperatures Tc
+; - Emission de la trame constituee des parties:
+;   - Header
+;   - Informations pour chaque capteur trouve
+;   - CRC8 de la trame complete
+; ---------
+ds18b20_init:
+	; Lecture du nombre premier associe a l'Id de la platine
+	ldi		REG_X_MSB, high(EEPROM_ADDR_PRIMES);
+	ldi		REG_X_LSB, low(EEPROM_ADDR_PRIMES);
+	lds		REG_TEMP_R16, G_HEADER_INDEX_PLATINE
+	andi		REG_TEMP_R16, 0x0f
+	add		REG_X_LSB, REG_TEMP_R16
+	clr		REG_TEMP_R16
+	adc		REG_X_MSB, REG_TEMP_R16
+
+	rcall		eeprom_read_byte
+
+	; Test si valeur incorrecte (0x00 ou 0xff)
+	; => Pas de maj de 'G_DS18B20_COUNTER_xxx'
+	;    => En consequence, pas de cadencement ;-)
+	tst		REG_TEMP_R16
+	breq		ds18b20_init_end
+
+	cpi		REG_TEMP_R16, 0xff
+	breq		ds18b20_init_end
+	; Fin: Test si valeur incorrecte (0x00 ou 0xff)
+
+	sts		G_DS18B20_COUNTER_INIT, REG_TEMP_R16
+
+	; Amorce avec une 2nd lecture des DS18B20 au bout de 5 Sec
+	; car la 1st retourne la valeur par defaut cad 85 degrees
+	; => Les suivantes se feront au rithme de 'G_DS18B20_COUNTER_INIT' Sec. ;-)
+	ldi		REG_TEMP_R17, 5
+	sts		G_DS18B20_COUNTER, REG_TEMP_R17
+
+	ldi		REG_TEMP_R17, 'e'
+	rcall		uos_print_mark_skip
+	lds		REG_X_LSB, G_HEADER_INDEX_PLATINE
+	rcall		uos_print_1_byte_hexa
+	lds		REG_X_LSB, G_DS18B20_COUNTER_INIT
+	rcall		uos_print_1_byte_hexa
+	rcall		uos_print_line_feed
+
+	; Armement timer 'DS18B20_TIMER_1_SEC' pour les meseure de temperatures
+	ldi      REG_TEMP_R17, DS18B20_TIMER_1_SEC
+	ldi      REG_TEMP_R18, (1000 % 256)
+	ldi      REG_TEMP_R19, (1000 / 256)
+	rcall    start_timer
+
+ds18b20_init_end:
+	ret
+; ---------
+
+; ---------
+ds18b20_exec:
+	; Autorisation traces si 'G_DS18B20_FLAGS<FLG_DS18B20_TRACE>' a 1
+	lds		REG_TEMP_R16, G_DS18B20_FLAGS
+	sbrs		REG_TEMP_R16, FLG_DS18B20_TRACE_IDX
+	sbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
+
+	; Recherche sur le bus des ROMs
+	ldi		REG_TEMP_R17, 's'
+	rcall		uos_print_mark_skip
+
+	rcall		ds18b20_search_rom
+	; Fin: Recherche sur le bus des ROMs
+
+	; 1st pass: Conversion des temperatures + Recherche des capteurs en alarme
+	; 2nd pass: Prise des temperatures
+	clr		REG_TEMP_R17
+	sbr		REG_TEMP_R17, FLG_DS18B20_CONV_T_MSK
+	cbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
+	sbr		REG_TEMP_R17, FLG_DS18B20_FRAMES_MSK
+	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
+
+ds18b20_exec_pass:
+	; Conversion pour chaque ROM detecte #N [0, 1, 2, etc.]
+	clr		REG_TEMP_R16
+
+ds18b20_exec_loop:
+	; Recuperation du ROM #N detecte
+	rcall		ds18b20_get_rom_detected_bypass	
+	brtc		ds18b20_exec_conversion_end
+
+	push		REG_TEMP_R16			; Sauvegarde #N
+
+	; Reset capteur #N
+	ldi		REG_TEMP_R17, 'r'
+	rcall		uos_print_mark_skip
+	rcall		ds18b20_reset
+
+	; Copy ROM @ 'REG_TEMP_R17' into 'G_DS18B20_BYTES_SEND'
+	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_SEND)
+	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_SEND)
+	ldi		REG_TEMP_R17, 8
+
+ds18b20_exec_loop_2:
+	ld			REG_TEMP_R18, X+
+	st			Y+, REG_TEMP_R18
+	dec		REG_TEMP_R17
+	brne		ds18b20_exec_loop_2
+	; End: Copy ROM @ 'REG_TEMP_R17' into 'G_DS18B20_BYTES_SEND'
+
+	ldi		REG_TEMP_R17, 'm'
+	rcall		uos_print_mark_skip
+	rcall		ds18b20_match_rom
+
+	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
+	sbrc		REG_TEMP_R17, FLG_DS18B20_CONV_T_IDX
+	rjmp		ds18b20_conversion
+
+	sbrc		REG_TEMP_R17, FLG_DS18B20_TEMP_IDX
+	rjmp		ds18b20_temp
+
+	rjmp		ds18b20_exec_cont_d
+
+ds18b20_conversion:
+	ldi		REG_TEMP_R17, 'c'
+	rcall		uos_print_mark_skip
+	rcall		ds18b20_convert_t
+	rjmp		ds18b20_exec_cont_d
+
+ds18b20_temp:
+	ldi		REG_TEMP_R17, 't'
+	rcall		uos_print_mark_skip
+	rcall		ds18b20_read_scratchpad
+	;rjmp		ds18b20_exec_cont_d
+
+ds18b20_exec_cont_d:
+	rcall		fifo_tx_to_send_sync
+
+	pop		REG_TEMP_R16			; Restauration #N
+	inc		REG_TEMP_R16			; #N suivant
+	rjmp		ds18b20_exec_loop
+	; Fin: Conversion pour chaque ROM detecte
+
+ds18b20_exec_conversion_end:
+	; Test si tous les 'G_DS18B20_NBR_ROM' ont ete balayes
+	lds		REG_TEMP_R17, G_DS18B20_NBR_ROM
+	tst		REG_TEMP_R17
+	breq		ds18b20_exec_build_frame		; Construction de la trame a emettre
+
+	cpse		REG_TEMP_R16, REG_TEMP_R17		; Fin si erreur de comparaison
+	rjmp		ds18b20_exec_end
+
+	; Recherche des capteurs en alarme si fin de la conversion
+	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
+	sbrc		REG_TEMP_R17, FLG_DS18B20_CONV_T_IDX
+	rjmp		ds18b20_exec_search_alarm
+
+	cbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
+	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
+	rjmp		ds18b20_exec_build_frame
+
+ds18b20_exec_search_alarm:
+	cbr		REG_TEMP_R17, FLG_DS18B20_CONV_T_MSK
+	sbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
+	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
+
+	ldi		REG_TEMP_R17, 'a'
+	rcall		uos_print_mark_skip
+	rcall		ds18b20_search_alarm
+
+	; Effacement des emplacements 'G_DS18B20_ALR_ROM_N' pour acceuillir les trames
+	rcall		ds18b20_clear_alr
+
+	rjmp		ds18b20_exec_pass
+
+ds18b20_exec_build_frame:
+	ldi		REG_TEMP_R17, 'f'
+	rcall		uos_print_mark_skip
+
+	; Complements d'informations de la trame complete a emettre
+	rcall		buid_frame_complement
+
+	; Preparation prochaine emission
+	lds		REG_Y_MSB, G_HEADER_NUM_FRAME_MSB
+	lds		REG_Y_LSB, G_HEADER_NUM_FRAME_LSB
+	adiw		REG_Y_LSB, 1
+	sts		G_HEADER_NUM_FRAME_MSB, REG_Y_MSB
+	sts		G_HEADER_NUM_FRAME_LSB, REG_Y_LSB
+
+ds18b20_exec_end:
+	; Reactivation trace
+	cbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
+
+	; Emission de la trame complete
+	rcall		ds18b20_send_frame
+
+	ret
+; ---------
 
 ; ---------
 ; Raz des 16 bytes [G_DS18B20_BYTES_RESP, ..., (G_DS18B20_BYTES_RESP + 15)]
@@ -71,7 +281,7 @@ ds18b20_shift_right_resp:
 ds18b20_shift_right_rom:
 	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_ROM)
 	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_ROM)
-	rjmp		ds18b20_shift_right
+	;rjmp		ds18b20_shift_right
 
 ds18b20_shift_right:
 
@@ -83,7 +293,7 @@ ds18b20_shift_right_resp_loop:
 
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 #endif
 
 	ld			REG_TEMP_R16, Y
@@ -91,8 +301,8 @@ ds18b20_shift_right_resp_loop:
 #if USE_DS18B20_TRACE
 	mov		REG_X_LSB, REG_TEMP_R16
 	push		REG_TEMP_R16
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_1_byte_hexa_skip
+	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
 	out		SREG, REG_SAVE_SREG				; Restore SREG
 #endif
@@ -132,187 +342,15 @@ ds18b20_shift_right_send_loop:
 ; ---------
 
 ; ---------
-; Lecture du registre ROM de 64 bits disponible dans [G_DS18B20_BYTES_RESP, ..., (G_DS18B20_BYTES_RESP + 7)]
+; ds18b20_reset: Generation de la pulse RESET --\__/---- de 1mS
 ; ---------
-ds18b20_read_rom:
-	cli
-
-	ldi		REG_TEMP_R16, DS18B20_CMD_READ_ROM
-	rcall		ds18b20_write_8_bits_command
-	rcall		ds18b20_read_response_64_bits
-
-	ldi		REG_TEMP_R18, 4
-	rcall		ds18b20_print_response
-
-	; Test du CRC8
-	ldi		REG_TEMP_R16, 8								; 8 bytes pour le calcul sur les ROM
-	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_RESP)	; Adresse de 'G_DS18B20_BYTES_RESP'
-	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_RESP)
-
-	clt															; Test du CRC8 avec non prise en compte du 1st byte
-	rcall		ds18b20_crc8_bypass
-
-	set															; A priori, CRC8 recu egal a celui attendu ...
-	lds		REG_TEMP_R16, G_CALC_CRC8
-	lds		REG_TEMP_R17, G_DS18B20_BYTES_RESP
-	cpse		REG_TEMP_R16, REG_TEMP_R17
-	clt															; ... et non CRC8 recu different de celui attendu
-	; Fin: Test du CRC8
-
-	sei
-	ret
-; ---------
-
-; ---------
-; Conversion de la temperature disponible dans [G_DS18B20_BYTES_RESP, ..., (G_DS18B20_BYTES_RESP + 7)]
-; ---------
-ds18b20_convert_t:
-	cli
-
-	ldi		REG_TEMP_R16, DS18B20_CMD_CONVERT_T
-	rcall		ds18b20_write_8_bits_command
-	rcall		ds18b20_read_response_72_bits
-
-	ldi		REG_TEMP_R16, 'C'
-	rcall		push_1_char_in_fifo_tx_skip
-	ldi		REG_TEMP_R18, 5
-	rcall		ds18b20_print_response
-
-	sei
-	ret
-; ---------
-
-; ---------
-; Lecture de la Scratchpad disponible dans [G_DS18B20_BYTES_RESP, ..., (G_DS18B20_BYTES_RESP + 7)]
-; ---------
-ds18b20_read_scratchpad:
-	cli
-
-	ldi		REG_TEMP_R16, DS18B20_CMD_READ_SCRATCHPAD
-	rcall		ds18b20_write_8_bits_command
-	rcall		ds18b20_read_response_72_bits
-
-	ldi		REG_TEMP_R16, 'T'
-	rcall		push_1_char_in_fifo_tx_skip
-	ldi		REG_TEMP_R18, 5
-	rcall		ds18b20_print_response
-
-	; Test du CRC8
-	ldi		REG_TEMP_R16, 9								; 9 bytes pour le calcul sur les valeurs lues
-	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_RESP)	; Adresse de 'G_DS18B20_BYTES_RESP'
-	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_RESP)
-
-	clt															; Test du CRC8 avec non prise en compte du 1st byte
-	rcall		ds18b20_crc8_bypass
-
-	set															; A priori, CRC8 recu egal a celui attendu ...
-	lds		REG_TEMP_R16, G_CALC_CRC8
-	lds		REG_TEMP_R17, G_DS18B20_BYTES_RESP
-	cpse		REG_TEMP_R16, REG_TEMP_R17
-	clt															; ... et non CRC8 recu different de celui attendu
-
-	brtc		ds18b20_read_scratchpad_ko
-	rjmp		ds18b20_read_scratchpad_ok
-	; Fin: Test du CRC8
-
-ds18b20_read_scratchpad_ok:
-	; Construction de la trame 
-	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
-	sbrc		REG_TEMP_R17, FLG_DS18B20_FRAMES_IDX
-	rcall		build_frame_infos
-
-	ldi		REG_TEMP_R16, 'O'
-	rcall		push_1_char_in_fifo_tx_skip
-	ldi		REG_TEMP_R16, 'k'
-	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
-
-	rjmp		ds18b20_read_scratchpad_end
-
-ds18b20_read_scratchpad_ko:
-	ldi		REG_TEMP_R16, 'K'
-	rcall		push_1_char_in_fifo_tx_skip
-	ldi		REG_TEMP_R16, 'o'
-	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
-
-	rjmp		ds18b20_read_scratchpad_end
-
-ds18b20_read_scratchpad_end:
-	sei
-	ret
-; ---------
-
-; ---------
-; Match d'un registre ROM de 64 bits depuis [G_DS18B20_BYTES_SEND, ..., (G_DS18B20_BYTES_SEND + 7)]
-; => Test avec "0x53 08 22 53 97 80 B5 28 (1st capteur) 'ds18b20_match_rom_1'
-;              "0x47 06 22 60 20 BB C8 28 (2nd capteur) 'ds18b20_match_rom_2'
-;              "0x2B 06 22 60 43 40 56 28 (3rd capteur) 'ds18b20_match_rom_3'
-; ---------
-ds18b20_match_rom:
-	; Emission de l'index du ROM #N
-	push		REG_X_MSB
-	push		REG_X_LSB
-
-	; Get the index of ROM in alarm
-	ldi		REG_X_MSB, high(G_DS18B20_BYTES_SEND)
-	ldi		REG_X_LSB, low(G_DS18B20_BYTES_SEND)
-	rcall		ds18b20_get_rom_idx
-
-	; Update index of ROM for build frame
-	sts		G_DS18B20_ROM_IDX, REG_TEMP_R16
-
-	push		REG_TEMP_R16
-	push		REG_TEMP_R16
-	ldi		REG_TEMP_R16, 'M'
-	rcall		push_1_char_in_fifo_tx_skip
-	pop		REG_X_LSB
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
-
-	pop		REG_TEMP_R16
-	pop		REG_X_LSB
-	pop		REG_X_MSB
-	; Fin: Emission du ROM #N
-
-	rcall		ds18b20_print_rom_send
-
-	; Attente du vidage de la FIFO/Tx
-	rcall		fifo_tx_to_send_sync
-
-	cli
-
-	ldi		REG_TEMP_R16, DS18B20_CMD_MATCH_ROM
-	rcall		ds18b20_write_8_bits_command
-
-	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_SEND + 8)
-	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_SEND + 8)
-
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-	ld			REG_TEMP_R16, -Y
-	rcall		ds18b20_write_8_bits_command
-
-	sei
-
-	ret
-; ---------
-
+; La norme specifie > 480uS
+;
+; Remarque: L'execution est ininterruptible
+;           => TODO: Amelioration peut eviter d'etre "sourd" sur la recpetion Rx
 ; ---------
 ds18b20_reset:
-	rcall		ds18b20_clear
+	rcall		ds18b20_clear							; Raz des zone d'emission et reception
 
 	cli
 
@@ -325,7 +363,7 @@ ds18b20_reset_loop_1:
 	ldi		REG_TEMP_R16, 100						; Wait 1mS
 
 ds18b20_reset_loop_2:
-	rcall		delay_10uS
+	rcall		uos_delay_10uS
 	dec		REG_TEMP_R16
 	brne		ds18b20_reset_loop_2
 
@@ -345,7 +383,7 @@ ds18b20_reset_loop_2:
 	ldi		REG_TEMP_R18, 100						; Wait 1mS
 
 ds18b20_reset_loop_3:
-	rcall		delay_10uS
+	rcall		uos_delay_10uS
 	dec		REG_TEMP_R18
 	brne		ds18b20_reset_loop_3
 
@@ -356,272 +394,10 @@ ds18b20_reset_loop_3:
 	
 	mov		REG_TEMP_R16, REG_TEMP_R17
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 	; End: Presence detect ?
 
 	sei
-	ret
-; ---------
-
-; ---------
-; Recherche des registres ROM sur le bus
-;
-; - Chaque passe consiste a remplacer chaque bit "inconnu" (retour 0x00 des 2 'ds18b20_read_bit')
-;   par celui du pattern (G_DS18B20_PATTERN) initialise a 0x00 et qui sera incremente
-;   a la fin de la passe a l'issue de laquelle un ROM a ete identifie avec ses 64 bits
-;
-; - Le ROM est conserve apres sa verification @ CRC
-;
-; - Exemple de ROM determines avec 'G_DS18B20_NBR_BITS_RETRY' egal a 8
-;   car apres tests, il est constates qu'il y a au plus 3 bits inconnues a discriminer
-;   => Justification de l'initialisation a '((1 << 3) - 1)'
-;
-; 0x4706226020BBC828 1st capteur DS18B20 avec le pattern initial b0000 0000 -> 2 bits inconnus
-;                                                                b0000 0100
-; 0xCB062260451C7328 2rd capteur DS18B20 avec le pattern initial b0000 0111 -> 2 bits inconnus
-;                                                                b0000 0011
-; 0x2B06226043405628 3rd capteur DS18B20 avec le pattern initial b0000 0110 -> 2 bits inconnus
-;                                                                b0000 0010
-; 0x530822539780B528 4th capteur DS18B20 avec le pattern initial b0000 0101 -> 3 bits inconnus
-; 0xE4062260238BB928 5th capteur DS18B20 avec le pattern initial b0000 0001 -> 3 bits inconnus
-;
-; ---------
-ds18b20_search_rom:
-	; Initilisation pour x passes durant lesquelles un meme ROM peut etre trouve plusieurs fois
-	ldi		REG_TEMP_R16, ((1 << 3) - 1)				; 8 passes + Pattern initial b0000 0111
-	sts		G_DS18B20_NBR_BITS_RETRY, REG_TEMP_R16
-	sts		G_DS18B20_PATTERN, REG_TEMP_R16
-
-	clr		REG_TEMP_R16
-	sts		G_DS18B20_NBR_ROM, REG_TEMP_R16
-	sts		G_DS18B20_ROM_IDX_WRK, REG_TEMP_R16
-	sts		G_DS18B20_NBR_BITS_0_1_MAX, REG_TEMP_R16
-
-	; Effacement des ROM a rechercher
-	rcall		ds18b20_clear_rom	
-
-	lds		REG_TEMP_R16, G_DS18B20_NBR_ROM_MAX
-	tst		REG_TEMP_R16
-	brne		ds18b20_search_rom_cont_d
-
-	ldi		REG_TEMP_R16, 8
-	sts		G_DS18B20_NBR_ROM_MAX, REG_TEMP_R16
-
-ds18b20_search_rom_cont_d:
-	clr		REG_TEMP_R16
-	sts		G_DS18B20_NBR_BITS_0_1, REG_TEMP_R16
-
-	ldi		REG_TEMP_R16, 'P'
-	rcall		push_1_char_in_fifo_tx_skip
-	lds		REG_X_LSB, G_DS18B20_PATTERN
-	rcall		print_1_byte_hexa_skip
-
-	rcall		print_line_feed_skip
-	rcall		fifo_tx_to_send_sync
-
-	; Reset
-	rcall		ds18b20_reset
-
-	cli
-
-	ldi		REG_TEMP_R16, DS18B20_CMD_SEARCH_ROM
-	rcall		ds18b20_write_8_bits_command
-
-	ldi		REG_TEMP_R18, 64		; Searching the ROM register
-
-ds18b20_search_rom_loop:
-	clr		REG_TEMP_R17
-
-	rcall		ds18b20_read_bit
-
-	brcc		ds18b20_search_rom_loop_a
-	sbr		REG_TEMP_R17, MSK_BIT0
-
-ds18b20_search_rom_loop_a:
-	ldi		REG_TEMP_R19, 16
-	rcall		ds18b20_shift_right_resp
-
-	rcall		ds18b20_read_bit
-
-	brcc		ds18b20_search_rom_loop_b
-	sbr		REG_TEMP_R17, MSK_BIT1
-
-ds18b20_search_rom_loop_b:
-	ldi		REG_TEMP_R19, 16
-	rcall		ds18b20_shift_right_resp
-
-	cpi		REG_TEMP_R17, 0x00		; Presence de '0' et de '1'
-	brne		ds18b20_search_rom_loop_c
-
-	; Comptabilisation du nombre de bits inconnus
-	lds		REG_TEMP_R19, G_DS18B20_NBR_BITS_0_1
-	inc		REG_TEMP_R19
-	sts		G_DS18B20_NBR_BITS_0_1, REG_TEMP_R19
-
-	lds		REG_TEMP_R20, G_DS18B20_NBR_BITS_0_1_MAX
-	cp			REG_TEMP_R19, REG_TEMP_R20
-	brmi		ds18b20_search_rom_loop_d
-
-	sts		G_DS18B20_NBR_BITS_0_1_MAX, REG_TEMP_R19
-
-ds18b20_search_rom_loop_d:
-
-	; Ecriture de 'G_DS18B20_PATTERN<0>'
-	lds		REG_TEMP_R19, G_DS18B20_PATTERN
-	lsr		REG_TEMP_R19
-	sts		G_DS18B20_PATTERN, REG_TEMP_R19
-
-	brcc		ds18b20_search_rom_loop_0
-	rjmp		ds18b20_search_rom_loop_1
-
-ds18b20_search_rom_loop_c:
-	cpi		REG_TEMP_R17, 0x02		; Presence de '0' uniquement
-	breq		ds18b20_search_rom_loop_0
-
-	cpi		REG_TEMP_R17, 0x01		; Presence de '1' uniquement
-	breq		ds18b20_search_rom_loop_1
-
-	cpi		REG_TEMP_R17, 0x03		; No capteur
-	breq		ds18b20_search_rom_no_device
-	rjmp		ds18b20_search_rom_end
-
-ds18b20_search_rom_loop_0:
-	clc
-	ldi		REG_TEMP_R19, 8
-	rcall		ds18b20_shift_right_rom
-
-	clc
-	rjmp		ds18b20_search_rom_loop_01
-
-ds18b20_search_rom_loop_1:
-	sec
-	ldi		REG_TEMP_R19, 8
-	rcall		ds18b20_shift_right_rom
-
-	sec
-	rjmp		ds18b20_search_rom_loop_01
-
-ds18b20_search_rom_loop_01:
-
-	rcall		ds18b20_write_bit	
-
-	dec		REG_TEMP_R18
-	brne		ds18b20_search_rom_loop
-
-	rjmp		ds18b20_search_rom_end
-
-ds18b20_search_rom_no_device:
-	ldi		REG_TEMP_R16, 'N'
-	rcall		push_1_char_in_fifo_tx_skip
-	rjmp		ds18b20_search_rom_abort
-
-ds18b20_search_rom_abort:
-	sei
-
-	ldi		REG_X_LSB, 64
-	sub		REG_X_LSB, REG_TEMP_R18
-	rcall		print_1_byte_hexa_skip
-
-	mov		REG_X_LSB, REG_TEMP_R17
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
-
-	rjmp		ds18b20_search_rom_rtn
-
-ds18b20_search_rom_end:
-	sei
-
-	ldi		REG_TEMP_R18, 8
-	rcall		ds18b20_print_response
-
-	ldi		REG_TEMP_R18, 8
-	rcall		ds18b20_print_rom
-
-	; Copy of ROM found in 'G_DS18B20_BYTES_ROM' to 'G_DS18B20_ROM_0' @ 'G_DS18B20_ROM_IDX'
-	; => 'REG_TEMP_R16' contient le rang du CRC du ROM trouve ou 0xff si pas trouve
-	rcall		ds18b20_compare_rom
-
-	cpi		REG_TEMP_R16, 0xff
-	brne		ds18b20_search_rom_found
-
-	rcall		ds18b20_copy_rom
-
-	lds		REG_TEMP_R16, G_DS18B20_NBR_ROM
-	inc		REG_TEMP_R16
-	sts		G_DS18B20_NBR_ROM, REG_TEMP_R16
-
-	lds		REG_TEMP_R17, G_DS18B20_NBR_ROM_MAX
-	cp			REG_TEMP_R16, REG_TEMP_R17
-	brpl		ds18b20_search_rom_rtn
-
-ds18b20_search_rom_found:
-	ldi		REG_TEMP_R16, 'N'
-	rcall		push_1_char_in_fifo_tx_skip
-	lds		REG_X_LSB, G_DS18B20_NBR_BITS_RETRY
-	rcall		print_1_byte_hexa_skip
-
-	ldi		REG_TEMP_R16, '?'
-	rcall		push_1_char_in_fifo_tx_skip
-	lds		REG_X_LSB, G_DS18B20_NBR_BITS_0_1
-	rcall		print_1_byte_hexa_skip
-
-	rcall		print_line_feed_skip
-
-	rcall		fifo_tx_to_send_sync
-
-	lds		REG_TEMP_R19, G_DS18B20_NBR_BITS_RETRY
-	dec		REG_TEMP_R19
-	sts		G_DS18B20_NBR_BITS_RETRY, REG_TEMP_R19
-	cpi		REG_TEMP_R19, 0xFF
-	breq		ds18b20_search_rom_rtn		
-
-	sts		G_DS18B20_PATTERN, REG_TEMP_R19
-
-	rjmp		ds18b20_search_rom_cont_d
-
-ds18b20_search_rom_rtn:
-
-	ret
-; ---------
-
-; ---------
-; Emission d'une commande de 8 bits contenue dans 'REG_TEMP_R16'
-; => LSB en tete
-; ---------
-ds18b20_write_8_bits_command:
-	ldi		REG_TEMP_R18, 8
-
-ds18b20_write_8_bits_command_loop:
-	ror		REG_TEMP_R16
-	rcall		ds18b20_write_bit
-
-	dec		REG_TEMP_R18
-	brne		ds18b20_write_8_bits_command_loop
-
-	ret
-; ---------
-
-; ---------
-; Lecture de la reponse sur 64 bits disponible dans [G_DS18B20_BYTES_RESP, ..., (G_DS18B20_BYTES_RESP + 7)]
-; Lecture de la reponse sur 72 bits disponible dans [G_DS18B20_BYTES_RESP, ..., (G_DS18B20_BYTES_RESP + 8)]
-; ---------
-ds18b20_read_response_72_bits:
-	ldi		REG_TEMP_R19, 9
-	ldi		REG_TEMP_R18, 72
-	rjmp		ds18b20_read_response_x_bits_loop
-
-ds18b20_read_response_64_bits:
-	ldi		REG_TEMP_R19, 8
-	ldi		REG_TEMP_R18, 64
-
-ds18b20_read_response_x_bits_loop:
-	rcall		ds18b20_read_bit
-
-	rcall		ds18b20_shift_right_resp
-
-	dec		REG_TEMP_R18
-	brne		ds18b20_read_response_x_bits_loop
-
 	ret
 ; ---------
 
@@ -633,12 +409,12 @@ ds18b20_print_response:
 ds18b20_print_response_loop:
 	ld			REG_X_MSB, Y+
 	ld			REG_X_LSB, Y+
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 
 	dec		REG_TEMP_R18
 	brne		ds18b20_print_response_loop
 
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 	ret
 ; ---------
 
@@ -652,12 +428,12 @@ ds18b20_print_rom_send:
 ds18b20_print_rom_send_loop:
 	ld			REG_X_MSB, Y+
 	ld			REG_X_LSB, Y+
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 
 	dec		REG_TEMP_R18
 	brne		ds18b20_print_rom_send_loop
 
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 
 	ret
 ; ---------
@@ -675,12 +451,12 @@ ds18b20_print_rom:
 ds18b20_print_rom_loop:
 	ld			REG_X_MSB, Y+
 	ld			REG_X_LSB, Y+
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 
 	dec		REG_TEMP_R18
 	brne		ds18b20_print_rom_loop
 
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 
 	ret
 ; ---------
@@ -767,7 +543,7 @@ ds18b20_compare_rom_loop:
 	cpse		REG_TEMP_R18, REG_TEMP_R19			; Famille differente ?
 	rjmp		ds18b20_compare_rom_not_found		; Non
 
-	sts		G_DS1820_FAMILLE, REG_TEMP_R18	; Update for build frame
+	sts		G_DS18B20_FAMILLE, REG_TEMP_R18	; Update for build frame
 
 	lds		REG_TEMP_R18, G_DS18B20_BYTES_ROM
 	ld			REG_TEMP_R19, Y
@@ -777,15 +553,15 @@ ds18b20_compare_rom_loop:
 ds18b20_compare_rom_found:
 	push		REG_TEMP_R16
 	mov		REG_X_LSB, REG_TEMP_R16
-	rcall		print_1_byte_hexa_skip
+	rcall		uos_print_1_byte_hexa_skip
 
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 
 	ldi		REG_TEMP_R16, 'F'
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
 
 	rjmp		ds18b20_compare_rom_ret
@@ -817,7 +593,7 @@ ds18b20_compare_rom_not_found:
 ds18b20_compare_rom_crc8_ko:						; Non
 	ldi		REG_TEMP_R16, 'K'
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 
 	ldi		REG_TEMP_R16, 0						; Force a ROM trouve (retour avec 'REG_TEMP_R16' != 0 ;-)
 	rjmp		ds18b20_compare_rom_ret
@@ -829,11 +605,11 @@ ds18b20_compare_rom_not_found_save:
 	push		REG_TEMP_R16
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 
 	ldi		REG_TEMP_R16, 'f'
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
 
 	; Test de depassement de l'index 'REG_TEMP_R16'
@@ -852,6 +628,13 @@ ds18b20_compare_rom_ret:
 	ret
 ; ---------
 
+; ---------
+; Gestion des alarmes
+; ---------
+; ds18b20_clear_alr:
+; ds18b20_alr_copy_rom:
+; ds18b20_compare_alr_rom:
+; ds18b20_search_alarm:    Recherche des capteurs en "alarme"
 ; ---------
 ; Clear of ROM table 'G_DS18B20_ALR_ROM_0', ...
 ; ---------
@@ -944,15 +727,15 @@ ds18b20_compare_alr_rom_loop:
 ds18b20_compare_alr_rom_found:
 	push		REG_TEMP_R16
 	mov		REG_X_LSB, REG_TEMP_R16
-	rcall		print_1_byte_hexa_skip
+	rcall		uos_print_1_byte_hexa_skip
 
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 
 	ldi		REG_TEMP_R16, 'F'
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
 
 	rjmp		ds18b20_compare_alr_rom_ret
@@ -984,7 +767,7 @@ ds18b20_compare_alr_rom_not_found:
 ds18b20_compare_alr_rom_crc8_ko:						; Non
 	ldi		REG_TEMP_R16, 'K'
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 
 	ldi		REG_TEMP_R16, 0						; Force a ROM trouve (retour avec 'REG_TEMP_R16' != 0 ;-)
 	rjmp		ds18b20_compare_alr_rom_ret
@@ -996,11 +779,11 @@ ds18b20_compare_alr_rom_not_found_save:
 	push		REG_TEMP_R16
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 
 	ldi		REG_TEMP_R16, 'f'
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
 
 	; Test de depassement de l'index 'REG_TEMP_R16'
@@ -1018,10 +801,16 @@ ds18b20_compare_alr_rom_loop_end:
 ds18b20_compare_alr_rom_ret:
 	ret
 ; ---------
+; Fin: Gestion des alarmes
+; ---------
 
 ; ---------
-; Calcul du CRC8
-;
+; CRC8-MAXIM
+; ---------
+; ds18b20_crc8_calc:   Calcul du CRC8
+; ds18b20_crc8_test:   Test du CRC8
+; ds18b20_crc8_bypass: Test du CRC8 avec non prise en compte du 1st byte
+; ---------
 ; Input:
 ;   - Y:            Adresse du 1st byte
 ;   - REG_TEMP_R16: Nombre de bytes
@@ -1052,7 +841,7 @@ ds18b20_crc8_calc:
 
 ds18b20_crc8_test:
 	set
-	rjmp		ds18b20_crc8
+	;rjmp		ds18b20_crc8
 
 ds18b20_crc8:
 	ldi		REG_TEMP_R16, 9	; 9 bytes pour le calcul sur les reponses
@@ -1089,7 +878,7 @@ ds18b20_crc8_loop_bytes:
 	ld			REG_TEMP_R17, -Y
 
 	mov		REG_X_LSB, REG_TEMP_R17
-	rcall		print_1_byte_hexa_skip
+	rcall		uos_print_1_byte_hexa_skip
 	
 	push		REG_TEMP_R18
 
@@ -1126,8 +915,8 @@ ds18b20_crc8_b:
 	ldi		REG_TEMP_R16, 'C'
 	rcall		push_1_char_in_fifo_tx_skip
 	mov		REG_X_LSB, REG_TEMP_R19
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_1_byte_hexa_skip
+	rcall		uos_print_line_feed_skip
 
 	pop		REG_Z_LSB
 	pop		REG_Z_MSB
@@ -1141,6 +930,8 @@ ds18b20_crc8_b:
 	pop		REG_TEMP_R16
 
 	ret
+; ---------
+; Fin: CRC8-MAXIM
 ; ---------
 
 ; ---------
@@ -1179,9 +970,13 @@ ds18b20_get_rom_detected_ok:					; Oui (0 <= N < 'G_DS18B20_NBR_ROM')
 	adc		REG_X_MSB, REG_TEMP_R17
 
 	ldi		REG_TEMP_R16, 'O'
+#if USE_DS18B20_TRACE
+	call		push_1_char_in_fifo_tx_skip
+#else
 	rcall		push_1_char_in_fifo_tx_skip
-	rcall		print_2_bytes_hexa_skip
-	rcall		print_line_feed_skip
+#endif
+	rcall		uos_print_2_bytes_hexa_skip
+	rcall		uos_print_line_feed_skip
 
 	set														; Detecte
 	rjmp		ds18b20_get_rom_detected_ret
@@ -1192,254 +987,13 @@ ds18b20_get_rom_detected_ko:
 	rcall		push_1_char_in_fifo_tx_skip
 	pop		REG_TEMP_R16
 	mov		REG_X_LSB, REG_TEMP_R16
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_1_byte_hexa_skip
+	rcall		uos_print_line_feed_skip
 
 	clt														; Non detecte
 
 ds18b20_get_rom_detected_ret:
 	pop		REG_TEMP_R16
-	ret
-; ---------
-
-; ---------
-; Recherche des capteurs en "alarme"; cad si la temperature mesuree
-; est inferieure a TL ou superieure a TH configurees
-; ---------
-ds18b20_search_alarm:
-	; Initilisation pour x passes durant lesquelles un meme ROM peut etre trouve plusieurs fois
-	ldi		REG_TEMP_R16, ((1 << 3) - 1)				; 8 passes + Pattern initial b0000 0111
-	sts		G_DS18B20_ALR_NBR_BITS_RETRY, REG_TEMP_R16
-	sts		G_DS18B20_ALR_PATTERN, REG_TEMP_R16
-
-	clr		REG_TEMP_R16
-	sts		G_DS18B20_ALR_NBR_ROM, REG_TEMP_R16
-	sts		G_DS18B20_ALR_ROM_IDX_WRK, REG_TEMP_R16
-	sts		G_DS18B20_ALR_NBR_BITS_0_1_MAX, REG_TEMP_R16
-	sts		G_DS1820_IN_ALARM, REG_TEMP_R16
-
-	; Effacement des ROM a rechercher
-	rcall		ds18b20_clear_alr	
-
-	lds		REG_TEMP_R16, G_DS18B20_ALR_NBR_ROM_MAX
-	tst		REG_TEMP_R16
-	brne		ds18b20_search_alr_cont_d
-
-	ldi		REG_TEMP_R16, 8
-	sts		G_DS18B20_ALR_NBR_ROM_MAX, REG_TEMP_R16
-
-ds18b20_search_alr_cont_d:
-	clr		REG_TEMP_R16
-	sts		G_DS18B20_ALR_NBR_BITS_0_1, REG_TEMP_R16
-
-	ldi		REG_TEMP_R16, 'P'
-	rcall		push_1_char_in_fifo_tx_skip
-	lds		REG_X_LSB, G_DS18B20_ALR_PATTERN
-	rcall		print_1_byte_hexa_skip
-
-	rcall		print_line_feed_skip
-	rcall		fifo_tx_to_send_sync
-
-	; Reset
-	rcall		ds18b20_reset
-
-	cli
-
-	ldi		REG_TEMP_R16, DS18B20_CMD_SEARCH_ALARM
-	rcall		ds18b20_write_8_bits_command
-
-	ldi		REG_TEMP_R18, 64		; Searching the ROM register
-
-ds18b20_search_alr_loop:
-	clr		REG_TEMP_R17
-
-	rcall		ds18b20_read_bit
-
-	brcc		ds18b20_search_alr_loop_a
-	sbr		REG_TEMP_R17, MSK_BIT0
-
-ds18b20_search_alr_loop_a:
-	ldi		REG_TEMP_R19, 16
-	rcall		ds18b20_shift_right_resp
-
-	rcall		ds18b20_read_bit
-
-	brcc		ds18b20_search_alr_loop_b
-	sbr		REG_TEMP_R17, MSK_BIT1
-
-ds18b20_search_alr_loop_b:
-	ldi		REG_TEMP_R19, 16
-	rcall		ds18b20_shift_right_resp
-
-	cpi		REG_TEMP_R17, 0x00		; Presence de '0' et de '1'
-	brne		ds18b20_search_alr_loop_c
-
-	; Comptabilisation du nombre de bits inconnus
-	lds		REG_TEMP_R19, G_DS18B20_ALR_NBR_BITS_0_1
-	inc		REG_TEMP_R19
-	sts		G_DS18B20_ALR_NBR_BITS_0_1, REG_TEMP_R19
-
-	lds		REG_TEMP_R20, G_DS18B20_ALR_NBR_BITS_0_1_MAX
-	cp			REG_TEMP_R19, REG_TEMP_R20
-	brmi		ds18b20_search_alr_loop_d
-
-	sts		G_DS18B20_ALR_NBR_BITS_0_1_MAX, REG_TEMP_R19
-
-ds18b20_search_alr_loop_d:
-
-	; Ecriture de 'G_DS18B20_ALR_PATTERN<0>'
-	lds		REG_TEMP_R19, G_DS18B20_ALR_PATTERN
-	lsr		REG_TEMP_R19
-	sts		G_DS18B20_ALR_PATTERN, REG_TEMP_R19
-
-	brcc		ds18b20_search_alr_loop_0
-	rjmp		ds18b20_search_alr_loop_1
-
-ds18b20_search_alr_loop_c:
-	cpi		REG_TEMP_R17, 0x02		; Presence de '0' uniquement
-	breq		ds18b20_search_alr_loop_0
-
-	cpi		REG_TEMP_R17, 0x01		; Presence de '1' uniquement
-	breq		ds18b20_search_alr_loop_1
-
-	cpi		REG_TEMP_R17, 0x03		; No capteur
-	breq		ds18b20_search_alr_no_device
-	rjmp		ds18b20_search_alr_end
-
-ds18b20_search_alr_loop_0:
-	clc
-	ldi		REG_TEMP_R19, 8
-	rcall		ds18b20_shift_right_rom
-
-	clc
-	rjmp		ds18b20_search_alr_loop_01
-
-ds18b20_search_alr_loop_1:
-	sec
-	ldi		REG_TEMP_R19, 8
-	rcall		ds18b20_shift_right_rom
-
-	sec
-	rjmp		ds18b20_search_alr_loop_01
-
-ds18b20_search_alr_loop_01:
-
-	rcall		ds18b20_write_bit	
-
-	dec		REG_TEMP_R18
-	brne		ds18b20_search_alr_loop
-
-	rjmp		ds18b20_search_alr_end
-
-ds18b20_search_alr_no_device:
-	ldi		REG_TEMP_R16, 'N'
-	rcall		push_1_char_in_fifo_tx_skip
-	rjmp		ds18b20_search_alr_abort
-
-ds18b20_search_alr_abort:
-	sei
-
-	ldi		REG_X_LSB, 64
-	sub		REG_X_LSB, REG_TEMP_R18
-	rcall		print_1_byte_hexa_skip
-
-	mov		REG_X_LSB, REG_TEMP_R17
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
-
-	rjmp		ds18b20_search_alr_rtn
-
-ds18b20_search_alr_end:
-	sei
-
-	ldi		REG_TEMP_R18, 8
-	rcall		ds18b20_print_response
-
-	ldi		REG_TEMP_R18, 8
-	rcall		ds18b20_print_rom
-
-	; Copy of ROM found in 'G_DS18B20_BYTES_ROM' to 'G_DS18B20_ALR_ROM_0' @ 'G_DS18B20_ALR_ROM_IDX'
-	; => 'REG_TEMP_R16' contient le rang du CRC du ROM trouve ou 0xff si pas trouve
-	rcall		ds18b20_compare_alr_rom
-
-	cpi		REG_TEMP_R16, 0xff
-	brne		ds18b20_search_alr_found
-
-	; Emission de l'index du ROM #N en alarme
-	push		REG_X_MSB
-	push		REG_X_LSB
-
-	; Get the index of ROM in alarm
-	ldi		REG_X_MSB, high(G_DS18B20_BYTES_ROM)
-	ldi		REG_X_LSB, low(G_DS18B20_BYTES_ROM)
-	rcall		ds18b20_get_rom_idx
-
-	push		REG_TEMP_R16
-	push		REG_TEMP_R16
-	ldi		REG_TEMP_R16, '#'
-	rcall		push_1_char_in_fifo_tx_skip
-	pop		REG_X_LSB
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
-
-	pop		REG_TEMP_R16
-	pop		REG_X_LSB
-	pop		REG_X_MSB
-	; Fin: Emission du ROM #N en alarme
-
-	; Cas ou le capteur #N n'est pas trouve dans la table des ROM detectes
-	; => Abort a la 1st occurence
-	cpi		REG_TEMP_R16, 0xff
-	breq		ds18b20_search_alr_rtn
-
-	; Update 'G_DS1820_IN_ALARM' @ 'REG_TEMP_R16'
-	ldi		REG_Z_MSB, ((text_msk_table << 1) / 256)
-	ldi		REG_Z_LSB, ((text_msk_table << 1) % 256)
-	add		REG_Z_LSB, REG_TEMP_R16
-	clr		REG_TEMP_R17
-	adc		REG_Z_MSB, REG_TEMP_R17
-	lpm		REG_TEMP_R18, Z
-	lds		REG_TEMP_R17, G_DS1820_IN_ALARM
-	or			REG_TEMP_R17, REG_TEMP_R18
-	sts		G_DS1820_IN_ALARM, REG_TEMP_R17
-	; End: Update 'G_DS1820_IN_ALARM' @ 'REG_TEMP_R16'
-
-	rcall		ds18b20_alr_copy_rom
-
-	lds		REG_TEMP_R16, G_DS18B20_ALR_NBR_ROM
-	inc		REG_TEMP_R16
-	sts		G_DS18B20_ALR_NBR_ROM, REG_TEMP_R16
-
-	lds		REG_TEMP_R17, G_DS18B20_ALR_NBR_ROM_MAX
-	cp			REG_TEMP_R16, REG_TEMP_R17
-	brpl		ds18b20_search_alr_rtn
-
-ds18b20_search_alr_found:
-	ldi		REG_TEMP_R16, 'N'
-	rcall		push_1_char_in_fifo_tx_skip
-	lds		REG_X_LSB, G_DS18B20_ALR_NBR_BITS_RETRY
-	rcall		print_1_byte_hexa_skip
-
-	ldi		REG_TEMP_R16, '?'
-	rcall		push_1_char_in_fifo_tx_skip
-	lds		REG_X_LSB, G_DS18B20_ALR_NBR_BITS_0_1
-	rcall		print_1_byte_hexa_skip
-
-	rcall		print_line_feed_skip
-
-	rcall		fifo_tx_to_send_sync
-
-	lds		REG_TEMP_R19, G_DS18B20_ALR_NBR_BITS_RETRY
-	dec		REG_TEMP_R19
-	sts		G_DS18B20_ALR_NBR_BITS_RETRY, REG_TEMP_R19
-	cpi		REG_TEMP_R19, 0xFF
-	breq		ds18b20_search_alr_rtn		
-
-	sts		G_DS18B20_ALR_PATTERN, REG_TEMP_R19
-
-	rjmp		ds18b20_search_alr_cont_d
-
-ds18b20_search_alr_rtn:
 	ret
 ; ---------
 
@@ -1495,7 +1049,7 @@ ds18b20_get_rom_idx_cont_d:					; Non => Continue
 	dec		REG_TEMP_R17
 	brne		ds18b20_get_rom_idx_loop
 
-	rjmp		ds18b20_get_rom_idx_not_found
+	;rjmp		ds18b20_get_rom_idx_not_found
 
 ds18b20_get_rom_idx_not_found:
 	ldi		REG_TEMP_R16, 0xff
@@ -1508,14 +1062,14 @@ ds18b20_get_rom_idx_not_found:
 	ldi		REG_TEMP_R16, '?'
 	rcall		push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
-	rcall		print_1_byte_hexa_skip
+	rcall		uos_print_1_byte_hexa_skip
 	pop		REG_X_LSB
 	pop		REG_X_MSB
-	rcall		print_2_bytes_hexa_skip
+	rcall		uos_print_2_bytes_hexa_skip
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_2_bytes_hexa_skip
+	rcall		uos_print_line_feed_skip
 	pop		REG_X_LSB
 	pop		REG_X_MSB
 
@@ -1528,8 +1082,8 @@ ds18b20_get_rom_idx_found:
 	ldi		REG_TEMP_R16, 'B'
 	rcall		push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
-	rcall		print_1_byte_hexa_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_1_byte_hexa_skip
+	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
 
 ds18b20_get_rom_idx_ret:
@@ -1540,203 +1094,6 @@ ds18b20_get_rom_idx_ret:
 
 	ret
 ; ---------
-
-; ---------
-; Preparation du code a exporter dans le fichier 'DS18B20.asm' inclus dans le projet
-; - Recherche sur le bus des ROMs a concurence de 8 maximum
-; - Conversion pour la detection de depassement des seuils d'alarme Tl et Th
-;   et pour prise des temperatures Tc
-; - Recherche des ROMs en alarme @ aus seuils Tl et Th
-; - Prise des temperatures Tc
-; - Emission de la trame constituee des parties:
-;   - Header
-;   - Informations pour chaque capteur trouve
-;   - CRC8 de la trame complete
-; ---------
-ds18b20_init:
-	; Lecture du nombre premier associe a l'Id de la platine
-	ldi		REG_X_MSB, high(EEPROM_ADDR_PRIMES);
-	ldi		REG_X_LSB, low(EEPROM_ADDR_PRIMES);
-	lds		REG_TEMP_R16, G_HEADER_INDEX_PLATINE
-	andi		REG_TEMP_R16, 0x0f
-	add		REG_X_LSB, REG_TEMP_R16
-	clr		REG_TEMP_R16
-	adc		REG_X_MSB, REG_TEMP_R16
-
-	rcall		eeprom_read_byte
-
-	; Test si valeur incorrecte (0x00 ou 0xff)
-	; => Pas de maj de 'G_DS18B20_COUNTER_xxx'
-	;    => En consequence, pas de cadencement ;-)
-	tst		REG_TEMP_R16
-	breq		ds18b20_init_end
-
-	cpi		REG_TEMP_R16, 0xff
-	breq		ds18b20_init_end
-	; Fin: Test si valeur incorrecte (0x00 ou 0xff)
-
-	sts		G_DS18B20_COUNTER_INIT, REG_TEMP_R16
-
-	; Amorce avec une 2nd lecture des DS18B20 au bout de 5 Sec
-	; car la 1st retourne la valeur par defaut cad 85 degrees
-	; => Les suivantes se feront au rithme de 'G_DS18B20_COUNTER_INIT' Sec. ;-)
-	ldi		REG_TEMP_R17, 5
-	sts		G_DS18B20_COUNTER, REG_TEMP_R17
-
-	ldi		REG_TEMP_R17, 'e'
-	rcall		print_mark_skip
-	lds		REG_X_LSB, G_HEADER_INDEX_PLATINE
-	rcall		print_1_byte_hexa
-	lds		REG_X_LSB, G_DS18B20_COUNTER_INIT
-	rcall		print_1_byte_hexa
-	rcall		print_line_feed
-
-	; Armement timer 'DS18B20_TIMER_1_SEC' pour les meseure de temperatures
-	ldi      REG_TEMP_R17, DS18B20_TIMER_1_SEC
-	ldi      REG_TEMP_R18, (1000 % 256)
-	ldi      REG_TEMP_R19, (1000 / 256)
-	call    start_timer
-
-ds18b20_init_end:
-	ret
-; ---------
-
-; ---------
-ds18b20_exec:
-	; Inhibition trace
-	sbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
-
-	; Recherche sur le bus des ROMs
-	ldi		REG_TEMP_R17, 's'
-	rcall		print_mark_skip
-
-	rcall		ds18b20_search_rom
-	; Fin: Recherche sur le bus des ROMs
-
-	; 1st pass: Conversion des temperatures + Recherche des capteurs en alarme
-	; 2nd pass: Prise des temperatures
-	clr		REG_TEMP_R17
-	sbr		REG_TEMP_R17, FLG_DS18B20_CONV_T_MSK
-	cbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
-	sbr		REG_TEMP_R17, FLG_DS18B20_FRAMES_MSK
-	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
-
-ds18b20_exec_pass:
-
-	; Conversion pour chaque ROM detecte #N [0, 1, 2, etc.]
-	clr		REG_TEMP_R16
-
-ds18b20_exec_loop:
-	; Recuperation du ROM #N detecte
-	rcall		ds18b20_get_rom_detected_bypass	
-	brtc		ds18b20_exec_conversion_end
-
-	push		REG_TEMP_R16			; Sauvegarde #N
-
-	; Reset capteur #N
-	ldi		REG_TEMP_R17, 'r'
-	rcall		print_mark_skip
-	rcall		ds18b20_reset
-
-	; Copy ROM @ 'REG_TEMP_R17' into 'G_DS18B20_BYTES_SEND'
-	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_SEND)
-	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_SEND)
-	ldi		REG_TEMP_R17, 8
-
-ds18b20_exec_loop_2:
-	ld			REG_TEMP_R18, X+
-	st			Y+, REG_TEMP_R18
-	dec		REG_TEMP_R17
-	brne		ds18b20_exec_loop_2
-	; End: Copy ROM @ 'REG_TEMP_R17' into 'G_DS18B20_BYTES_SEND'
-
-	ldi		REG_TEMP_R17, 'm'
-	rcall		print_mark_skip
-	rcall		ds18b20_match_rom
-
-	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
-	sbrc		REG_TEMP_R17, FLG_DS18B20_CONV_T_IDX
-	rjmp		ds18b20_conversion
-
-	sbrc		REG_TEMP_R17, FLG_DS18B20_TEMP_IDX
-	rjmp		ds18b20_temp
-
-	rjmp		ds18b20_exec_cont_d
-
-ds18b20_conversion:
-	ldi		REG_TEMP_R17, 'c'
-	rcall		print_mark_skip
-	rcall		ds18b20_convert_t
-	rjmp		ds18b20_exec_cont_d
-
-ds18b20_temp:
-	ldi		REG_TEMP_R17, 't'
-	rcall		print_mark_skip
-	rcall		ds18b20_read_scratchpad
-	rjmp		ds18b20_exec_cont_d
-
-ds18b20_exec_cont_d:
-	rcall		fifo_tx_to_send_sync
-
-	pop		REG_TEMP_R16			; Restauration #N
-	inc		REG_TEMP_R16			; #N suivant
-	rjmp		ds18b20_exec_loop
-	; Fin: Conversion pour chaque ROM detecte
-
-ds18b20_exec_conversion_end:
-	; Test si tous les 'G_DS18B20_NBR_ROM' ont ete balayes
-	lds		REG_TEMP_R17, G_DS18B20_NBR_ROM
-	tst		REG_TEMP_R17
-	breq		ds18b20_exec_build_frame		; Construction de la trame a emettre
-
-	cpse		REG_TEMP_R16, REG_TEMP_R17		; Fin si erreur de comparaison
-	rjmp		ds18b20_exec_end
-
-	; Recherche des capteurs en alarme si fin de la conversion
-	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
-	sbrc		REG_TEMP_R17, FLG_DS18B20_CONV_T_IDX
-	rjmp		ds18b20_exec_search_alarm
-
-	cbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
-	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
-	rjmp		ds18b20_exec_build_frame
-
-ds18b20_exec_search_alarm:
-	cbr		REG_TEMP_R17, FLG_DS18B20_CONV_T_MSK
-	sbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
-	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
-
-	ldi		REG_TEMP_R17, 'a'
-	rcall		print_mark_skip
-	rcall		ds18b20_search_alarm
-
-	; Effacement des emplacements 'G_DS18B20_ALR_ROM_N' pour acceuillir les trames
-	rcall		ds18b20_clear_alr
-
-	rjmp		ds18b20_exec_pass
-
-ds18b20_exec_build_frame:
-	ldi		REG_TEMP_R17, 'f'
-	rcall		print_mark_skip
-
-	; Complements d'informations de la trame complete a emettre
-	rcall		buid_frame_complement
-
-	; Preparation prochaine emission
-	lds		REG_Y_MSB, G_HEADER_NUM_FRAME_MSB
-	lds		REG_Y_LSB, G_HEADER_NUM_FRAME_LSB
-	adiw		REG_Y_LSB, 1
-	sts		G_HEADER_NUM_FRAME_MSB, REG_Y_MSB
-	sts		G_HEADER_NUM_FRAME_LSB, REG_Y_LSB
-
-ds18b20_exec_end:
-	; Reactivation trace
-	cbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
-
-	; Emission de la trame complete
-	rcall		ds18b20_send_frame
-
-	ret
 
 ; ---------
 ; Construction des trames a emettre pour chaque capteur
@@ -1762,7 +1119,7 @@ build_frame_infos:
 	clr		REG_TEMP_R16
 	adc		REG_Z_MSB, REG_TEMP_R16
 
-	lds		REG_TEMP_R16, G_DS1820_FAMILLE
+	lds		REG_TEMP_R16, G_DS18B20_FAMILLE
 	std		Z + FRAME_IDX_FAMILLE, REG_TEMP_R16
 
 	lds		REG_TEMP_R16, G_DS18B20_ROM_IDX
@@ -1796,7 +1153,7 @@ build_frame_infos:
 	clr		REG_TEMP_R17
 	adc		REG_Z_MSB, REG_TEMP_R17
 	lpm		REG_TEMP_R17, Z
-	lds		REG_TEMP_R18, G_DS1820_IN_ALARM
+	lds		REG_TEMP_R18, G_DS18B20_IN_ALARM
 	and		REG_TEMP_R17, REG_TEMP_R18
 	breq		build_frame_infos_no_alarm
 	sbr		REG_TEMP_R16, MSK_BIT7	; Etat d'alarme du Capteur dans REG_TEMP_R16<7>
@@ -1870,10 +1227,10 @@ buid_frame_complement:
 	; Fin: Calcul du CRC8 sur tous les bytes sauf le 1st
 
 	mov		REG_X_LSB, REG_TEMP_R17
-	rcall		print_1_byte_hexa_skip
+	rcall		uos_print_1_byte_hexa_skip
 	movw		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_2_bytes_hexa_skip
+	rcall		uos_print_line_feed_skip
 
 	; Calcul du CRC8 sur tous les bytes avec le 1st
 	; => Le CRC8 "total" doit etre etre egal a 0 car inclu ledit CRC8 ;-)
@@ -1886,10 +1243,10 @@ buid_frame_complement:
 	; Fin: Calcul du CRC8 sur tous les bytes avec le 1st
 
 	mov		REG_X_LSB, REG_TEMP_R17
-	rcall		print_1_byte_hexa_skip
+	rcall		uos_print_1_byte_hexa_skip
 	movw		REG_X_LSB, REG_Y_LSB
-	rcall		print_2_bytes_hexa_skip
-	rcall		print_line_feed_skip
+	rcall		uos_print_2_bytes_hexa_skip
+	rcall		uos_print_line_feed_skip
 	; Fin: Calcul du CRC8 sur tous les bytes avec le 1st
 	; Fin: Calcul du CRC8 de la trame complete
 
@@ -1915,16 +1272,16 @@ ds18b20_send_frame:
 
 #if USE_DS18B20_TRACE
 	ldi		REG_TEMP_R17, '$'
-	rcall		print_mark_skip
+	rcall		uos_print_mark_skip
 	mov		REG_X_LSB, REG_TEMP_R18
-	rcall		print_2_bytes_hexa
-	rcall		print_y_reg
-	rcall		print_line_feed_skip
+	rcall		uos_print_2_bytes_hexa
+	rcall		uos_print_y_reg
+	rcall		uos_print_line_feed_skip
 #endif
 
 	; Emission de la trame
 	ldi		REG_TEMP_R16, '$'
-	call		push_1_char_in_fifo_tx_skip
+	rcall		uos_push_1_char_in_fifo_tx_skip
 
 ds18b20_send_frame_loop:
 	ld			REG_TEMP_R16, -Y
@@ -1933,8 +1290,8 @@ ds18b20_send_frame_loop:
 	dec		REG_TEMP_R18
 	brne		ds18b20_send_frame_loop
 
-	rcall		print_line_feed_skip
-	call		fifo_tx_to_send_sync
+	rcall		uos_print_line_feed_skip
+	rcall		fifo_tx_to_send_sync
 	; Fin: Emission de la trame
 
 	ret
@@ -1957,8 +1314,8 @@ convert_val_for_ds18b20:
 
 	lds		REG_X_MSB, G_TEST_VALUE_DEC_MSB
 	lds		REG_X_LSB, G_TEST_VALUE_DEC_LSB
-	rcall		print_2_bytes_hexa_skip
-   call     print_line_feed_skip
+	rcall		uos_print_2_bytes_hexa_skip
+	rcall		uos_print_line_feed_skip
 
 	; Test dans la plage [0, 1, ..., 99, 100, 101, ..., 155]
 	;                                    L-- Negatives (0, -1, -2, ..., -55)
@@ -2031,105 +1388,19 @@ convert_2_bytes_hexa_to_dec:
 	ret
 ; ---------
 
-; ---------
-; Code DS18B20 pour l'ecriture du 'scratchpad' #x et dans l'eeprom
-; ---------
-ds18b20_write_scratchpad_x:
-	rcall		ds18b20_reset
-
-	lds		REG_TEMP_R16, (G_FRAME_ALL_INFOS + 0)		; Recuperation de l'Id du capteur
-	rcall		ds18b20_match_rom_x
-
-	lds		REG_TEMP_R17, (G_FRAME_ALL_INFOS + 1)		; Recuperation Tl
-	lds		REG_TEMP_R16, (G_FRAME_ALL_INFOS + 2)		; Recuperation Th
-	lds		REG_TEMP_R18, (G_FRAME_ALL_INFOS + 3)		; Recuperation Resolution
-
-	rjmp		ds18b20_write_scratchpad
-; ---------
-
-; ---------
-ds18b20_copy_scratchpad_x:
-	rcall		ds18b20_reset
-
-	lds		REG_TEMP_R16, (G_FRAME_ALL_INFOS + 0)		; Recuperation de l'Id du capteur
-	rcall		ds18b20_match_rom_x
-
-	rjmp		ds18b20_copy_scratchpad
-; ---------
-
-; ---------
-ds18b20_match_rom_x:
-	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_SEND)
-	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_SEND)
-
-	rcall		ds18b20_get_rom_detected_bypass	
-	brtc		ds18b20_match_rom_x_not_detect
-
-ds18b20_match_rom_x_cont_d:
-	ldi		REG_TEMP_R16, 8
-
-ds18b20_match_rom_x_loop:
-	ld			REG_TEMP_R17, X+
-	st			Y+, REG_TEMP_R17
-	dec		REG_TEMP_R16
-	brne		ds18b20_match_rom_x_loop
-
-	rjmp		ds18b20_match_rom
-
-ds18b20_match_rom_x_not_detect:
-	; ROM non detecte
-   ldi      REG_TEMP_R17, '?'
-	rcall		print_mark_skip
-
-	lds		REG_TEMP_R16, G_DS18B20_FLAGS
-	sbr		REG_TEMP_R16, FLG_TEST_CONFIG_ERROR_MSK
-	sts		G_DS18B20_FLAGS, REG_TEMP_R16
-
-	ret
-; ---------
-
-; ---------
-ds18b20_write_scratchpad:
-	cli
-
-	push		REG_TEMP_R18
-	push		REG_TEMP_R17
-	push		REG_TEMP_R16
-
-	ldi		REG_TEMP_R16, DS18B20_CMD_WRITE_SCRATCHPAD
-	rcall		ds18b20_write_8_bits_command
-
-	pop		REG_TEMP_R16
-	rcall		ds18b20_write_8_bits_command
-
-	pop		REG_TEMP_R17
-	mov		REG_TEMP_R16, REG_TEMP_R17
-	rcall		ds18b20_write_8_bits_command
-
-	pop		REG_TEMP_R18
-	mov		REG_TEMP_R16, REG_TEMP_R18
-	rcall		ds18b20_write_8_bits_command
-
-	sei
-
-	ret
-; ---------
-
-; ---------
-ds18b20_copy_scratchpad:
-	cli
-	ldi		REG_TEMP_R16, DS18B20_CMD_COPY_SCRATCHPAD
-	rcall		ds18b20_write_8_bits_command
-	sei
-
-	ret
-; ---------
+text_prompt_ds18b20:
+.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.9 $", CHAR_LF, CHAR_NULL, CHAR_NULL
 
 text_msk_table:
 .db	MSK_BIT0, MSK_BIT1, MSK_BIT2, MSK_BIT3
 .db	MSK_BIT4, MSK_BIT5, MSK_BIT6, MSK_BIT7
 
-end:
+;end:
+
+.include		"ATtiny85_uOS+DS18B20_Timers.asm"
+.include		"ATtiny85_uOS+DS18B20_Commands.asm"
+.include		"ATtiny85_uOS+DS18B20_1_Wire.asm"
+.include		"ATtiny85_DS18B20_1_Wire_Commands.asm"
 
 end_of_program:
  
