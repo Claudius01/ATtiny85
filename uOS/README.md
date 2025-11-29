@@ -5,7 +5,7 @@ Micro-OS écrit entièrement en assembleur avec les fonctionnalités suivantes:
 * Gestion de 16 *timers* logiciel sur 16 bits avec une résolution de 1 mS dont 6 sont utilisés par uOS
 * Gestion d'une liaison UART *full-duplex* de 300 à 19200 bauds reconfigurable à chaud
 * Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel) et *PCINT0* (gestion de la réception UART et du bouton)
-* Support de commandes permettant le suivi de l'exécution du programme ou la lecture/écriture dans l'eeprom de l'ATtiny85 (cf. § Commandes/Réponses)
+* Support de commandes permettant le suivi de l'exécution du programme et la lecture/écriture dans l'eeprom de l'ATtiny85 (cf. § Commandes/Réponses)
 
 ## 🛠️ Environnement de développement
 [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement remanié pour:
