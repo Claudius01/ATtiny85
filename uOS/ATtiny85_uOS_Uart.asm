@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Uart.asm,v 1.3 2025/11/25 16:56:59 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Uart.asm,v 1.4 2025/11/29 13:43:23 administrateur Exp $"
 
 .include    "ATtiny85_uOS_Uart.h"
 
@@ -285,10 +285,12 @@ uart_tx_send:
 ;    REG_Z_LSB:REG_Z_LSB -> Pointeur sur le texte en memoire programme (preserve)
 ;    REG_TEMP_R16        -> Working register (preserve)
 ; ---------
+uos_push_text_in_fifo_tx_skip:
 push_text_in_fifo_tx_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
 
+uos_push_text_in_fifo_tx:
 push_text_in_fifo_tx:
 	push		REG_Z_MSB
 	push		REG_Z_LSB
@@ -321,10 +323,12 @@ push_text_in_fifo_tx_end:
 ; Registres utilises
 ;    REG_TEMP_R16 -> Working register
 ; ---------
+uos_push_1_char_in_fifo_tx_skip:
 push_1_char_in_fifo_tx_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
 
+uos_push_1_char_in_fifo_tx:
 push_1_char_in_fifo_tx:
 	mov		REG_R3, REG_TEMP_R16
 	rcall		uart_fifo_tx_write
@@ -423,6 +427,7 @@ fifo_tx_to_send_async_rtn:
 ; Registres utilises
 ;    REG_TEMP_R16        -> Working register (non preserve)
 ; ---------
+uos_fifo_tx_to_send_sync:
 fifo_tx_to_send_sync:
 	nop
 

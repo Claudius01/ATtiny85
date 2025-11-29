@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.11 2025/11/26 17:56:04 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.13 2025/11/29 13:43:23 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -34,6 +34,8 @@
 	rjmp		wdt_isr				; Vector: 13 - wdt_isr
 	rjmp		usi_start_isr		; Vector: 14 - usi_start_isr
 	rjmp		usi_ovf_isr			; Vector: 15 - usi_ovf_isr
+
+	nop		; Evite le message "Warning : Improve: Skip equal to 0"
 
 ; Its non supportees => Mise sur voie de garage
 int0_isr:
@@ -100,8 +102,7 @@ main:
 	; Fin: Preparation emission du prompt d'accueil
 
 #if USE_DS18B20
-	call		ds18b20_init		; Duree de cadencement lue de l'EEPROM @ Id Platine
-	call		ds18b20_exec		; 1st appel a l'initialisation
+	rcall		ds18b20_begin
 #endif
 
 main_loop:
@@ -149,7 +150,7 @@ main_loop_end:
 	rjmp		main_loop
 
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.11 $", CHAR_LF, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.13 $", CHAR_LF, CHAR_NULL
 
 .include		"ATtiny85_uOS_Macros.def"
 

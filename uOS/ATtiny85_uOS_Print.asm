@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Print.asm,v 1.7 2025/11/25 20:05:41 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Print.asm,v 1.8 2025/11/29 13:43:23 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Print.h"
 
@@ -129,10 +129,12 @@ presentation_connexion_rtn:
 ; ---------
 
 ; ---------
+uos_print_line_feed_skip:
 print_line_feed_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
 
+uos_print_line_feed:
 print_line_feed:
 	push		REG_Z_MSB
 	push		REG_Z_LSB
@@ -147,10 +149,12 @@ print_line_feed:
 ; ---------
 
 ; ---------
+uos_print_1_byte_hexa_skip:
 print_1_byte_hexa_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
 
+uos_print_1_byte_hexa:
 print_1_byte_hexa:
 	push		REG_Z_MSB
 	push		REG_Z_LSB
@@ -173,10 +177,12 @@ print_1_byte_hexa:
 ; ---------
 
 ; ---------
+uos_print_2_bytes_hexa_skip:
 print_2_bytes_hexa_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
 
+uos_print_2_bytes_hexa:
 print_2_bytes_hexa:
 	push		REG_Z_MSB
 	push		REG_Z_LSB
@@ -204,6 +210,7 @@ print_2_bytes_hexa:
 ; ---------
 ; Marquage traces
 ; ---------
+uos_print_mark_skip:
 print_mark_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
@@ -232,6 +239,68 @@ print_mark_loop_b:
 
 	pop		REG_TEMP_R16
 
+	ret
+; ---------
+
+; ---------
+; Print du registre X
+; ---------
+uos_print_x_reg_skip:
+print_x_reg_skip:
+	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+	ret
+
+uos_print_x_reg:
+print_x_reg:
+	push		REG_Z_MSB
+	push		REG_Z_LSB
+
+	rcall		print_2_bytes_hexa
+
+	pop		REG_Z_LSB
+	pop		REG_Z_MSB
+	ret
+; ---------
+
+; ---------
+; Print du registre Y
+; ---------
+uos_print_y_reg_skip:
+print_y_reg_skip:
+	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+	ret
+
+uos_print_y_reg:
+print_y_reg:
+	push		REG_X_MSB
+	push		REG_X_LSB
+
+	movw		REG_X_LSB, REG_Y_LSB
+	rcall		print_x_reg
+
+	pop		REG_X_LSB
+	pop		REG_X_MSB
+	ret
+; ---------
+
+; ---------
+; Print du registre Z
+; ---------
+uos_print_z_reg_skip:
+print_z_reg_skip:
+	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+	ret
+
+uos_print_z_reg:
+print_z_reg:
+	push		REG_X_MSB
+	push		REG_X_LSB
+
+	movw		REG_X_LSB, REG_Z_LSB
+	rcall		print_x_reg
+
+	pop		REG_X_LSB
+	pop		REG_X_MSB
 	ret
 ; ---------
 

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Commands.asm,v 1.4 2025/11/26 17:55:14 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Commands.asm,v 1.5 2025/11/29 13:43:23 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Commands.h"
 
@@ -113,6 +113,7 @@ interpret_command_rtn:
 ; ---------
 ; - Echo de la commande avec ses parametres
 ; ---------
+uos_print_command_ok:
 print_command_ok:
 	; Echo de la commande reconnue avec uniquement l'adresse
 	; => ie. "[34>zA987-4321]"
@@ -123,6 +124,7 @@ print_command_ok:
 	ldi		REG_TEMP_R16, CHAR_COMMAND_SEND
 	rjmp		print_command
 
+uos_print_command_ko:
 print_command_ko:
 	; Echo de la commande non reconnue avec ses parametres
 	; => ie. "34?zA987-4321" si commande non reconnue
