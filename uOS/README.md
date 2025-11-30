@@ -4,7 +4,7 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
 * Gestion de 3 Leds et de l'appui simple sur le bouton
 * Gestion de 16 *timers* logiciel sur 16 bits du type *callback* avec une résolution de 1 mS
 * Gestion d'une liaison UART *full duplex* de 300 bauds à 19200 bauds reconfigurable à chaud
-* Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changement de UART/Rx et du bouton)
+* Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
 * Support des commandes permettant notamment:
     * le *dump* et le calcul du CRC8-MAXIM du programme *flashé* à des fins de vérification
     * la lecture et l'écriture dans la SRAM
