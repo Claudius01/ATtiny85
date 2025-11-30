@@ -16,7 +16,9 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
     * Accueillir pour l'ATtiny85 les sauts **rjmp** et appels **rcall** relatifs
-    * Ajouter des messages de *warning* comme "*ATtiny85_uOS+DS18B20.asm(1326) : Warning : Improve: Replace absolute by a relative branch (-2048 <= k <= 2047)*"
+    * Ajouter des messages de *warning* comme:
+        * "*ATtiny85_uOS+DS18B20.asm(1326) : Warning : Improve: Replace absolute by a relative branch (-2048 <= k <= 2047)*"
+        * "*ATtiny85_uOS.asm(80) : Warning : Improve: Skip equal to 0*"
     * *Á compléter*
 
 * Script shell *goGenerateProject.sh* fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX (Intel)](https://fr.wikipedia.org/wiki/HEX_(Intel))
