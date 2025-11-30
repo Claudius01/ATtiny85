@@ -1,4 +1,4 @@
-# uOS
+# ⭕ uOS
 Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivantes:
 * Cadencement matériel fixé à 26 µS
 * Gestion de 3 Leds et de l'appui simple sur le bouton
@@ -12,6 +12,18 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * la lecture de la signature et des fusibles du µC
     * cf. § Commandes/Réponses pour la liste exhaustive avec des exemples
 * *Á compléter*
+
+## 🛄 Orgaisation du projet
+uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
+* ATtiny85_uOS.asm et ATtiny85_uOS.h
+* ATtiny85_uOS_Macros.def
+* ATtiny85_uOS_Misc.asm
+* ATtiny85_uOS_Interrupts.asm et ATtiny85_uOS_Interrupts.h
+* ATtiny85_uOS_Interrupts.asm  et ATtiny85_uOS_Interrupts.h
+* ATtiny85_uOS_Uart.asm et ATtiny85_uOS_Uart.h
+* ATtiny85_uOS_Eeprom.asm et ATtiny85_uOS_Eeprom.h
+* ATtiny85_uOS_Commands.asm et ATtiny85_uOS_Commands.h
+* ATtiny85_uOS_Print.asm et ATtiny85_uOS_Print.h
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
