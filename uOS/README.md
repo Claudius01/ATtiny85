@@ -13,17 +13,32 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * cf. § Commandes/Réponses pour la liste exhaustive avec des exemples
 * *Á compléter*
 
-## 🛄 Orgaisation du projet
+## 🛄 Organisation du projet
 uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * ATtiny85_uOS.asm et ATtiny85_uOS.h
+     * Programme principal exécuté au RESET et incluant tous les fichiers qui suivent
+     * 📔 La chaine de production du '.hex' n'utilise pas d'éditeur de liens
+
 * ATtiny85_uOS_Macros.def
+     * Macros pour la gestion du port de sortie (Leds, UART/Tx, etc.)
+
 * ATtiny85_uOS_Misc.asm
+     * Méthodes diverses
+
 * ATtiny85_uOS_Interrupts.asm et ATtiny85_uOS_Interrupts.h
-* ATtiny85_uOS_Interrupts.asm  et ATtiny85_uOS_Interrupts.h
+     * Prise en charge des 2 interruptions *TIMER1_COMPA* et *PCINT0*
+
 * ATtiny85_uOS_Uart.asm et ATtiny85_uOS_Uart.h
+     * Gestion de l'UART
+
 * ATtiny85_uOS_Eeprom.asm et ATtiny85_uOS_Eeprom.h
+     * Gestion de l'EEPROM
+
 * ATtiny85_uOS_Commands.asm et ATtiny85_uOS_Commands.h
+     * Gestion des commandes/réponses
+
 * ATtiny85_uOS_Print.asm et ATtiny85_uOS_Print.h
+     * Formatage des emissions
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
