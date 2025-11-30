@@ -4,4 +4,4 @@ Projet basé sur une platine d'essais pouvant gérer 5 capteurs de température 
 
 ![Platine d'essais DS18B20](Platine-ATtiny85-DS18B20.png)
 
-La gestion est faite au dessus du ![micro-OS](../uOS/README.md)
+La gestion est faite au dessus du ![uOS](../uOS/README.md)
