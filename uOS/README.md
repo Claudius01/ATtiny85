@@ -13,6 +13,11 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * cf. § Commandes/Réponses pour la liste exhaustive avec des exemples
 * *Á compléter*
 
+## 📎 Applications
+uOS permet de développer au dessus des programmes utilisant ses ressources sans avoir à les réécrire; à savoir:
+* Gestion complète de 5 capteurs de température DS18B20 sur un bus 1-Wire (cf. ![Projet DS18B20](../DS18B20))
+* *Á compléter*
+
 ## 🛄 Organisation du projet
 uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * ATtiny85_uOS.asm et ATtiny85_uOS.h
