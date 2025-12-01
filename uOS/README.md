@@ -62,7 +62,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'ATtiny85
 * 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un ATtiny45 avec:
      * La suppression des commandes/réponses
-     * La gestion de 10 *timers*
+     * La gestion de 10 *timers* au lieu de 16
      * La suppression de l'UART/Rx
      * *Á compléter*
 
