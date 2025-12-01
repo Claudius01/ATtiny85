@@ -57,6 +57,9 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * ATtiny85_uOS_Print.asm et ATtiny85_uOS_Print.h
      * Formatage des emissions
 
+## ⚓ Occupation mémoires
+uOS occupe environ 40% de la mémoire *flash* et 60% de la mémoire SRAM de l'ATtiny85
+
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
     * Accueillir les sauts **rjmp** et appels **rcall** relatifs
