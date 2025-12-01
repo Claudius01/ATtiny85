@@ -6,7 +6,7 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
 * Gestion d'une liaison UART *full duplex* de 300 bauds à 19200 bauds reconfigurable à chaud
 * Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
 * Support des commandes permettant notamment:
-    * le *dump* et le calcul du CRC8-MAXIM du programme *flashé* à des fins de vérification
+    * le *dump* et le calcul du [CRC8-MAXIM](https://crccalc.com/?crc=123456789&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex) du programme *flashé* à des fins de vérification
     * la lecture et l'écriture dans la SRAM
     * la lecture et l'écriture dans l'EEPROM du µC
     * la lecture de la signature et des fusibles du µC
