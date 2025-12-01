@@ -1,5 +1,44 @@
 # Liste des commandes / réponses supportées par uOS
 # -------------------------------------------------
 
+@ Emission du prompt au RESET
+@ => les versions de uOS et/ou de l'EEPROM peuvent changer suivant l'état de développement
+@ => Les Ids de réponses (ie. # 4080 peuvent varier suivant les copier/coller des commandes/réponse)
+
+# 4064: [[### ATtiny85_uOS $Revision: 1.13 $]]
+# 4065: [[### EEPROM: 1.2.6]]
+# 4066: [[### Type: 78]]
+# 4067: [[### Id: 00]]
+
+@ Réponses à la commande "<f"
+@ Lecture de la signature et des fusibles
+
+@ => Signature: [0x1e09300b] (ATtiny85)
+@ => Fusibles:
+@    => Low:      [0xf1]
+@    => Lock:     [0xff]
+@    => Extended: [0xff]
+@    => High:     [0xd7]
+
+# 4080: [[02>f0000]]
+# 4082: [[0x1e][0x93][0x0b]]
+# 4083: [[0xf1][0xff][0xff][0xd7]]
+@ ---------------------------
+
+@ Réponse à la commande "<p"
+@ Dump sur 64 mots de la mémoire flash à partir d'une adresse donnée 
+
+#   20: [[05>p0000]]
+        Addr     0    1    2    3     4    5    6    7    0 1 2 3 4 5 6 7
+#   22: 0000  10c0 0ec0 b8c1 07c1  0bc0 0ac0 09c0 08c0  |................|
+#   23: 0008  07c0 06c0 05c0 04c0  03c0 02c0 01c0 0000  |................|
+#   24: 0010  c6c0 2ed0 3ed0 5fd0  94d0 1fe0 2de7 30e0  |....>._.....-.0.|
+#   25: 0018  17d2 7894 f0e0 ece5  5ed3 b1d3 9064 dcd6  |..x.....^....d..|
+#   26: 0020  80ff 09c0 1091 6300  1093 6200 8e7f e6d1  |......c...b.....|
+#   27: 0028  bdd2 60d6 dbd3 6fd3  2fd6 f2cf 2323 2320  |..`...o./...### |
+#   28: 0030  4154 7469 6e79 3835  5f75 4f53 2024 5265  |ATtiny85_uOS $Re|
+#   29: 0038  7669 7369 6f6e 3a20  312e 3133 2024 0a00  |vision: 1.13 $..|
+@ --------------------------
+
 # Fin du fichier
 
