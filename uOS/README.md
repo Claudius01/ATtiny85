@@ -53,6 +53,6 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
         * "*ATtiny85_uOS.asm(80) : Warning : Improve: Skip equal to 0*"
     * *Á compléter*
 
-* *Script shell* *goGenerateProject.sh* fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX (Intel)](https://fr.wikipedia.org/wiki/HEX_(Intel))
+* *Script shell* *goGenerateProject.sh* fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 * Développement sous Linux (distribution Ubuntu 24.04.3 LTS)
 * *Á compléter*
