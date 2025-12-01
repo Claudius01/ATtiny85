@@ -22,7 +22,8 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * la lecture et l'écriture dans la SRAM
     * la lecture et l'écriture dans l'EEPROM
     * la lecture de la signature et des fusibles
-    * cf. [§ Commandes/Réponses](TESTS/Commands+Responses.txt) pour la liste exhaustive avec des exemples
+    * la reconfiguration de la vitesse de l'UART
+    * cf. § [Commandes/Réponses](TESTS/Commands+Responses.txt) pour la liste exhaustive avec des exemples
 * *Á compléter*
 
 ## 📎 Applications
@@ -55,7 +56,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
      * Gestion des commandes/réponses
 
 * ATtiny85_uOS_Print.asm et ATtiny85_uOS_Print.h
-     * Formatage des emissions
+     * Formatage des emissions (texte, données décimales et hexadécimales, ...)
 
 ## ⚓ Occupation mémoires
 uOS occupe environ 40% de la mémoire *flash* et 60% de la mémoire SRAM de l'ATtiny85
@@ -69,5 +70,12 @@ uOS occupe environ 40% de la mémoire *flash* et 60% de la mémoire SRAM de l'AT
     * *Á compléter*
 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
+
+* Gestion des sources sous [CVS](https://doc.ubuntu-fr.org/cvs) permettant de faire évoluer le programme avec notamment:
+    * un retour arrière facilité
+    * la différence entre différents développement versionnés
+    * la pose d'un marqueur symbolique sur une révision d'un ou plusieurs fichiers
+    * etc.
+
 * Développement sous Linux (distribution Ubuntu 24.04.3 LTS)
 * *Á compléter*
