@@ -2,14 +2,19 @@
 Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivantes:
 * Cadencement matériel fixé à 26 µS
 * Gestion de 3 Leds et de l'appui simple sur le bouton
+    * Led verte allumée fugitivement pour l'activité en fond de tâche
+    * Led jaune allumée fugitivement pour la détection de l'appui bouton
+    * Led rouge allumée fugitivement ou en permanence
+    * Bouton pour l'effacement des erreurs persistantes
 * Gestion de 16 *timers* logiciel sur 16 bits du type *callback* avec une résolution de 1 mS
 * Gestion d'une liaison UART *full duplex* de 300 bauds à 19200 bauds reconfigurable à chaud
-* Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
+* Gestion des interruptions 
 * Support des commandes permettant notamment:
-    * le *dump* et le calcul du [CRC8-MAXIM](https://crccalc.com/?crc=123456789&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex) du programme *flashé* à des fins de vérification
+    * le *dump* du programme à partir d'une adresse donnée
+    * le calcul du [CRC8-MAXIM](https://crccalc.com/?crc=123456789&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex) du programme *flashé* à des fins de vérification
     * la lecture et l'écriture dans la SRAM
-    * la lecture et l'écriture dans l'EEPROM du µC
-    * la lecture de la signature et des fusibles du µC
+    * la lecture et l'écriture dans l'EEPROM
+    * la lecture de la signature et des fusibles
     * cf. § Commandes/Réponses pour la liste exhaustive avec des exemples
 * *Á compléter*
 
@@ -31,7 +36,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
      * Méthodes diverses
 
 * ATtiny85_uOS_Interrupts.asm et ATtiny85_uOS_Interrupts.h
-     * Prise en charge des 2 interruptions *TIMER1_COMPA* et *PCINT0*
+     * Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
 
 * ATtiny85_uOS_Uart.asm et ATtiny85_uOS_Uart.h
      * Gestion de l'UART
