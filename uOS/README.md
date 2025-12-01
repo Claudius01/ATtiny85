@@ -47,7 +47,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
-    * Accueillir pour l'ATtiny85 les sauts **rjmp** et appels **rcall** relatifs
+    * Accueillir les sauts **rjmp** et appels **rcall** relatifs
     * Ajouter des messages de *warning* comme:
         * "*ATtiny85_uOS+DS18B20.asm(1326) : Warning : Improve: Replace absolute by a relative branch (-2048 <= k <= 2047)*"
         * "*ATtiny85_uOS.asm(80) : Warning : Improve: Skip equal to 0*"
