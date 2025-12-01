@@ -22,7 +22,7 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * la lecture et l'écriture dans la SRAM
     * la lecture et l'écriture dans l'EEPROM
     * la lecture de la signature et des fusibles
-    * cf. § Commandes/Réponses pour la liste exhaustive avec des exemples
+    * cf. [§ Commandes/Réponses](TESTS/Commands+Responses.txt) pour la liste exhaustive avec des exemples
 * *Á compléter*
 
 ## 📎 Applications
