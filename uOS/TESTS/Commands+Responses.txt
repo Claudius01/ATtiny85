@@ -4,6 +4,8 @@
 @ Emission du prompt au RESET
 @ => les versions de uOS et/ou de l'EEPROM peuvent changer suivant l'état de développement
 @ => Les Ids de réponses (ie. # 4080 peuvent varier suivant les copier/coller des commandes/réponse)
+@ => Les présentations comme "28: 0030  4154 7469 6e79 3835  5f75 4f53 2024 5265  |ATtiny85_uOS $Re|"
+@    sont effectuées par le terminal qui interprète les réponses de l'uOS
 
 # 4064: [[### ATtiny85_uOS $Revision: 1.13 $]]
 # 4065: [[### EEPROM: 1.2.6]]
@@ -113,6 +115,7 @@
 #  143: 0250  02 02 03 8c 06 89 04 f9  04 28 00 2b 04 28 00 2b  |.........(.+.(.+|
 @ --------------------------
 
+@ Réponse à la commande "<e"
 @ --------------------------
 @ Dump des 512 premiers octets de l'EEPROM
 @ --------------------------
@@ -128,5 +131,41 @@
 #  354: 01e0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
 #  355: 01f0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
 
-# Fin du fichier
+@ Réponse à la commande "<E"
+@ --------------------------
+@ Ecriture de 3 octets dans l'EEPROM à l'adresse 0x20 et suivantes
+@ --------------------------
+>>> Send command [<E20+ab+cd+ef] (13 bytes)
+#  411: [[17>E0020]]
 
+@ ---------------------
+@ Relecture de l'EEPROM
+@ ---------------------
+>>> Send command [<e] (2 bytes)
+#  459: [[19>e0000]]
+        Addr   0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F   0123456789ABCDEF
+#  461: 0000  31 2e 32 2e 36 00 00 00  78 00 00 00 00 00 00 00  |1.2.6...x.......|
+#  462: 0010  1e 1f 25 29 2b 2f 35 3b  3d 43 47 49 ff 53 59 61  |..%)+/5;=CGI.SYa|
+#  463: 0020  ab cd ef ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+...
+@ ---------------------
+
+@ Réponse à la commande "<a"
+@ --------------------------
+@ Calcul du CRC8-MAXIM du programme uOS
+@ --------------------------
+>>> Send command [<a] (2 bytes)
+#  500: [[1a>a0000]]
+#  503: [[[0x0000][0xc010c00ec1b8c107c00bc00ac009c008c007c006c005c004c003c002c0010000][0xf1]]]
+#  504: [[[0x0010][0xc0c6d02ed03ed05fd094e01fe72de030d2179478e0f0e5ecd35ed3b16490d6dc][0xc9]]]
+#  505: [[[0x0020][0xff80c00991100063931000627f8ed1e6d2bdd660d3dbd36fd62fcff223232023][0xc4]]]
+...
+#  708: [[[0x0cd0][0x01c5d9d1d9c6940e03a6913001c3953a933001c33f3ff019933001c4cf699508][0xb8]]]
+#  709: [[[0x0ce0][0xdaad910001cad00c911001cb910001cc912001cdcf32daa2910001cad001cf3d][0x5e]]]
+#  710: [[[0x0cf0][0xe0d1e4cedbddf436e008911d9319950af7e1ce6ae31fd9c79100014768009300][0xcb]]]
+#  711: [[[0x0d00][0x01479508][0x97]]]
+#  712: [[-c-]]
+#  713: [[[0x97]]]
+@ --------------------------
+
+# Fin du fichier
