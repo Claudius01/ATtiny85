@@ -71,11 +71,12 @@ uOS occupe environ 40% de la mémoire *flash* et 60% de la mémoire SRAM de l'AT
 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
-* Gestion des sources sous [CVS](https://doc.ubuntu-fr.org/cvs) permettant de faire évoluer le programme avec notamment:
+* Gestion des sources sous [CVS](https://tuteurs.ens.fr/logiciels/cvs/) permettant de faire évoluer le programme "prudemment" avec notamment:
     * un retour arrière facilité
-    * la différence entre différents développement versionnés
+    * la différence entre différents développements versionnés
     * la pose d'un marqueur symbolique sur une révision d'un ou plusieurs fichiers
+    * la création d'une branche sur le projet
     * etc.
 
-* Développement sous Linux (distribution Ubuntu 24.04.3 LTS)
+* Développements sous Linux (distribution Ubuntu 24.04.3 LTS)
 * *Á compléter*
