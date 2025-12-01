@@ -7,7 +7,13 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * Led rouge allumée fugitivement ou en permanence
     * Bouton pour l'effacement des erreurs persistantes
 * Gestion de 16 *timers* logiciel sur 16 bits du type *callback* avec une résolution de 1 mS
-    * 📔 Á noter que uOS utilise pour ses propres besoins 6 *timers*
+    * 📔 Á noter que uOS utilise 6 *timers* pour:
+         * L'activité en fond de tâche
+         * L'allumage fugitf de la Led rouge en cas d'erreurs
+         * L'allumage fugitif de la Led jaune suite à l'appui bouton
+         * La détection de l'appui bouton
+         * Les détections des anti-rebonds sur UART/RX qui est connecté au bouton
+         * L'allumage fugitif de la Led verte 
 * Gestion d'une liaison UART *full duplex* de 300 bauds à 19200 bauds reconfigurable à chaud
 * Gestion des interruptions 
 * Support des commandes permettant notamment:
