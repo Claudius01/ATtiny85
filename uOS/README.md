@@ -38,7 +38,6 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
      * 📔 La chaine de production du '.hex' n'utilise pas d'éditeur de liens
 * ATtiny85_uOS_Macros.def
      * Macros pour la gestion du port de sortie (Leds, UART/Tx, etc.)
-
 * ATtiny85_uOS_Misc.asm
      * Méthodes diverses
           * Initialisation de la SRAM
@@ -46,19 +45,14 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
           * Calcul du CRC8-MAXIM
           * Test Leds
           * etc. 
-
 * ATtiny85_uOS_Interrupts.asm et ATtiny85_uOS_Interrupts.h
      * Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
-
 * ATtiny85_uOS_Uart.asm et ATtiny85_uOS_Uart.h
      * Gestion de l'UART
-
 * ATtiny85_uOS_Eeprom.asm et ATtiny85_uOS_Eeprom.h
      * Gestion de l'EEPROM
-
 * ATtiny85_uOS_Commands.asm et ATtiny85_uOS_Commands.h
      * Gestion des commandes/réponses
-
 * ATtiny85_uOS_Print.asm et ATtiny85_uOS_Print.h
      * Formatage des émissions (textes, données décimales et hexadécimales, ...)
 
