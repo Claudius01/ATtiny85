@@ -9,7 +9,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
 * Led jaune allumée fugitivement pour la détection de l'appui bouton et l'activité sur le bus 1-Wire
 
 * Commandes:
-     * Ajout de la commande "<C" pour la configuration des seuils de température et de la résolution de chaque capteur détecté
+     * Ajout de la commande "<C" pour la configuration des seuils et de la résolution de chaque capteur détecté
      * Ajout de la commande "<T" pour l'activation/déactivation des traces
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 
