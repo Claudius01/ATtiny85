@@ -1,0 +1,77 @@
+# Liste des commandes / réponses supportées par DS128B20
+# ------------------------------------------------------
+
+@ => les versions de DS18B20 et/ou de l'EEPROM peuvent changer suivant l'état de développement
+@ => Les Ids de réponses (ie. # 4080 peuvent varier suivant les copier/coller des commandes/réponses)
+
+@ Emission du prompt au RESET
+@ ---------------------------
+# 2579: [[### ATtiny85_uOS $Revision: 1.17 $]]
+# 2580: [[### EEPROM: 1.2.6]]
+# 2581: [[### Type: 78]]
+# 2582: [[### Id: 00]]
+# 2583: [[### ATtiny85_uOS+DS18B20 $Revision: 1.12 $]]
+
+@ Contenu d'une d'émission où les seuils de température et les résolutions
+@ ont configurés avec la seule commande "<C0+15+19+3"
+@ - Tl = 15°C
+@ - Th = 19°C
+@ - Résolution des mesures = 3
+@ => A noter que le 3rd capteur est un TO-92 dont la résolution n'est pas configurable et fixée à 0
+@ ------------------------------
+
+# 2624: [[$780004580015b4030028012f130f036401280126130f03ca02280140130f807a3b]]
+Frame     [780004580015b4030028012f130f036401280126130f03ca02280140130f807a3b] (66 bytes)
+		- Header [780004580015b403]
+			- Type Platine [0x78]
+			- Id Platine   [0x00]
+			- Num frames   [0x0458] (1112)
+			- Timestamp    [0x0015b4] (Platine: 01:32:36) @ (System: 01:45:21) (Diff: -00:12:45)
+		- Nbr Capteurs [3]
+			#1: [0028012f130f0364] (16 bytes)
+				- Id Capteur   [0x00]
+				- Famille      [0x28]
+				- Tc           [0x012f] (18.9 degrees)
+				- Th           [0x13]   (19.0 degrees)
+				- Tl           [0x0f]   (15.0 degrees)
+				- Resolv       [0x03]
+				- Alarm        [No]
+			#2: [01280126130f03ca] (16 bytes)
+				- Id Capteur   [0x01]
+				- Famille      [0x28]
+				- Tc           [0x0126] (18.4 degrees)
+				- Th           [0x13]   (19.0 degrees)
+				- Tl           [0x0f]   (15.0 degrees)
+				- Resolv       [0x03]
+				- Alarm        [No]
+			#3: [02280140130f807a] (16 bytes)
+				- Id Capteur   [0x02]
+				- Famille      [0x28]
+				- Tc           [0x0140] (20.0 degrees)
+				- Th           [0x13]   (19.0 degrees)
+				- Tl           [0x0f]   (15.0 degrees)
+				- Resolv       [0x00]
+				- Alarm        [Yes]
+
+@ Les CRC8-MAXIM sont vérifiables au moyen du calculateur en ligne:
+@ -------------
+@ Pour la trame d'émission: "780004580015b4030028012f130f036401280126130f03ca02280140130f807a3b" (0x3b est le CRC8-MAXIM)
+https://crccalc.com/?crc=780004580015b4030028012f130f036401280126130f03ca02280140130f807a&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex
+
+@ Pour chaque information des capteurs:
+@ -------------
+@ 1st capteur: "0028012f130f0364" (0x64 est le CRC8-MAXIM)
+https://crccalc.com/?crc=0028012f130f03&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex
+@ => Result [0x64]
+@ -------------
+@ 2nd capteur: "01280126130f03ca" (0xca est le CRC8-MAXIM)
+https://crccalc.com/?crc=01280126130f03&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex
+@ => Result [0xCA]
+@ -------------
+@ 3rd capteur: "02280140130f807a" (0x7a est le CRC8-MAXIM)
+https://crccalc.com/?crc=02280140130f80&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex
+@ => Result [0x7A]
+@ -------------
+
+# Fin du fichier
+ 
