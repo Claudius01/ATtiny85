@@ -71,16 +71,12 @@ uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'AT
         * "*ATtiny85_uOS+DS18B20.asm(1326) : Warning : Improve: Replace absolute by a relative branch (-2048 <= k <= 2047)*"
         * "*ATtiny85_uOS.asm(80) : Warning : Improve: Skip equal to 0*"
     * *Á compléter*
-
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
-
 * Gestion des sources sous [CVS](https://tuteurs.ens.fr/logiciels/cvs/) permettant de faire évoluer le programme "prudemment" avec notamment:
     * Un retour arrière facilité
     * La différence entre différents développements versionnés
     * La pose d'un marqueur symbolique sur une révision d'un ou plusieurs fichiers
     * La création d'une branche sur le projet
     * etc.
-
 * Développements sous Linux (distribution Ubuntu 24.04.3 LTS)
-
 * *Á compléter*
