@@ -13,15 +13,25 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
      * Ajout de la commande "<T" pour l'activation/déactivation des traces
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 
+* Emission d'une trame complète avec un CRC8-MAXIM contenant:
+     * Un *header* avec:
+         * Le numéro de type de la platine lu de l'EEPROM
+         * L'*Id* de la platine lu de l'EEPROM
+         * Le numéro de la trame
+         * Le *timestamp* de la trame
+         * Le nombre de capteurs détectée
+
+      * Les informations:
+         * Son *Id*
+         * Son numéro de famille dans le monde 1-Wire (ici 0x28)
+         * La température Tc mesurée
+         * La température Th du seuil haut
+         * La température Tl du seuil bas
+         * La résolution de la mesure
+            
+     * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
+
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
-* Gestion des sources sous [CVS](https://tuteurs.ens.fr/logiciels/cvs/) permettant de faire évoluer le programme "prudemment" avec notamment:
-    * Un retour arrière facilité
-    * La différence entre différents développements versionnés
-    * La pose d'un marqueur symbolique sur une révision d'un ou plusieurs fichiers
-    * La création d'une branche sur le projet
-    * etc.
-
-* Développements sous Linux (distribution Ubuntu 24.04.3 LTS)
 
 
