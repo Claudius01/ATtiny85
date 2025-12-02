@@ -13,7 +13,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
      * Ajout de la commande "<T" pour l'activation/déactivation des traces
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 
-* Emission d'une trame complète avec un CRC8-MAXIM contenant:
+* Emission d'une trame complète avec un CRC8-MAXIM terminal contenant:
      * Un *header* avec:
          * 
          * Le numéro de type de la platine lu de l'EEPROM
@@ -30,6 +30,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * La température Tl du seuil bas
          * La résolution de la mesure
          * L'état de l'alarme (Tc > Th ou Tc < Tl)
+         * Un CRC8-MAXIM pour garantir l'intégrité des informations
             
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 
