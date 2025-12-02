@@ -19,7 +19,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * L'*Id* de la platine lu de l'EEPROM
          * Le numéro de la trame
          * Le *timestamp* de la trame
-         * Le nombre de capteurs détectée
+         * Le nombre de capteurs détectés
 
      * Les informations propres à chaque capteur:
          * Son *Id* dans la liste
