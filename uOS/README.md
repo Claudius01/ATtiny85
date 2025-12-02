@@ -43,6 +43,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * ATtiny85_uOS_Misc.asm
      * Méthodes diverses
           * Initialisation de la SRAM
+          * Initialisation des registres
           * Calcul du CRC8-MAXIM
           * Test Leds
           * etc. 
@@ -88,4 +89,5 @@ uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'AT
     * etc.
 
 * Développements sous Linux (distribution Ubuntu 24.04.3 LTS)
+
 * *Á compléter*
