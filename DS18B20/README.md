@@ -21,13 +21,14 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * Le *timestamp* de la trame
          * Le nombre de capteurs détectée
 
-      * Les informations:
-         * Son *Id*
+     * Les informations propres à chaque capteur:
+         * Son *Id* dans la liste
          * Son numéro de famille dans le monde 1-Wire (ici 0x28)
          * La température Tc mesurée
          * La température Th du seuil haut
          * La température Tl du seuil bas
          * La résolution de la mesure
+         * L'état de l'alarme (Tc > Th ou Tc < Tl)
             
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 
