@@ -42,6 +42,10 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 
 * ATtiny85_uOS_Misc.asm
      * Méthodes diverses
+          * Initialisation de la SRAM
+          * Calcul du CRC8-MAXIM
+          * Test Leds
+          * etc. 
 
 * ATtiny85_uOS_Interrupts.asm et ATtiny85_uOS_Interrupts.h
      * Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
