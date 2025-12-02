@@ -13,9 +13,8 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
      * Ajout de la commande "<T" pour l'activation/déactivation des traces
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 
-* Emission d'une trame complète avec un CRC8-MAXIM terminal contenant:
+* Emission d'une trame complète préfixée par '$' avec un CRC8-MAXIM terminal suivi d'un '\n' contenant:
      * Un *header* avec:
-         * 
          * Le numéro de type de la platine lu de l'EEPROM
          * L'*Id* de la platine lu de l'EEPROM
          * Le numéro de la trame
@@ -41,6 +40,39 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
      * Pour chaque capteur, une indication de l'alarme est présentée en supperposition sur le graphe suivant 
 
 ![Expérience avec 3 capteurs](UsbMonitor_DS18B20-20251118.png)
+
+## 🛄 Organisation du projet
+DS18B20 est organisé au sein des fichiers suivants dont les sources sont fournis:
+* ATtiny85_uOS+DS18B20.asm et ATtiny85_uOS+DS18B20.h
+     * Programme principal exécuté par uOS et incluant tous les fichiers qui suivent
+     * 📔 La chaine de production du '.hex' n'utilise pas d'éditeur de liens
+
+* ATtiny85_uOS+DS18B20_Timers.asm
+     * Gestion de l'acquisition toutes les secondes et de l'émission de la trame de mesure
+
+* ATtiny85_uOS+DS18B20_Commands.asm
+     * Gestion de la commande "<C" pour la configuration des seuils et de la résolution
+     * Gestion de la commande "<T" pour l'activation/déactivation des traces 
+
+* ATtiny85_uOS+DS18B20_1_Wire.asm
+     * Gestion du protocole 1-Wire
+
+* ATtiny85_DS18B20_1_Wire_Commands.asm
+     * Gestion des commandes du monde 1-Wire:
+          * Commandes ROM standards (Read Rom [33h], Match Rom [55H] et Search ROM [F0h])
+          * Commandes specifiques au DS18B20
+               * Convert T [44h]
+               * Read Scratchpad [BEh]
+               * Copy Scratchpad [48h]
+               * Write Scratchpad [4Eh]
+               * Alarm Search [ECh]
+
+## ⚓ Occupation mémoires
+DS18B20 occupe environ 82% de la mémoire *flash* et 73% de la mémoire SRAM de l'ATtiny85
+* 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un ATtiny45 utilisant la version minimaliste de uOS avec:
+     * La suppression des commandes/réponses (seuils de température et résolution lus de l'EEPROM)
+     * L'abandon des détections d'apparition des alarmes
+     * *Á compléter*
 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
