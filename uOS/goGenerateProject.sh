@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.4 2025/11/25 07:47:14 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.8 2025/12/02 13:27:20 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
@@ -59,6 +59,11 @@ rm -f ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_MAP} ${PROJECTS_FILE}.$
 
 echo
 echo "################## Production of '${PROJECTS_FILE}' ##################"
+# Directives d'assemblage:
+# - USE_MINIMALIST -> Production de la version minimaliste
+# - USE_DS18B20    -> Production avec la gestion des capteurs de temperature DS18B20
+
+#${AVRA_BIN} -D USE_MINIMALIST -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
 ${AVRA_BIN} -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
@@ -68,7 +73,13 @@ if [ ! -f ${PROJECTS_FILE}.${EXT_LST} ]; then
 fi
 
 echo
+echo "List of files under './'"
 ls -ltr ${PROJECTS_FILE}*.*
+
+cp -p ${PROJECTS_FILE}.hex ${PROJECTS_FILE}.lst ${PROJECTS_FILE}.map Products
+echo
+echo "List of files under './Products'"
+ls -ltr Products
 
 echo
 echo "Build successful of project [${PROJECTS_FILE}] :-)"
