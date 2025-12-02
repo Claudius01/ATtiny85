@@ -5,14 +5,12 @@ Projet basé sur une platine d'essais pouvant gérer 5 capteurs de température 
 ![Platine d'essais DS18B20](Platine-ATtiny85-DS18B20.png)
 
 La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions suivantes:
-
-* Led jaune allumée fugitivement pour la détection de l'appui bouton et l'activité sur le bus 1-Wire
-
+* La gestion du bus 1-Wire avec la "découverte" des capteurs qui peuvent être déconnectés/reconnectés du bus à chaud
+* Led jaune allumée fugitivement pour en plus indiquer l'activité sur le bus 1-Wire
 * Commandes:
      * Ajout de la commande "<C" pour la configuration des seuils et de la résolution de chaque capteur détecté
      * Ajout de la commande "<T" pour l'activation/déactivation des traces
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
-
 * Emission d'une trame complète préfixée par '$' avec un CRC8-MAXIM terminal suivi d'un '\n' contenant:
      * Un *header* avec:
          * Le numéro de type de la platine lu de l'EEPROM
@@ -32,7 +30,6 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * Un CRC8-MAXIM pour garantir l'intégrité des informations
             
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
-
 * Après agrégation, ci-après le résultat d'une expérience sur 30 minutes avec 3 capteurs qui consiste à:
      * Mesurer la température d'un 1st capteur (sonde #1) plongé dans un récipient d'eau qui a été porté à ébullition
      * Mesurer la température d'un 2nd capteur (sonde #2) plongé dans un récipient rempli de glaçons
