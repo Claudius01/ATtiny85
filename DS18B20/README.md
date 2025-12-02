@@ -38,17 +38,17 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
 
 ## 🛄 Organisation du projet
 DS18B20 est organisé au sein des fichiers suivants dont les sources sont fournis:
-* ATtiny85_uOS+DS18B20.asm et ATtiny85_uOS+DS18B20.h
+* **ATtiny85_uOS+DS18B20.asm** et **ATtiny85_uOS+DS18B20.h**
      * Programme principal exécuté par uOS et incluant tous les fichiers qui suivent
      * 📔 La chaine de production du '.hex' n'utilise pas d'éditeur de liens
-* ATtiny85_uOS+DS18B20_Timers.asm
+* **ATtiny85_uOS+DS18B20_Timers.asm**
      * Gestion de l'acquisition toutes les secondes et de l'émission de la trame de mesure
-* ATtiny85_uOS+DS18B20_Commands.asm
+* **ATtiny85_uOS+DS18B20_Commands.asm**
      * Gestion de la commande "<C" pour la configuration des seuils et de la résolution
      * Gestion de la commande "<T" pour l'activation/déactivation des traces 
-* ATtiny85_uOS+DS18B20_1_Wire.asm
+* **ATtiny85_uOS+DS18B20_1_Wire.asm**
      * Gestion du protocole 1-Wire
-* ATtiny85_DS18B20_1_Wire_Commands.asm
+* **ATtiny85_DS18B20_1_Wire_Commands.asm**
      * Gestion des commandes du monde 1-Wire:
           * Commandes ROM standards (Read Rom [33h], Match Rom [55H] et Search ROM [F0h])
           * Commandes specifiques au DS18B20
