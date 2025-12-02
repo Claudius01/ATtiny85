@@ -11,5 +11,5 @@ Projets basés sur une platine d'essais pouvant gérer divers périphériques co
 ![Platine d'essais](Platine-ATtiny85.png)
 
 - Projets utilisant la platine d'essais:
-     - [uOs](uOS): Micro OS
+     - [uOS](uOS): Micro OS
      - [DS18B20](DS18B20): Gestion de 5 capteurs de température sur un bus 1-Wire
