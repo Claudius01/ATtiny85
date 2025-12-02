@@ -15,6 +15,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
 
 * Emission d'une trame complète avec un CRC8-MAXIM contenant:
      * Un *header* avec:
+         * 
          * Le numéro de type de la platine lu de l'EEPROM
          * L'*Id* de la platine lu de l'EEPROM
          * Le numéro de la trame
@@ -31,6 +32,14 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * L'état de l'alarme (Tc > Th ou Tc < Tl)
             
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
+
+* Après agrégation, ci-après le résultat d'une expérience sur 30 minutes avec 3 capteurs qui consiste à:
+     * Mesurer la température d'un 1st capteur (sonde #1) plongé dans un récipient d'eau qui a été porté à ébullition
+     * Mesurer la température d'un 2nd capteur (sonde #2) plongé dans un récipient rempli de glaçons
+     * Mesurer la température d'un 3rd capteur (boitier TO-92) laissé à la température ambiante
+     * Pour chaque capteur, une indication de l'alarme est présentée en supperposition sur le graphe suivant 
+
+![Expérience avec 3 capteurs](UsbMonitor_DS18B20-20251118.png)
 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
