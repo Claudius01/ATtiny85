@@ -65,7 +65,6 @@ DS18B20 occupe environ 82% de la mémoire *flash* et 73% de la mémoire SRAM de 
      * La suppression des commandes/réponses (seuils de température et résolution lus de l'EEPROM)
      * L'abandon des détections d'apparition des alarmes
      * *Á compléter*
-
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
 
