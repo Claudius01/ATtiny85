@@ -30,10 +30,10 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * Un CRC8-MAXIM pour garantir l'intégrité des informations de chaque cpateur et de l'ensemble de la trame émise        
      * Cf. le fichier [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 * Après agrégation, ci-après le résultat d'une expérience sur 30 minutes avec 3 capteurs qui consiste à:
-     * Mesurer la température d'un 1st capteur (sonde #1) plongé dans un récipient d'eau qui a été porté à ébullition
+     * Mesurer la température d'un 1st capteur (sonde #1) plongé dans un récipient d'eau qui a été portée à ébullition
      * Mesurer la température d'un 2nd capteur (sonde #2) plongé dans un récipient rempli de glaçons
      * Mesurer la température d'un 3rd capteur (boitier TO-92) laissé à la température ambiante
-     * Pour chaque capteur, une indication de l'alarme est présentée en supperposition sur le graphe suivant 
+     * Pour chaque capteur, une indication de l'alarme est présentée en superposition sur le graphe suivant: 
 
 ![Expérience avec 3 capteurs](UsbMonitor_DS18B20-20251118.png)
 
