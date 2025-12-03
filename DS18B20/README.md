@@ -59,7 +59,7 @@ DS18B20 est organisé au sein des fichiers suivants dont les sources sont fourni
                * Alarm Search [ECh]
 
 ## ⚓ Occupation mémoires
-DS18B20 occupe environ 82% de la mémoire *flash* et 73% de la mémoire SRAM de l'ATtiny85
+DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de l'ATtiny85
 * 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un ATtiny45 utilisant la version minimaliste de uOS avec:
      * La gestion de 2 capteurs
      * La suppression des commandes/réponses (seuils de température et résolution lus de l'EEPROM)
