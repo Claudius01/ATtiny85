@@ -68,10 +68,17 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
 ## ❗Évolutions apportées à uOS pour accueillir DS18B20
-- Ajout dans ATtiny85-uOS.asm de l'appel à l'initialisation
+- Ajout dans **ATtiny85-uOS.asm** de l'appel à l'initialisation et changement des adresses de fin du programme et de la SRAM utilisées et qui sont définis dans **ATtiny85-uOS_DS18B20.asm**
 
-#if USE_DS18B20<br/>
-&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;ds18b20_begin<br/>
+#if&nbsp;&nbsp;USE_DS18B20<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;ds18b20_begin<br/>
+#endif<br/>
+
+#if&nbsp;&nbsp;!USE_DS18B20<br/>
+end_of_program:<br/>
+
+.dseg<br/>
+G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
 #endif<br/>
 
 ## ❗Évolutions envisagées
