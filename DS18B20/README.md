@@ -67,6 +67,13 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
      * *Á compléter*
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
+## ❗Évolutions apportées à uOS pour accueillir DS18B20
+- Ajout dans ATtiny85-uOS.asm de l'appel à l'initialisation
+
+#if USE_DS18B20<br/>
+&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;ds18b20_begin<br/>
+#endif<br/>
+
 ## ❗Évolutions envisagées
 - Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
 - Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour proposer le support d'autres périphériques non proposés sur le bus 1-Wire
