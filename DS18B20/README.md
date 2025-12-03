@@ -26,8 +26,8 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * La température Tl du seuil bas
          * La résolution de la mesure
          * L'état de l'alarme (Tc > Th ou Tc < Tl)
-         * Un CRC8-MAXIM pour garantir l'intégrité des informations de chaque cpateur et de l'ensemble de trame émise        
-     * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
+         * Un CRC8-MAXIM pour garantir l'intégrité des informations de chaque cpateur et de l'ensemble de la trame émise        
+     * Cf. le fichier [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 * Après agrégation, ci-après le résultat d'une expérience sur 30 minutes avec 3 capteurs qui consiste à:
      * Mesurer la température d'un 1st capteur (sonde #1) plongé dans un récipient d'eau qui a été porté à ébullition
      * Mesurer la température d'un 2nd capteur (sonde #2) plongé dans un récipient rempli de glaçons
