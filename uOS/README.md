@@ -24,12 +24,10 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * La lecture de la signature et des fusibles
     * La reconfiguration de la vitesse de l'UART
     * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour la liste exhaustive avec des exemples
-* *Á compléter*
 
 ## 📎 Applications
 uOS permet de développer des programmes utilisant ses ressources sans avoir à les réécrire comme:
 * 📈 La gestion complète de 5 capteurs de température DS18B20 sur un bus 1-Wire (cf. ![Projet DS18B20](../DS18B20))
-* *Á compléter*
 
 ## 🛄 Organisation du projet
 uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
