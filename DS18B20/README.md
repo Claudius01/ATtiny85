@@ -1,8 +1,8 @@
 # ⭕ DS18B20
 
-Projet basé sur une platine d'essais pouvant gérer 5 capteurs de température [DS18B20](https://www.analog.com/media/en/technical-documentation/data-sheets/ds18b20.pdf) avec un [ATtiny85](https://ww1.microchip.com/downloads/en/devicedoc/atmel-2586-avr-8-bit-microcontroller-attiny25-attiny45-attiny85_datasheet.pdf) alimenté en 5V et cadencé à 20 MHz.
+Projet basé sur une platine d'essais pouvant gérer 4 capteurs de température [DS18B20](https://www.analog.com/media/en/technical-documentation/data-sheets/ds18b20.pdf) avec un [ATtiny85](https://ww1.microchip.com/downloads/en/devicedoc/atmel-2586-avr-8-bit-microcontroller-attiny25-attiny45-attiny85_datasheet.pdf) alimenté en 5V et cadencé à 20 MHz.
 
-![Platine d'essais DS18B20](Platine-ATtiny85-DS18B20.png)
+![Platine d'essais DS18B20](Platine-ATtiny85-4xDS18B20.png)
 
 La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions suivantes:
 * La gestion du bus 1-Wire avec la "découverte" des capteurs qui peuvent être déconnectés/reconnectés du bus à chaud
