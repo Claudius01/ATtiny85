@@ -23,7 +23,7 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
     * La lecture et l'écriture dans l'EEPROM
     * La lecture de la signature et des fusibles
     * La reconfiguration de la vitesse de l'UART
-    * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour la liste exhaustive avec des exemples
+    * Cf. le fichier [Commandes/Réponses](Tests/Commands+Responses.txt) pour la liste exhaustive avec des exemples
 
 ## 📎 Applications
 uOS permet de développer des programmes utilisant ses ressources sans avoir à les réécrire comme:
