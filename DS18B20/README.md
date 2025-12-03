@@ -108,7 +108,7 @@ Les évolutions très limitées dans uOS qui suivent permettent d'accueillir DS1
 
 ## ❗Évolutions envisagées
 - Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
-- Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour proposer le support d'autres périphériques non proposés sur le bus 1-Wire
+- Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour permettre le support d'autres périphériques non disponibles sur le bus 1-Wire
 
 Le but étant de proposer une platine avec la cohabitation de divers périphériques connectés sur le bus 1-Wire ou I2C
 
