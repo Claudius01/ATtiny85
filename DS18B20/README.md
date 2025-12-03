@@ -5,7 +5,8 @@ Projet basé sur une platine d'essais pouvant gérer jusqu'à 4 capteurs de temp
 ![Platine d'essais DS18B20](Platine-ATtiny85-4xDS18B20.png)
 
 La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions suivantes:
-* La gestion du bus 1-Wire avec la "découverte" des capteurs qui peuvent être déconnectés/reconnectés du bus à chaud à concurence du nombre de capteurs à détecter
+* La gestion du bus 1-Wire avec la "découverte" des capteurs qui peuvent être déconnectés/reconnectés du bus à chaud à concurence du nombre de capteurs à détecter et lu dans l'EEPROM
+     * 📔 Le nombre de capteurs à gérer peut ainsi être "bridé" à 1, 2 ou 3 capteurs DS18B20
 * Led jaune allumée fugitivement pour en plus indiquer l'activité sur le bus 1-Wire
 * Commandes:
      * Ajout de la commande "<C" pour la configuration des seuils et de la résolution de chaque capteur détecté
