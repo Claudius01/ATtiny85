@@ -74,12 +74,24 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 &nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;ds18b20_begin<br/>
 #endif<br/>
 
-#if&nbsp;&nbsp;!USE_DS18B20<br/>
+#ifndef&nbsp;&nbsp;!USE_DS18B20<br/>
 end_of_program:<br/>
 
 .dseg<br/>
 G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
 #endif<br/>
+ 
+- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #3
+
+; ---------<br/>
+; TIMER_SPARE<br/>
+; ---------<br/>
+exec_timer_3:<br/>
+#ifdef&nbsp;&nbsp;USE_DS18B20<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;exec_timer_3_ds18b20<br/>
+#endif<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;ret<br/>
+; ---------<br/>
 
 ## ❗Évolutions envisagées
 - Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
