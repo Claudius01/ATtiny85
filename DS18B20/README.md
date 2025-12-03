@@ -68,27 +68,31 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
 ## ❗Évolutions apportées à uOS pour accueillir DS18B20
-- Ajout dans **ATtiny85-uOS.asm** de l'appel à l'initialisation et changement des adresses de fin du programme et de la SRAM utilisées et qui sont définis dans **ATtiny85-uOS_DS18B20.asm**
+- Ajout dans **ATtiny85-uOS.asm** de l'appel à l'initialisation, prompt du DS18B20 et changement des 2 adresses de fin du programme et de la SRAM utilisée qui sont définis dans **ATtiny85-uOS_DS18B20.asm**
 
-#if&nbsp;&nbsp;USE_DS18B20<br/>
+#ifdef&nbsp;&nbsp;USE_DS18B20<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;ds18b20_begin<br/>
 #endif<br/>
 
-#ifndef&nbsp;&nbsp;!USE_DS18B20<br/>
+#ifndef&nbsp;&nbsp;USE_MINIMALIST<br/>
+.include&nbsp;&nbsp;&nbsp;&nbsp;"ATtiny85_uOS_Commands.asm"<br/>
+#endif<br/>
+
+#ifndef&nbsp;&nbsp;USE_DS18B20<br/>
 end_of_program:<br/>
 
 .dseg<br/>
 G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
 #endif<br/>
  
-- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #3
+- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6
 
 ; ---------<br/>
-; TIMER_SPARE<br/>
+; Timer for DS18B20br/>
 ; ---------<br/>
-exec_timer_3:<br/>
+exec_timer_6:<br/>
 #ifdef&nbsp;&nbsp;USE_DS18B20<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;exec_timer_3_ds18b20<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;exec_timer_ds18b20<br/>
 #endif<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;ret<br/>
 ; ---------<br/>
