@@ -89,7 +89,7 @@ G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
 &nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;print_command_ko&nbsp;&nbsp;; Commande non reconnue
 #endif<br/>
 
-- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6 pour le cadencements des mesures de températures et l'émission de la trame
+- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6 pour le cadencement des mesures de températures et l'émission de la trame
 
 ; ---------<br/>
 ; Timer for DS18B20<br/>
