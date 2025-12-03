@@ -69,38 +69,42 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
 ## ❗Évolutions apportées à uOS pour accueillir DS18B20
+Les évolutions très limitées dans uOS qui suivent permettent d'accueillir DS18B20 afin:
+- aaa
++ bbb
+
 - Ajouts dans **ATtiny85-uOS.asm** de l'appel à l'initialisation (méthode **setup**) et changement des 2 adresses de fin du programme et de la SRAM utilisée (en fin de fichier) qui seront définies dans **ATtiny85-uOS_DS18B20.asm**
 
-#ifdef&nbsp;&nbsp;USE_DS18B20<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;ds18b20_begin<br/>
-#endif<br/>
+`#ifdef USE_DS18B20`<br/>
+`    rcall   ds18b20_begin`<br/>
+`#endif`<br/>
 
-#ifndef&nbsp;&nbsp;USE_DS18B20<br/>
-end_of_program:<br/>
+`#ifndef USE_DS18B20`<br/>
+`end_of_program:`<br/>
 
-.dseg<br/>
-G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
-#endif<br/>
+`.dseg`<br/>
+`G_SRAM_END_OF_USE:      .byte    1`<br/>
+`#endif`<br/>
 
 - Ajout dans **ATtiny85-uOS_Commands.asm** (méthode **exec_command**) de l'appel aux traitements des 2 nouvelles commandes "<C" et "<T"
 
-#ifdef&nbsp;&nbsp;USE_DS18B20<br/>
-&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;exec_command_ds18b20<br/>
-#else<br/>
-&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;print_command_ko&nbsp;&nbsp;; Commande non reconnue
-#endif<br/>
+`#ifdef USE_DS18B20`<br/>
+`     rcall   exec_command_ds18b20`<br/>
+`#else`<br/>
+`     rcall   print_command_ko     ; Commande non reconnue`<br/>
+`#endif`<br/>
 
 - Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6 pour le cadencement des mesures de températures et l'émission de la trame
 
-; ---------<br/>
-; Timer for DS18B20<br/>
-; ---------<br/>
-exec_timer_6:<br/>
-#ifdef&nbsp;&nbsp;USE_DS18B20<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;exec_timer_ds18b20<br/>
-#endif<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;ret<br/>
-; ---------<br/>
+`; ---------`<br/>
+`; Timer #6 for DS18B20`<br/>
+`; ---------`<br/>
+`exec_timer_6:`<br/>
+`#ifdef USE_DS18B20`<br/>
+`     rcall   exec_timer_ds18b20`<br/>
+`#endif`<br/>
+`     ret`<br/>
+`; ---------`<br/>
 
 ## ❗Évolutions envisagées
 - Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
