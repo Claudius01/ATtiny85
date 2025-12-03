@@ -68,14 +68,10 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
 ## ❗Évolutions apportées à uOS pour accueillir DS18B20
-- Ajout dans **ATtiny85-uOS.asm** de l'appel à l'initialisation, prompt du DS18B20 et changement des 2 adresses de fin du programme et de la SRAM utilisée qui sont définis dans **ATtiny85-uOS_DS18B20.asm**
+- Ajouts dans **ATtiny85-uOS.asm** de l'appel à l'initialisation (méthode **setup**) et changement des 2 adresses de fin du programme et de la SRAM utilisée (en fin de fichier) qui seront définies dans **ATtiny85-uOS_DS18B20.asm**
 
 #ifdef&nbsp;&nbsp;USE_DS18B20<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;ds18b20_begin<br/>
-#endif<br/>
-
-#ifndef&nbsp;&nbsp;USE_MINIMALIST<br/>
-.include&nbsp;&nbsp;&nbsp;&nbsp;"ATtiny85_uOS_Commands.asm"<br/>
 #endif<br/>
 
 #ifndef&nbsp;&nbsp;USE_DS18B20<br/>
@@ -84,11 +80,19 @@ end_of_program:<br/>
 .dseg<br/>
 G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
 #endif<br/>
- 
+
+- Ajout dans **ATtiny85-uOS_Commands.asm** (méthode **exec_command**) de l'appel au traitements de DS18B20
+
+#ifdef&nbsp;&nbsp;USE_DS18B20<br/>
+&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;exec_command_ds18b20<br/>
+#else<br/>
+&nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;print_command_ko&nbsp;&nbsp;; Commande non reconnue
+#endif<br/>
+
 - Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6
 
 ; ---------<br/>
-; Timer for DS18B20br/>
+; Timer for DS18B20<br/>
 ; ---------<br/>
 exec_timer_6:<br/>
 #ifdef&nbsp;&nbsp;USE_DS18B20<br/>
