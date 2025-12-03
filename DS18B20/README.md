@@ -5,11 +5,11 @@ Projet basé sur une platine d'essais pouvant gérer 4 capteurs de température 
 ![Platine d'essais DS18B20](Platine-ATtiny85-4xDS18B20.png)
 
 La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions suivantes:
-* La gestion du bus 1-Wire avec la "découverte" des capteurs qui peuvent être déconnectés/reconnectés du bus à chaud
+* La gestion du bus 1-Wire avec la "découverte" des capteurs qui peuvent être déconnectés/reconnectés du bus à chaud à concurence du nombre de capteurs à détecter
 * Led jaune allumée fugitivement pour en plus indiquer l'activité sur le bus 1-Wire
 * Commandes:
      * Ajout de la commande "<C" pour la configuration des seuils et de la résolution de chaque capteur détecté
-     * Ajout de la commande "<T" pour l'activation/déactivation des traces
+     * Ajout de la commande "<T" pour l'activation/déactivation des traces (pas de traces par défaut)
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 * Emission d'une trame complète préfixée par '$' avec un CRC8-MAXIM terminal suivi d'un '\n' contenant:
      * Un *header* avec:
@@ -68,7 +68,8 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
 ## ❗Évolutions envisagées
-Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
+- Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
+- Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour proposer le support d'autres périphériques non proposés sur le bus 1-Wire
 
-Le but étant de proposer une platine avec la cohabitation de divers périphériques connectés sur le bus 1-Wire
+Le but étant de proposer une platine avec la cohabitation de divers périphériques connectés sur le bus 1-Wire ou I2C
 
