@@ -81,7 +81,7 @@ end_of_program:<br/>
 G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
 #endif<br/>
 
-- Ajout dans **ATtiny85-uOS_Commands.asm** (méthode **exec_command**) de l'appel au traitements des 2 nouvelles commandes "<C" et "<T"
+- Ajout dans **ATtiny85-uOS_Commands.asm** (méthode **exec_command**) de l'appel aux traitements des 2 nouvelles commandes "<C" et "<T"
 
 #ifdef&nbsp;&nbsp;USE_DS18B20<br/>
 &nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;exec_command_ds18b20<br/>
@@ -89,7 +89,7 @@ G_SRAM_END_OF_USE:&nbsp;&nbsp;&nbsp;&nbsp;.byte&nbsp;&nbsp;&nbsp;&nbsp;1<br/>
 &nbsp;&nbsp;rcall&nbsp;&nbsp;&nbsp;&nbsp;print_command_ko&nbsp;&nbsp;; Commande non reconnue
 #endif<br/>
 
-- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6
+- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6 pour le cadencements des mesures de températures et l'émission de la trame
 
 ; ---------<br/>
 ; Timer for DS18B20<br/>
