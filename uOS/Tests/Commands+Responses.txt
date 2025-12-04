@@ -203,24 +203,43 @@
 
 @ Réponse à la commande "<S"
 @ --------------------------
-@ Ecriture de l'octet 0x02 dans la SRAM à l'adresse 0x180 correspond
-@ au nombre de capteurs DS18B20 à détecter et gérer dans le cas où le
-@ programme DS18B20 est flashé
+@ Cette commande est à utiliser avec prudence au risque de déstabiliser uOS
+@ car l'écriture dans la SRAM doit se faire en connaissance de cause en
+@ éditant notamment les fichiers 'ATtiny85_uOS.lst' et/ou 'ATtiny85_uOS.map'
+@ pour connaître le rôle de ou des octets modifiés en cours de fonctionnement
 @ --------------------------
->>> Send command [<S180+2] (7 bytes)
+@ L'écriture de l'octet 0x01 dans la SRAM à l'adresse 0x60 correspond à
+@ l'activation de la génération des pulses --\__/---- sur PB4 (Led Red)
+@ et permettant de visualiser sur un scope la durée d'exécution passée dans l'It
+@ de cadencement de 26 uS
+@ => L'adresse en SRAM 0x60 correspond à 'G_BEHAVIOR' avec les flags:
+@ #define  FLG_BEHAVIOR_MARK_IN_TIM1_COMPA_IDX    IDX_BIT0 ; Pulse --\__/--... en entree/sortie de l'It 'tim1_compa_isr'
+@ #define  FLG_BEHAVIOR_MARK_IN_PCINT0_IDX        IDX_BIT1 ; Pulse --\__/--... en entree/sortie de l'It 'pcint0_isr'
+@ #define  FLG_BEHAVIOR_MARK_IN_RX_REC_BIT_IDX    IDX_BIT2 ; Pulse --\__/--... en entree/sortie de 'tim1_compa_isr_rx_rec_bit'
+@ --------------------------
+>>> Send command [<S60+1] (6 bytes)
 #  694: [[0c>S0180]]
+@ => La Led doit clignoter rapidement
+@ ---------------------
+>>> Send command [<S60+0] (6 bytes)
+#  695: [[0c>S0180]]
+@ => La Led ne doit plus clignoter
 @ ---------------------
 
 @ ---------------------
-@ Relecture de l'adresse 0x180 et suivantes
+@ Lecture de l'adresse 0x60 et suivantes après l'activation
 @ ---------------------
->>> Send command [<s180] (5 bytes)
-#  760: [[0f>s0180]]
+# 1197: [[1b>s0060]]
         Addr   0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F   0123456789ABCDEF
-#  762: 0180  02 10 01 cb 06 22 60 45  1c 73 28 2b 06 22 60 43  |....."`E.s(+."`C|
-#  763: 0190  40 56 28 00 00 00 00 00  00 00 00 00 00 00 00 00  |@V(.............|
-#  764: 01a0  00 00 00 06 03 01 02 01  08 08 8d c1 02 ef 17 31  |...............1|
+# 1199: 0060  01 02 1f 26 fe fe 1b 05  00 b8 0b 00 00 00 00 00  |...&............|
 ...
+
 @ ---------------------
+@ Lecture de l'adresse 0x60 et suivantes après la déactivation
+@ ---------------------
+# 1306: [[1b>s0060]]
+        Addr   0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F   0123456789ABCDEF
+# 1307: 0060  00 02 1f 26 fe fe 1b 05  00 b8 0b 00 00 00 00 00  |...&............|
+...
 
 # Fin du fichier
