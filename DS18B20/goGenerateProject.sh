@@ -77,11 +77,6 @@ echo
 echo "List of files under './'"
 ls -ltr ${PROJECTS_FILE}*.*
 
-cp -p ${PROJECTS_FILE}.hex ${PROJECTS_FILE}.lst ${PROJECTS_FILE}.map Products
-echo
-echo "List of files under './Products'"
-ls -ltr Products
-
 echo
 echo "Build successful of project [${PROJECTS_FILE}] :-)"
 echo
@@ -95,6 +90,11 @@ if [ $? -eq 0 ]; then
 	echo
 	genHexFile -o ./eeprom_4xds18b20.hex -T 1 -t BYTE
 fi
+
+cp -p ${PROJECTS_FILE}.hex ${PROJECTS_FILE}.lst ${PROJECTS_FILE}.map eeprom*.hex Products
+echo
+echo "List of files under './Products'"
+ls -ltr Products
 
 echo "################## End of production of '${PROJECTS_FILE}' ##################"
 
