@@ -1,5 +1,5 @@
 
-AVRA   Ver. 1.4.2 ATtiny85_uOS.asm Tue Dec  2 18:26:48 2025
+AVRA   Ver. 1.4.2 ATtiny85_uOS.asm Thu Dec  4 11:44:51 2025
 
 
          ; "$Id: ATtiny85_uOS.asm,v 1.17 2025/12/02 13:27:20 administrateur Exp $"
@@ -967,9 +967,9 @@ C:000019 9478      	sei						; Set all interrupts for send prompts
          	; => Prompt d'accueil
 C:00001a e0f0      	ldi		REG_Z_MSB, ((text_whoami << 1) / 256)
 C:00001b e5ea      	ldi		REG_Z_LSB, ((text_whoami << 1) % 256)
-C:00001c d35c      	rcall		push_text_in_fifo_tx
+C:00001c d330      	rcall		push_text_in_fifo_tx
          
-C:00001d d3af      	rcall		set_infos_from_eeprom
+C:00001d d383      	rcall		set_infos_from_eeprom
          
 C:00001e 6490      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
          	; Fin: Preparation emission des prompts d'accueil ('whoami' et 'eeprom')
@@ -998,14 +998,14 @@ C:000026 d1e6      	rcall		gestion_timer		; Gestion des timers
          	; Traitements toutes les 1mS
          	; ---
          	; Presentation etat 'Detect Line Idle'
-C:000027 d2bc      	rcall		test_detect_line_idle
+C:000027 d290      	rcall		test_detect_line_idle
          
          	; Presentation sur Led GREEN mode "Connecte/Non Connecte"
-C:000028 d671      	rcall		presentation_connexion
+C:000028 d645      	rcall		presentation_connexion
          
           #ifndef USE_MINIMALIST
          	; Interpretation de la commande recue
-C:000029 d3da      	rcall		interpret_command
+C:000029 d3ae      	rcall		interpret_command
           #endif
          
          	; ---
@@ -1017,10 +1017,10 @@ C:000029 d3da      	rcall		interpret_command
          	; => Effectue des que possible des lors que 'FLG_1_UART_FIFO_TX_TO_SEND'
          	;    est a 1 et que 'FLG_0_UART_TX_TO_SEND' est a 0
          	;    => Traitement en fond de tache pour cadencer l'emission au max des 9600 bauds
-C:00002a d36e      	rcall		fifo_tx_to_send_async
+C:00002a d342      	rcall		fifo_tx_to_send_async
          
          	; Presentation erreurs sur Led RED Externe
-C:00002b d640      	rcall		presentation_error
+C:00002b d614      	rcall		presentation_error
          
           loop_end:
 C:00002c cff2      	rjmp		loop
@@ -1811,7 +1811,7 @@ C:000189 c00d      	rjmp		tim1_compa_isr_rx_rec_bit_end
          
           tim1_compa_isr_rx_rec_bit_ok:
 C:00018a 2e16      	mov		REG_R1, REG_TEMP_R22
-C:00018b d163      	rcall		uart_fifo_rx_write
+C:00018b d137      	rcall		uart_fifo_rx_write
           
 C:00018c 6088      	sbr		REG_FLAGS_0, FLG_0_UART_RX_BYTE_RECEIVED_MSK		; Donnee recue valide ou "Break" disponible
 C:00018d c009      	rjmp		tim1_compa_isr_rx_rec_bit_end
@@ -2022,7 +2022,7 @@ C:0001fc 9518      	reti
          ; ---------
           ; ---------
           .include		"ATtiny85_uOS_Timers.asm"
-         ; "$Id: ATtiny85_uOS_Timers.asm,v 1.10 2025/12/02 14:31:06 administrateur Exp $"
+         ; "$Id: ATtiny85_uOS_Timers.asm,v 1.12 2025/12/04 10:34:39 administrateur Exp $"
          
           .include		"ATtiny85_uOS_Timers.h"
          ; "$Id:"
@@ -2059,18 +2059,18 @@ C:0001fd c06c      	rjmp		exec_timer_connect					; Timer #0
 C:0001fe c074      	rjmp		exec_timer_error						; Timer #1
 C:0001ff c079      	rjmp		exec_timer_push_button_led			; Timer #2
 C:000200 c07d      	rjmp		exec_timer_push_button_detect		; Timer #3
-C:000201 c0ad      	rjmp		exec_timer_anti_rebound				; Timer #4
-C:000202 c0ae      	rjmp		exec_timer_led_green					; Timer #5
-C:000203 c0c4      	rjmp		exec_timer_6							; Timer #6
-C:000204 c0c4      	rjmp		exec_timer_7							; Timer #7
-C:000205 c0c4      	rjmp		exec_timer_8							; Timer #8
-C:000206 c0c4      	rjmp		exec_timer_9							; Timer #9
-C:000207 c0c4      	rjmp		exec_timer_10							; Timer #10
-C:000208 c0c4      	rjmp		exec_timer_11							; Timer #11
-C:000209 c0c4      	rjmp		exec_timer_12							; Timer #12
-C:00020a c0c4      	rjmp		exec_timer_13							; Timer #13
-C:00020b c0c4      	rjmp		exec_timer_14							; Timer #14
-C:00020c c0c4      	rjmp		exec_timer_15							; Timer #15
+C:000201 c089      	rjmp		exec_timer_anti_rebound				; Timer #4
+C:000202 c08a      	rjmp		exec_timer_led_green					; Timer #5
+C:000203 c0a0      	rjmp		exec_timer_6							; Timer #6
+C:000204 c0a0      	rjmp		exec_timer_7							; Timer #7
+C:000205 c0a0      	rjmp		exec_timer_8							; Timer #8
+C:000206 c0a0      	rjmp		exec_timer_9							; Timer #9
+C:000207 c0a0      	rjmp		exec_timer_10							; Timer #10
+C:000208 c0a0      	rjmp		exec_timer_11							; Timer #11
+C:000209 c0a0      	rjmp		exec_timer_12							; Timer #12
+C:00020a c0a0      	rjmp		exec_timer_13							; Timer #13
+C:00020b c0a0      	rjmp		exec_timer_14							; Timer #14
+C:00020c c0a0      	rjmp		exec_timer_15							; Timer #15
          
          ; ---------
          ; Gestion des timers 16 bits; Durees [0, 1 mS, ..., ~65 Sec]
@@ -2372,72 +2372,20 @@ C:000285 dfba      	rcall		restart_timer
          
          	; Emission en hexa du compteur 'G_NBR_VALUE_TRACE'
 C:000286 e0f5      	ldi		REG_Z_MSB, ((text_appui_bouton << 1) / 256)
-C:000287 eae4      	ldi		REG_Z_LSB, ((text_appui_bouton << 1) % 256)
-C:000288 d0f0      	rcall		push_text_in_fifo_tx
+C:000287 e5ec      	ldi		REG_Z_LSB, ((text_appui_bouton << 1) % 256)
+C:000288 d0c4      	rcall		push_text_in_fifo_tx
          
-          #ifndef USE_MINIMALIST
-C:000289 9100 0066 	lds		REG_TEMP_R16, G_NBR_VALUE_TRACE
-C:00028b d406      	rcall		convert_and_put_fifo_tx
-         	; Fin: Emission en hexa du compteur 'G_NBR_VALUE_TRACE'
+C:000289 6490      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
          
-         	; Emission en hexa du compteur 'G_NBR_ERRORS'
-C:00028c e0f5      	ldi		REG_Z_MSB, ((text_appui_bouton_value_hexa << 1) / 256)
-C:00028d ebea      	ldi		REG_Z_LSB, ((text_appui_bouton_value_hexa << 1) % 256)
-C:00028e d0ea      	rcall		push_text_in_fifo_tx
-         
-C:00028f 9100 0067 	lds		REG_TEMP_R16, G_NBR_ERRORS
-C:000291 d400      	rcall		convert_and_put_fifo_tx
-         	; Fin: Emission en hexa du compteur 'G_NBR_ERRORS'
-         
-         	; Emission en hexa de 'ASCII' de 'G_TEST_COMMAND_TYPE'
-C:000292 e0f5      	ldi		REG_Z_MSB, ((text_appui_bouton_value_ascii << 1) / 256)
-C:000293 ece0      	ldi		REG_Z_LSB, ((text_appui_bouton_value_ascii << 1) % 256)
-C:000294 d0e4      	rcall		push_text_in_fifo_tx
-         
-C:000295 9100 00fc 	lds		REG_TEMP_R16, G_TEST_COMMAND_TYPE
-C:000297 d0f0      	rcall		push_1_char_in_fifo_tx
-         	; Fin: Emission en ASCII de 'G_TEST_COMMAND_TYPE'
-         
-         	; Emission en hexa de 'G_TEST_VALUE_MSB:G_TEST_VALUE_LSB'
-C:000298 e0f5      	ldi		REG_Z_MSB, ((text_appui_bouton_value_hexa << 1) / 256)
-C:000299 ebea      	ldi		REG_Z_LSB, ((text_appui_bouton_value_hexa << 1) % 256)
-C:00029a d0de      	rcall		push_text_in_fifo_tx
-         
-C:00029b 9100 00fd 	lds		REG_TEMP_R16, G_TEST_VALUE_MSB
-C:00029d d3f4      	rcall		convert_and_put_fifo_tx
-         
-C:00029e 9100 00fe 	lds		REG_TEMP_R16, G_TEST_VALUE_LSB
-C:0002a0 d3f1      	rcall		convert_and_put_fifo_tx
-         	; Fin: Emission en hexa de 'G_TEST_VALUE_MSB:G_TEST_VALUE_LSB'
-         
-         	; Emission en hexa de 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
-C:0002a1 e0f5      	ldi		REG_Z_MSB, ((text_appui_bouton_value_hexa << 1) / 256)
-C:0002a2 ebea      	ldi		REG_Z_LSB, ((text_appui_bouton_value_hexa << 1) % 256)
-C:0002a3 d0d5      	rcall		push_text_in_fifo_tx
-         
-C:0002a4 9100 00ff 	lds		REG_TEMP_R16, G_TEST_VALUE_MSB_MORE
-C:0002a6 d3eb      	rcall		convert_and_put_fifo_tx
-         
-C:0002a7 9100 0100 	lds		REG_TEMP_R16, G_TEST_VALUE_LSB_MORE
-C:0002a9 d3e8      	rcall		convert_and_put_fifo_tx
-         	; Fin: Emission en hexa de 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
-         
-C:0002aa e0f5      	ldi		REG_Z_MSB, ((text_appui_bouton_end << 1) / 256)
-C:0002ab ece4      	ldi		REG_Z_LSB, ((text_appui_bouton_end << 1) % 256)
-C:0002ac d0cc      	rcall		push_text_in_fifo_tx
-          #endif
-         
-C:0002ad 6490      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
-         
-C:0002ae 9508      	ret
+C:00028a 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_RXD_ANTI_REBONDS
          ; ---------
           exec_timer_anti_rebound:
-C:0002af 7f8b      	cbr		REG_FLAGS_0, FLG_0_UART_DETECT_BIT_START_MSK
-C:0002b0 9508      	ret
+C:00028b 7f8b      	cbr		REG_FLAGS_0, FLG_0_UART_DETECT_BIT_START_MSK
+C:00028c 9508      	ret
          ; ---------
          
          ; ---------
@@ -2445,131 +2393,114 @@ C:0002b0 9508      	ret
          ; ---------
           exec_timer_led_green:
          	; Recuperation du chenillard de presentation de la Led GREEN
-C:0002b1 9100 0064 	lds		REG_TEMP_R16, G_CHENILLARD_MSB
-C:0002b3 9110 0065 	lds		REG_TEMP_R17, G_CHENILLARD_LSB
+C:00028d 9100 0064 	lds		REG_TEMP_R16, G_CHENILLARD_MSB
+C:00028f 9110 0065 	lds		REG_TEMP_R17, G_CHENILLARD_LSB
          
          	; Allumage/Extinction atomique en fonction de G_CHENILLARD_LSB<0>
-C:0002b5 94f8      	cli
-C:0002b6 6078      	sbr		REG_PORTB_OUT, MSK_BIT_LED_GREEN		; Extinction a priori Led GREEN ...
-C:0002b7 fd10      	sbrc		REG_TEMP_R17, IDX_BIT0
-C:0002b8 7f77      	cbr		REG_PORTB_OUT, MSK_BIT_LED_GREEN		; ... en fait, Allumage Led GREEN
-C:0002b9 9478      	sei
+C:000291 94f8      	cli
+C:000292 6078      	sbr		REG_PORTB_OUT, MSK_BIT_LED_GREEN		; Extinction a priori Led GREEN ...
+C:000293 fd10      	sbrc		REG_TEMP_R17, IDX_BIT0
+C:000294 7f77      	cbr		REG_PORTB_OUT, MSK_BIT_LED_GREEN		; ... en fait, Allumage Led GREEN
+C:000295 9478      	sei
          	; Fin: Allumage/Extinction atomique en fonction de G_CHENILLARD_LSB<0>
          
          	; Progression du chenillard
-C:0002ba 9506      	lsr		REG_TEMP_R16							; G_CHENILLARD_MSB<0> -> Carry
-C:0002bb 9517      	ror		REG_TEMP_R17							; Carry -> G_CHENILLARD_LSB<7> et G_CHENILLARD_LSB<0> -> Carry
+C:000296 9506      	lsr		REG_TEMP_R16							; G_CHENILLARD_MSB<0> -> Carry
+C:000297 9517      	ror		REG_TEMP_R17							; Carry -> G_CHENILLARD_LSB<7> et G_CHENILLARD_LSB<0> -> Carry
          
-C:0002bc 770f      	cbr		REG_TEMP_R16, MSK_BIT7				; Preparation '0' dans G_CHENILLARD_MSB<7> a priori ...
-C:0002bd f408      	brcc		exec_timer_led_green_more
-C:0002be 6800      	sbr		REG_TEMP_R16, MSK_BIT7				; ... et non, '1' dans G_CHENILLARD_MSB<7>
+C:000298 770f      	cbr		REG_TEMP_R16, MSK_BIT7				; Preparation '0' dans G_CHENILLARD_MSB<7> a priori ...
+C:000299 f408      	brcc		exec_timer_led_green_more
+C:00029a 6800      	sbr		REG_TEMP_R16, MSK_BIT7				; ... et non, '1' dans G_CHENILLARD_MSB<7>
          
           exec_timer_led_green_more:									; Ici, G_CHENILLARD_MSB<7> reflete la Carry
-C:0002bf 9300 0064 	sts		G_CHENILLARD_MSB, REG_TEMP_R16
-C:0002c1 9310 0065 	sts		G_CHENILLARD_LSB, REG_TEMP_R17
+C:00029b 9300 0064 	sts		G_CHENILLARD_MSB, REG_TEMP_R16
+C:00029d 9310 0065 	sts		G_CHENILLARD_LSB, REG_TEMP_R17
          	; Fin: Chenillard de presentation de la Led GREEN
          
          	; Armement du Timer #7
-C:0002c3 e015      	ldi		REG_TEMP_R17, TIMER_LED_GREEN
-C:0002c4 e72d      	ldi		REG_TEMP_R18, (125 % 256)
-C:0002c5 e030      	ldi		REG_TEMP_R19, (125 / 256)
-C:0002c6 df68      	rcall		start_timer
+C:00029f e015      	ldi		REG_TEMP_R17, TIMER_LED_GREEN
+C:0002a0 e72d      	ldi		REG_TEMP_R18, (125 % 256)
+C:0002a1 e030      	ldi		REG_TEMP_R19, (125 / 256)
+C:0002a2 df8c      	rcall		start_timer
          
-C:0002c7 9508      	ret
+C:0002a3 9508      	ret
          ; ---------
          
          ; ---------
-         ; TIMER_SPARE
+         ; Timer #6 for DS18B20
          ; ---------
           exec_timer_6:
           #ifdef USE_DS18B20
           #endif
-C:0002c8 9508      	ret
+C:0002a4 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_7:
-C:0002c9 9508      	ret
+C:0002a5 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_8:
-C:0002ca 9508      	ret
+C:0002a6 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_9:
-C:0002cb 9508      	ret
+C:0002a7 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_10:
-C:0002cc 9508      	ret
+C:0002a8 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_11:
-C:0002cd 9508      	ret
+C:0002a9 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_12:
-C:0002ce 9508      	ret
+C:0002aa 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_13:
-C:0002cf 9508      	ret
+C:0002ab 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_14:
-C:0002d0 9508      	ret
+C:0002ac 9508      	ret
          ; ---------
          
          ; ---------
          ; TIMER_SPARE
          ; ---------
           exec_timer_15:
-C:0002d1 9508      	ret
+C:0002ad 9508      	ret
          ; ---------
          
           text_appui_bouton:
-          #ifdef USE_MINIMALIST
-          #else
-          .db	"### Appui bouton [0x", CHAR_NULL, CHAR_NULL
-C:0002D2 23232320417070756920626F75746F6E205B30780000
-          #endif
-         
-          #ifndef USE_MINIMALIST
-          text_appui_bouton_value_hexa:
-          .db	"] [0x", CHAR_NULL
-C:0002DD 5D205B307800
-         
-          text_appui_bouton_value_ascii:
-          .db	"] [", CHAR_NULL
-C:0002E0 5D205B00
-         
-          text_appui_bouton_end:
-          .db	"] ", CHAR_LF, CHAR_NULL
-C:0002E2 5D200A00
-          #endif
+          .db	"### Button action", CHAR_LF, CHAR_NULL, CHAR_NULL
+C:0002AE 23232320427574746F6E20616374696F6E0A0000
          
          ; End of file
          
@@ -2647,26 +2578,26 @@ D:0000fa    G_UART_FIFO_TX_DATA_END:	.byte		1									; Last byte de la FIFO/Tx
           .cseg
          ; ---------
           test_detect_line_idle:
-C:0002e4 fd81      	sbrc		REG_FLAGS_0, FLG_0_UART_DETECT_LINE_IDLE_IDX
-C:0002e5 c008      	rjmp		test_detect_line_idle_rtn
+C:0002b8 fd81      	sbrc		REG_FLAGS_0, FLG_0_UART_DETECT_LINE_IDLE_IDX
+C:0002b9 c008      	rjmp		test_detect_line_idle_rtn
          
          	; Presentation flash de 100mS sur Led YELLOW
-C:0002e6 94f8      	cli
-C:0002e7   +  	setLedYellowOn
-C:0002e7 7f7b      cbr		REG_PORTB_OUT, MSK_BIT_LED_YELLOW
-C:0002e8 bb78      out		PORTB, REG_PORTB_OUT					
+C:0002ba 94f8      	cli
+C:0002bb   +  	setLedYellowOn
+C:0002bb 7f7b      cbr		REG_PORTB_OUT, MSK_BIT_LED_YELLOW
+C:0002bc bb78      out		PORTB, REG_PORTB_OUT					
 
-C:0002e9 9478      	sei
+C:0002bd 9478      	sei
          
          	; Presentation flash de 100mS sur Led YELLOW
-C:0002ea e012      	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_LED
-C:0002eb e624      	ldi		REG_TEMP_R18, (100 % 256)
-C:0002ec e030      	ldi		REG_TEMP_R19, (100 / 256)
-C:0002ed df52      	rcall		restart_timer
+C:0002be e012      	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_LED
+C:0002bf e624      	ldi		REG_TEMP_R18, (100 % 256)
+C:0002c0 e030      	ldi		REG_TEMP_R19, (100 / 256)
+C:0002c1 df7e      	rcall		restart_timer
          	; Fin: Presentation flash de 100mS sur Led YELLOW
          
           test_detect_line_idle_rtn:
-C:0002ee 9508      	ret
+C:0002c2 9508      	ret
          ; ---------
          
          ; ---------
@@ -2689,116 +2620,116 @@ C:0002ee 9508      	ret
          ; Warning: Methode appelee sous l'It 'tim1_compa_isr'
          ; ---------
           uart_fifo_rx_write:
-C:0002ef e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_RX_DATA / 256)		; Indexation dans la FIFO/Rx
-C:0002f0 e9a9      	ldi		REG_X_LSB, (G_UART_FIFO_RX_DATA % 256)
-C:0002f1 9110 0097 	lds		REG_TEMP_R17, G_UART_FIFO_RX_WRITE			; Pointeur d'ecriture courant
-C:0002f3 9120 0098 	lds		REG_TEMP_R18, G_UART_FIFO_RX_READ			; Pointeur de lecture courant
+C:0002c3 e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_RX_DATA / 256)		; Indexation dans la FIFO/Rx
+C:0002c4 e9a9      	ldi		REG_X_LSB, (G_UART_FIFO_RX_DATA % 256)
+C:0002c5 9110 0097 	lds		REG_TEMP_R17, G_UART_FIFO_RX_WRITE			; Pointeur d'ecriture courant
+C:0002c7 9120 0098 	lds		REG_TEMP_R18, G_UART_FIFO_RX_READ			; Pointeur de lecture courant
          
-C:0002f5 2700      	clr		REG_TEMP_R16
-C:0002f6 0fa1      	add		REG_X_LSB, REG_TEMP_R17	; XL += REG_TEMP_R17
-C:0002f7 1fb0      	adc		REG_X_MSB, REG_TEMP_R16	; XH += 0 + Carry
+C:0002c9 2700      	clr		REG_TEMP_R16
+C:0002ca 0fa1      	add		REG_X_LSB, REG_TEMP_R17	; XL += REG_TEMP_R17
+C:0002cb 1fb0      	adc		REG_X_MSB, REG_TEMP_R16	; XH += 0 + Carry
          
-C:0002f8 921c      	st			X, REG_R1			; Ecriture donnee dans [G_UART_FIFO_RX_DATA, ..., G_UART_FIFO_RX_DATA_END]
+C:0002cc 921c      	st			X, REG_R1			; Ecriture donnee dans [G_UART_FIFO_RX_DATA, ..., G_UART_FIFO_RX_DATA_END]
          
-C:0002f9 9513      	inc		REG_TEMP_R17
-C:0002fa 711f      	andi		REG_TEMP_R17, (SIZE_UART_FIFO_RX - 1)		; Pointeur d'ecriture dans [0, ..., [SIZE_UART_FIFO_RX - 1)]
-C:0002fb 9310 0097 	sts		G_UART_FIFO_RX_WRITE, REG_TEMP_R17			; Maj pointeur d'ecriture
+C:0002cd 9513      	inc		REG_TEMP_R17
+C:0002ce 711f      	andi		REG_TEMP_R17, (SIZE_UART_FIFO_RX - 1)		; Pointeur d'ecriture dans [0, ..., [SIZE_UART_FIFO_RX - 1)]
+C:0002cf 9310 0097 	sts		G_UART_FIFO_RX_WRITE, REG_TEMP_R17			; Maj pointeur d'ecriture
          
          	; Indication FIFO/Rx non vide
-C:0002fd 6091      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_MSK
+C:0002d1 6091      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_MSK
          
          	; Indication si FIFO/Rx pleine
          	; => FIFO/Rx pleine si le pointeur d'ecriture "rejoint" le pointeur de lecture
          	;    => Soit (REG_TEMP_R17 == REG_TEMP_R18) ici
-C:0002fe 7f9d      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_FULL_MSK 		; FIFO/Rx a priori non pleine ...
-C:0002ff 94e8      	clt																	; SREG<T> = 0
-C:000300 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
-C:000301 f419      	brne		uart_fifo_rx_write_rtn
-C:000302 6092      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_FULL_MSK		; ... et non, FIFO/Rx pleine
-C:000303 9468      	set																	; SREG<T> = 1
+C:0002d2 7f9d      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_FULL_MSK 		; FIFO/Rx a priori non pleine ...
+C:0002d3 94e8      	clt																	; SREG<T> = 0
+C:0002d4 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
+C:0002d5 f419      	brne		uart_fifo_rx_write_rtn
+C:0002d6 6092      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_FULL_MSK		; ... et non, FIFO/Rx pleine
+C:0002d7 9468      	set																	; SREG<T> = 1
          
          	; Maj compteur d'erreurs
-C:000304 ddc8      	rcall		update_errors
+C:0002d8 ddf4      	rcall		update_errors
          
           uart_fifo_rx_write_rtn:
-C:000305 9508      	ret
+C:0002d9 9508      	ret
          ; ---------
          
          ; ---------
           uart_fifo_rx_read:
-C:000306 e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_RX_DATA / 256)		; Indexation dans la FIFO/Rx
-C:000307 e9a9      	ldi		REG_X_LSB, (G_UART_FIFO_RX_DATA % 256)
-C:000308 9110 0097 	lds		REG_TEMP_R17, G_UART_FIFO_RX_WRITE			; Pointeur d'ecriture courant
-C:00030a 9120 0098 	lds		REG_TEMP_R18, G_UART_FIFO_RX_READ			; Pointeur de lecture courant
+C:0002da e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_RX_DATA / 256)		; Indexation dans la FIFO/Rx
+C:0002db e9a9      	ldi		REG_X_LSB, (G_UART_FIFO_RX_DATA % 256)
+C:0002dc 9110 0097 	lds		REG_TEMP_R17, G_UART_FIFO_RX_WRITE			; Pointeur d'ecriture courant
+C:0002de 9120 0098 	lds		REG_TEMP_R18, G_UART_FIFO_RX_READ			; Pointeur de lecture courant
          
          	; Sortie prematuree si rien a lire
-C:00030c 94e8      	clt													; A priori pas de donnee a lire
-C:00030d 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
-C:00030e f061      	breq		uart_fifo_rx_read_end				; Pointeurs egaux => FIFO/Rx trouvee vide
+C:0002e0 94e8      	clt													; A priori pas de donnee a lire
+C:0002e1 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
+C:0002e2 f061      	breq		uart_fifo_rx_read_end				; Pointeurs egaux => FIFO/Rx trouvee vide
          
-C:00030f 2700      	clr		REG_TEMP_R16
-C:000310 0fa2      	add		REG_X_LSB, REG_TEMP_R18	; XL += REG_TEMP_R18
-C:000311 1fb0      	adc		REG_X_MSB, REG_TEMP_R16	; XH += 0 + Carry
+C:0002e3 2700      	clr		REG_TEMP_R16
+C:0002e4 0fa2      	add		REG_X_LSB, REG_TEMP_R18	; XL += REG_TEMP_R18
+C:0002e5 1fb0      	adc		REG_X_MSB, REG_TEMP_R16	; XH += 0 + Carry
          
-C:000312 902c      	ld			REG_R2, X					; Lecture de la donnee dans [G_UART_FIFO_RX_DATA, ..., G_UART_FIFO_RX_DATA_END]
-C:000313 9468      	set										; Indication donnee disponible
+C:0002e6 902c      	ld			REG_R2, X					; Lecture de la donnee dans [G_UART_FIFO_RX_DATA, ..., G_UART_FIFO_RX_DATA_END]
+C:0002e7 9468      	set										; Indication donnee disponible
          
-C:000314 9523      	inc		REG_TEMP_R18
-C:000315 712f      	andi		REG_TEMP_R18, (SIZE_UART_FIFO_RX - 1)		; Pointeur de lecture dans [0, ..., [SIZE_UART_FIFO_RX - 1)]
-C:000316 9320 0098 	sts		G_UART_FIFO_RX_READ, REG_TEMP_R18
+C:0002e8 9523      	inc		REG_TEMP_R18
+C:0002e9 712f      	andi		REG_TEMP_R18, (SIZE_UART_FIFO_RX - 1)		; Pointeur de lecture dans [0, ..., [SIZE_UART_FIFO_RX - 1)]
+C:0002ea 9320 0098 	sts		G_UART_FIFO_RX_READ, REG_TEMP_R18
          
          	; Indication FIFO/Rx vide ou non vide apres la lecture
          	; => FIFO/Rx vide si le pointeur de lecture "rejoint" le pointeur ecriture
          	;    => Soit (REG_TEMP_R17 == REG_TEMP_R18) ici
           uart_fifo_rx_read_test_empty:
-C:000318 6091      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_MSK		; FIFO/Rx a priori non vide...
-C:000319 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
-C:00031a f409      	brne		uart_fifo_rx_read_rtn
+C:0002ec 6091      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_MSK		; FIFO/Rx a priori non vide...
+C:0002ed 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
+C:0002ee f409      	brne		uart_fifo_rx_read_rtn
          
           uart_fifo_rx_read_end:
-C:00031b 7f9e      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_MSK		; ... et non, FIFO/Rx vide
+C:0002ef 7f9e      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_MSK		; ... et non, FIFO/Rx vide
          
           uart_fifo_rx_read_rtn:
-C:00031c 9508      	ret
+C:0002f0 9508      	ret
          ; ---------
          
          ; ---------
           uart_fifo_tx_write:
-C:00031d 93bf      	push		REG_X_MSB
-C:00031e 93af      	push		REG_X_LSB
-C:00031f 931f      	push		REG_TEMP_R17
-C:000320 932f      	push		REG_TEMP_R18
+C:0002f1 93bf      	push		REG_X_MSB
+C:0002f2 93af      	push		REG_X_LSB
+C:0002f3 931f      	push		REG_TEMP_R17
+C:0002f4 932f      	push		REG_TEMP_R18
          
-C:000321 e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_TX_DATA / 256)	; Indexation dans la FIFO/Tx et ses 2 pointeurs
-C:000322 ebab      	ldi		REG_X_LSB, (G_UART_FIFO_TX_DATA % 256)
-C:000323 9110 00b9 	lds		REG_TEMP_R17, G_UART_FIFO_TX_WRITE			; Pointeur d'ecriture courant
-C:000325 9120 00ba 	lds		REG_TEMP_R18, G_UART_FIFO_TX_READ			; Pointeur de lecture courant
+C:0002f5 e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_TX_DATA / 256)	; Indexation dans la FIFO/Tx et ses 2 pointeurs
+C:0002f6 ebab      	ldi		REG_X_LSB, (G_UART_FIFO_TX_DATA % 256)
+C:0002f7 9110 00b9 	lds		REG_TEMP_R17, G_UART_FIFO_TX_WRITE			; Pointeur d'ecriture courant
+C:0002f9 9120 00ba 	lds		REG_TEMP_R18, G_UART_FIFO_TX_READ			; Pointeur de lecture courant
          
-C:000327 2700      	clr		REG_TEMP_R16
-C:000328 0fa1      	add		REG_X_LSB, REG_TEMP_R17			; XL += REG_TEMP_R17
-C:000329 1fb0      	adc		REG_X_MSB, REG_TEMP_R16			; XH += 0 + Carry
+C:0002fb 2700      	clr		REG_TEMP_R16
+C:0002fc 0fa1      	add		REG_X_LSB, REG_TEMP_R17			; XL += REG_TEMP_R17
+C:0002fd 1fb0      	adc		REG_X_MSB, REG_TEMP_R16			; XH += 0 + Carry
          
-C:00032a 923c      	st			X, REG_R3			; Ecriture donnee dans [G_UART_FIFO_TX_DATA, ..., G_UART_FIFO_TX_DATA_END]
+C:0002fe 923c      	st			X, REG_R3			; Ecriture donnee dans [G_UART_FIFO_TX_DATA, ..., G_UART_FIFO_TX_DATA_END]
          
-C:00032b 9513      	inc		REG_TEMP_R17
-C:00032c 731f      	andi		REG_TEMP_R17, (SIZE_UART_FIFO_TX - 1)		; Pointeur d'ecriture dans [0, ..., [SIZE_UART_FIFO_TX - 1)]
-C:00032d 9310 00b9 	sts		G_UART_FIFO_TX_WRITE, REG_TEMP_R17			; Maj pointeur d'ecriture
+C:0002ff 9513      	inc		REG_TEMP_R17
+C:000300 731f      	andi		REG_TEMP_R17, (SIZE_UART_FIFO_TX - 1)		; Pointeur d'ecriture dans [0, ..., [SIZE_UART_FIFO_TX - 1)]
+C:000301 9310 00b9 	sts		G_UART_FIFO_TX_WRITE, REG_TEMP_R17			; Maj pointeur d'ecriture
          
          	; Indication FIFO/Tx non vide
-C:00032f 6190      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_MSK
+C:000303 6190      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_MSK
          
          	; Emision de tous les caracteres de la FIFO/Tx jusqu'au dernier des que le pointeur d'ecriture (REG_TEMP_R17)
          	; atteint le pointeur de lecture (REG_TEMP_R18) -(SIZE_UART_FIFO_TX / 2) modulo SIZE_UART_FIFO_TX
          	; => Revient a vider la FIFO/Tx des que celle-ci est pleine a 50%
          	;    => Au dessous des 50%, les caracteres seront emis en fond de tache grace a l'appel de 'fifo_tx_to_send_async'
          	;    => Evite d'appeler dans le code la methode 'fifo_tx_to_send_sync' pour ne pas saturer la FIFO/Tx ;-)
-C:000330 2f02      	mov		REG_TEMP_R16, REG_TEMP_R18
-C:000331 5200      	subi		REG_TEMP_R16, (SIZE_UART_FIFO_TX / 2)		; Seuil a 50 % d'occupation de la FIFO/Tx
-C:000332 730f      	andi		REG_TEMP_R16, (SIZE_UART_FIFO_TX - 1)		; Modulo SIZE_UART_FIFO_TX
-C:000333 1701      	cp			REG_TEMP_R16, REG_TEMP_R17
-C:000334 f409      	brne		uart_fifo_tx_write_skip
+C:000304 2f02      	mov		REG_TEMP_R16, REG_TEMP_R18
+C:000305 5200      	subi		REG_TEMP_R16, (SIZE_UART_FIFO_TX / 2)		; Seuil a 50 % d'occupation de la FIFO/Tx
+C:000306 730f      	andi		REG_TEMP_R16, (SIZE_UART_FIFO_TX - 1)		; Modulo SIZE_UART_FIFO_TX
+C:000307 1701      	cp			REG_TEMP_R16, REG_TEMP_R17
+C:000308 f409      	brne		uart_fifo_tx_write_skip
          
-C:000335 d06e      	rcall		fifo_tx_to_send_sync
+C:000309 d06e      	rcall		fifo_tx_to_send_sync
          
           uart_fifo_tx_write_skip:
          	; Fin: Emision de tous les caracteres de la FIFO/Tx...
@@ -2806,70 +2737,70 @@ C:000335 d06e      	rcall		fifo_tx_to_send_sync
          	; Indication si FIFO pleine
          	; => FIFO pleine si le pointeur d'ecriture "rejoint" le pointeur de lecture
          	;    => Soit (REG_TEMP_R17 == REG_TEMP_R18) ici
-C:000336 7d9f      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_MSK 		; FIFO/Rx a priori non pleine ...
-C:000337 94e8      	clt																	; SREG<T> = 0
-C:000338 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
-C:000339 f419      	brne		uart_fifo_tx_write_rtn
-C:00033a 6290      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_MSK		; ... et non, FIFO/Rx pleine
-C:00033b 9468      	set																	; SREG<T> = 1
+C:00030a 7d9f      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_MSK 		; FIFO/Rx a priori non pleine ...
+C:00030b 94e8      	clt																	; SREG<T> = 0
+C:00030c 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
+C:00030d f419      	brne		uart_fifo_tx_write_rtn
+C:00030e 6290      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_MSK		; ... et non, FIFO/Rx pleine
+C:00030f 9468      	set																	; SREG<T> = 1
          
          	; Ne doit jamais arrive ;-)...
          	; Mise sur voie de garage si FIFO/Tx pleine
-C:00033c cd96      	rjmp		forever_1
+C:000310 cdc2      	rjmp		forever_1
          
           uart_fifo_tx_write_rtn:
-C:00033d 912f      	pop		REG_TEMP_R18
-C:00033e 911f      	pop		REG_TEMP_R17
-C:00033f 91af      	pop		REG_X_LSB
-C:000340 91bf      	pop		REG_X_MSB
-C:000341 9508      	ret
+C:000311 912f      	pop		REG_TEMP_R18
+C:000312 911f      	pop		REG_TEMP_R17
+C:000313 91af      	pop		REG_X_LSB
+C:000314 91bf      	pop		REG_X_MSB
+C:000315 9508      	ret
          ; ---------
          
          ; ---------
           uart_fifo_tx_read:
-C:000342 93bf      	push		REG_X_MSB
-C:000343 93af      	push		REG_X_LSB
-C:000344 931f      	push		REG_TEMP_R17
-C:000345 932f      	push		REG_TEMP_R18
+C:000316 93bf      	push		REG_X_MSB
+C:000317 93af      	push		REG_X_LSB
+C:000318 931f      	push		REG_TEMP_R17
+C:000319 932f      	push		REG_TEMP_R18
          
-C:000346 e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_TX_DATA / 256)	; Indexation dans la FIFO/Tx et ses 2 pointeurs
-C:000347 ebab      	ldi		REG_X_LSB, (G_UART_FIFO_TX_DATA % 256)
-C:000348 9110 00b9 	lds		REG_TEMP_R17, G_UART_FIFO_TX_WRITE			; Pointeur d'ecriture courant
-C:00034a 9120 00ba 	lds		REG_TEMP_R18, G_UART_FIFO_TX_READ			; Pointeur d'ecriture courant
+C:00031a e0b0      	ldi		REG_X_MSB, (G_UART_FIFO_TX_DATA / 256)	; Indexation dans la FIFO/Tx et ses 2 pointeurs
+C:00031b ebab      	ldi		REG_X_LSB, (G_UART_FIFO_TX_DATA % 256)
+C:00031c 9110 00b9 	lds		REG_TEMP_R17, G_UART_FIFO_TX_WRITE			; Pointeur d'ecriture courant
+C:00031e 9120 00ba 	lds		REG_TEMP_R18, G_UART_FIFO_TX_READ			; Pointeur d'ecriture courant
          
          	; Sortie prematuree si rien a lire
-C:00034c 94e8      	clt														; A priori pas de donnee a lire
-C:00034d 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
-C:00034e f061      	breq		uart_fifo_tx_read_end					; Pas de lecture => maj flags
+C:000320 94e8      	clt														; A priori pas de donnee a lire
+C:000321 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
+C:000322 f061      	breq		uart_fifo_tx_read_end					; Pas de lecture => maj flags
          
-C:00034f 2700      	clr		REG_TEMP_R16
-C:000350 0fa2      	add		REG_X_LSB, REG_TEMP_R18	; XL += REG_TEMP_R18
-C:000351 1fb0      	adc		REG_X_MSB, REG_TEMP_R16	; XH += 0 + Carry
+C:000323 2700      	clr		REG_TEMP_R16
+C:000324 0fa2      	add		REG_X_LSB, REG_TEMP_R18	; XL += REG_TEMP_R18
+C:000325 1fb0      	adc		REG_X_MSB, REG_TEMP_R16	; XH += 0 + Carry
          
-C:000352 904c      	ld			REG_R4, X			; Lecture de la donnee dans [G_UART_FIFO_TX_DATA, ..., G_UART_FIFO_TX_DATA_END]
-C:000353 9468      	set								; Indication donnee disponible
+C:000326 904c      	ld			REG_R4, X			; Lecture de la donnee dans [G_UART_FIFO_TX_DATA, ..., G_UART_FIFO_TX_DATA_END]
+C:000327 9468      	set								; Indication donnee disponible
          
-C:000354 9523      	inc		REG_TEMP_R18
-C:000355 732f      	andi		REG_TEMP_R18, (SIZE_UART_FIFO_TX - 1)		; Pointeur de lecture dans [0, ..., [SIZE_UART_FIFO_TX - 1)]
-C:000356 9320 00ba 	sts		G_UART_FIFO_TX_READ, REG_TEMP_R18
+C:000328 9523      	inc		REG_TEMP_R18
+C:000329 732f      	andi		REG_TEMP_R18, (SIZE_UART_FIFO_TX - 1)		; Pointeur de lecture dans [0, ..., [SIZE_UART_FIFO_TX - 1)]
+C:00032a 9320 00ba 	sts		G_UART_FIFO_TX_READ, REG_TEMP_R18
          
          	; Indication FIFO/Tx vide ou non vide apres la lecture
          	; => FIFO/Tx vide si le pointeur de lecture "rejoint" le pointeur ecriture
          	;    => Soit (REG_TEMP_R17 == REG_TEMP_R18) ici
           uart_fifo_tx_read_test_empty:
-C:000358 6190      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_MSK		; FIFO/Rx a priori non vide...
-C:000359 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
-C:00035a f409      	brne		uart_fifo_tx_read_rtn
+C:00032c 6190      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_MSK		; FIFO/Rx a priori non vide...
+C:00032d 1712      	cp			REG_TEMP_R17, REG_TEMP_R18
+C:00032e f409      	brne		uart_fifo_tx_read_rtn
          
           uart_fifo_tx_read_end:
-C:00035b 7e9f      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_MSK		; ... et non, FIFO/Rx vide
+C:00032f 7e9f      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_MSK		; ... et non, FIFO/Rx vide
          
           uart_fifo_tx_read_rtn:
-C:00035c 912f      	pop		REG_TEMP_R18
-C:00035d 911f      	pop		REG_TEMP_R17
-C:00035e 91af      	pop		REG_X_LSB
-C:00035f 91bf      	pop		REG_X_MSB
-C:000360 9508      	ret
+C:000330 912f      	pop		REG_TEMP_R18
+C:000331 911f      	pop		REG_TEMP_R17
+C:000332 91af      	pop		REG_X_LSB
+C:000333 91bf      	pop		REG_X_MSB
+C:000334 9508      	ret
          ; ---------
          
          ; ---------
@@ -2888,34 +2819,34 @@ C:000360 9508      	ret
          ;    REG_TEMP_R17        -> Working register
          ; ---------
           uart_tx_send:
-C:000361 930f      	push		REG_TEMP_R16
-C:000362 931f      	push		REG_TEMP_R17
+C:000335 930f      	push		REG_TEMP_R16
+C:000336 931f      	push		REG_TEMP_R17
          
          	; Construction du mot a emettre avec '1111 11sD DDDD DDDS' ([S]tart/[s]top)
          	; R17:R16 = MSB:LSB = '1111 111D DDDD DDD0'
-C:000363 ef1f      	ldi		REG_TEMP_R17, 0xFF	; Preparation MSB avec les 1, 2, 3, ... Bits Stop
-C:000364 0f00      	lsl		REG_TEMP_R16			; 'DDDD DDD0':  Bit Start a 0 et C = D7
-C:000365 1f11      	rol		REG_TEMP_R17			; '1111 111D':  Propagation de la Carry et des Bits Stop
+C:000337 ef1f      	ldi		REG_TEMP_R17, 0xFF	; Preparation MSB avec les 1, 2, 3, ... Bits Stop
+C:000338 0f00      	lsl		REG_TEMP_R16			; 'DDDD DDD0':  Bit Start a 0 et C = D7
+C:000339 1f11      	rol		REG_TEMP_R17			; '1111 111D':  Propagation de la Carry et des Bits Stop
          
-C:000366 94f8      	cli		; Copie atomique
-C:000367 9300 0095 	sts		G_UART_BYTE_TX_LSB, REG_TEMP_R16
-C:000369 9310 0096 	sts		G_UART_BYTE_TX_MSB, REG_TEMP_R17
-C:00036b 9478      	sei		; Fin: Copie atomique
+C:00033a 94f8      	cli		; Copie atomique
+C:00033b 9300 0095 	sts		G_UART_BYTE_TX_LSB, REG_TEMP_R16
+C:00033d 9310 0096 	sts		G_UART_BYTE_TX_MSB, REG_TEMP_R17
+C:00033f 9478      	sei		; Fin: Copie atomique
          
          	;ldi		REG_TEMP_R16, ((1+8+1) + 1)	; 1 Bit START + 8 Datas + 1 Bit  STOP (11)
-C:00036c e00c      	ldi		REG_TEMP_R16, ((1+8+1) + 2)	; 1 Bit START + 8 Datas + 2 Bits STOP (12)
+C:000340 e00c      	ldi		REG_TEMP_R16, ((1+8+1) + 2)	; 1 Bit START + 8 Datas + 2 Bits STOP (12)
          	;ldi		REG_TEMP_R16, ((1+8+1) + 3)	; 1 Bit START + 8 Datas + 3 Bits STOP (13)
-C:00036d 9300 0092 	sts		G_UART_CPT_NBR_BITS_TX, REG_TEMP_R16
+C:000341 9300 0092 	sts		G_UART_CPT_NBR_BITS_TX, REG_TEMP_R16
          
-C:00036f 2700         clr		REG_TEMP_R16			; Initialisation a 0 pour faire partir l'emission immediatement
-C:000370 9300 0090    sts		G_UART_CPT_DURATION_1BIT_TX, REG_TEMP_R16
+C:000343 2700         clr		REG_TEMP_R16			; Initialisation a 0 pour faire partir l'emission immediatement
+C:000344 9300 0090    sts		G_UART_CPT_DURATION_1BIT_TX, REG_TEMP_R16
          
-C:000372 6072      	sbr		REG_PORTB_OUT, MSK_BIT_TXD						; TXD a l'etat haut avant lancement emission
-C:000373 6180      	sbr		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_MSK		; Positionnement donnee a emettre
+C:000346 6072      	sbr		REG_PORTB_OUT, MSK_BIT_TXD						; TXD a l'etat haut avant lancement emission
+C:000347 6180      	sbr		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_MSK		; Positionnement donnee a emettre
          
-C:000374 911f      	pop		REG_TEMP_R17
-C:000375 910f      	pop		REG_TEMP_R16
-C:000376 9508      	ret
+C:000348 911f      	pop		REG_TEMP_R17
+C:000349 910f      	pop		REG_TEMP_R16
+C:00034a 9508      	ret
          ; ---------
          
          ; ---------
@@ -2932,30 +2863,30 @@ C:000376 9508      	ret
          ; ---------
           uos_push_text_in_fifo_tx_skip:
           push_text_in_fifo_tx_skip:
-C:000377 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:000378 9508      	ret
+C:00034b fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:00034c 9508      	ret
          
           uos_push_text_in_fifo_tx:
           push_text_in_fifo_tx:
-C:000379 93ff      	push		REG_Z_MSB
-C:00037a 93ef      	push		REG_Z_LSB
-C:00037b 930f      	push		REG_TEMP_R16
+C:00034d 93ff      	push		REG_Z_MSB
+C:00034e 93ef      	push		REG_Z_LSB
+C:00034f 930f      	push		REG_TEMP_R16
          
           push_text_in_fifo_tx_loop:
-C:00037c 9105      	lpm		REG_TEMP_R16, Z+
-C:00037d 3000      	cpi		REG_TEMP_R16, CHAR_NULL		; '\0' terminal ?
-C:00037e f019      	breq		push_text_in_fifo_tx_end
+C:000350 9105      	lpm		REG_TEMP_R16, Z+
+C:000351 3000      	cpi		REG_TEMP_R16, CHAR_NULL		; '\0' terminal ?
+C:000352 f019      	breq		push_text_in_fifo_tx_end
          
-C:00037f 2e30      	mov		REG_R3, REG_TEMP_R16
-C:000380 df9c      	rcall		uart_fifo_tx_write
+C:000353 2e30      	mov		REG_R3, REG_TEMP_R16
+C:000354 df9c      	rcall		uart_fifo_tx_write
          
-C:000381 cffa      	rjmp		push_text_in_fifo_tx_loop
+C:000355 cffa      	rjmp		push_text_in_fifo_tx_loop
          
           push_text_in_fifo_tx_end:
-C:000382 910f      	pop		REG_TEMP_R16
-C:000383 91ef      	pop		REG_Z_LSB
-C:000384 91ff      	pop		REG_Z_MSB
-C:000385 9508      	ret
+C:000356 910f      	pop		REG_TEMP_R16
+C:000357 91ef      	pop		REG_Z_LSB
+C:000358 91ff      	pop		REG_Z_MSB
+C:000359 9508      	ret
          ; ---------
          
          ; ---------
@@ -2970,15 +2901,15 @@ C:000385 9508      	ret
          ; ---------
           uos_push_1_char_in_fifo_tx_skip:
           push_1_char_in_fifo_tx_skip:
-C:000386 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:000387 9508      	ret
+C:00035a fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:00035b 9508      	ret
          
           uos_push_1_char_in_fifo_tx:
           push_1_char_in_fifo_tx:
-C:000388 2e30      	mov		REG_R3, REG_TEMP_R16
-C:000389 df93      	rcall		uart_fifo_tx_write
+C:00035c 2e30      	mov		REG_R3, REG_TEMP_R16
+C:00035d df93      	rcall		uart_fifo_tx_write
          
-C:00038a 9508      	ret
+C:00035e 9508      	ret
          ; ---------
          
          ; ---------
@@ -2994,32 +2925,32 @@ C:00038a 9508      	ret
          ;
          ; ---------
           push_text_in_fifo_tx_from_eeprom_skip:
-C:00038b fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:00038c 9508      	ret
+C:00035f fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:000360 9508      	ret
          
           push_text_in_fifo_tx_from_eeprom:
-C:00038d 0000      	nop
+C:000361 0000      	nop
          
           push_text_in_fifo_tx_from_eeprom_loop:
-C:00038e d02b      	rcall		eeprom_read_byte
+C:000362 d02b      	rcall		eeprom_read_byte
          
-C:00038f 3f0f      	cpi		REG_TEMP_R16, 0xff
-C:000390 f031      	breq		push_text_in_fifo_tx_from_eeprom_end
+C:000363 3f0f      	cpi		REG_TEMP_R16, 0xff
+C:000364 f031      	breq		push_text_in_fifo_tx_from_eeprom_end
          
-C:000391 2300      	tst		REG_TEMP_R16
-C:000392 f021      	breq		push_text_in_fifo_tx_from_eeprom_end
+C:000365 2300      	tst		REG_TEMP_R16
+C:000366 f021      	breq		push_text_in_fifo_tx_from_eeprom_end
          
-C:000393 dff4      	rcall		push_1_char_in_fifo_tx
+C:000367 dff4      	rcall		push_1_char_in_fifo_tx
          
-C:000394 9611      	adiw		REG_X_LSB, 1
-C:000395 952a      	dec		REG_TEMP_R18
-C:000396 f7b9      	brne		push_text_in_fifo_tx_from_eeprom_loop
+C:000368 9611      	adiw		REG_X_LSB, 1
+C:000369 952a      	dec		REG_TEMP_R18
+C:00036a f7b9      	brne		push_text_in_fifo_tx_from_eeprom_loop
          
           push_text_in_fifo_tx_from_eeprom_end:
-C:000397 9508      	ret
+C:00036b 9508      	ret
          ; ---------
          
-C:000398 9508      	ret
+C:00036c 9508      	ret
          ; ---------
          
          ; ---------
@@ -3036,24 +2967,24 @@ C:000398 9508      	ret
          ; ---------
           fifo_tx_to_send_async:
          	; Caractere de la FIFO/Tx a emettre ?
-C:000399 ff96      	sbrs		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_IDX
-C:00039a c008      	rjmp		fifo_tx_to_send_async_rtn
+C:00036d ff96      	sbrs		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_IDX
+C:00036e c008      	rjmp		fifo_tx_to_send_async_rtn
          
-C:00039b fd84      	sbrc		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_IDX		; Caractere emis ?
-C:00039c c006      	rjmp		fifo_tx_to_send_async_rtn
+C:00036f fd84      	sbrc		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_IDX		; Caractere emis ?
+C:000370 c006      	rjmp		fifo_tx_to_send_async_rtn
          
-C:00039d dfa4      	rcall		uart_fifo_tx_read					; Oui => Lecture du caractere suivant dans FIFO/Tx
-C:00039e f41e      	brtc		fifo_tx_to_send_async_end		; Caractere disponible ?
+C:000371 dfa4      	rcall		uart_fifo_tx_read					; Oui => Lecture du caractere suivant dans FIFO/Tx
+C:000372 f41e      	brtc		fifo_tx_to_send_async_end		; Caractere disponible ?
          
-C:00039f 2d04      	mov		REG_TEMP_R16, REG_R4				; Oui => Emission de celui-ci
-C:0003a0 dfc0      	rcall		uart_tx_send
-C:0003a1 c001      	rjmp		fifo_tx_to_send_async_rtn		; Retour et attente que ce caractere soit emis...
+C:000373 2d04      	mov		REG_TEMP_R16, REG_R4				; Oui => Emission de celui-ci
+C:000374 dfc0      	rcall		uart_tx_send
+C:000375 c001      	rjmp		fifo_tx_to_send_async_rtn		; Retour et attente que ce caractere soit emis...
          
           fifo_tx_to_send_async_end:
-C:0003a2 7b9f      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK		; Non => Arret de la demande d'emission
+C:000376 7b9f      	cbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK		; Non => Arret de la demande d'emission
          
           fifo_tx_to_send_async_rtn:
-C:0003a3 9508      	ret
+C:000377 9508      	ret
          ; ---------
          
          ; ---------
@@ -3074,38 +3005,38 @@ C:0003a3 9508      	ret
          ; ---------
           uos_fifo_tx_to_send_sync:
           fifo_tx_to_send_sync:
-C:0003a4 0000      	nop
+C:000378 0000      	nop
          
           fifo_tx_to_send_sync_retry:
-C:0003a5 6490      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
-C:0003a6 dff2      	rcall		fifo_tx_to_send_async
+C:000379 6490      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
+C:00037a dff2      	rcall		fifo_tx_to_send_async
          
-C:0003a7 fd84      	sbrc		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_IDX				; Caractere emis ?
-C:0003a8 cffc      	rjmp		fifo_tx_to_send_sync_retry								; Non => Retry
+C:00037b fd84      	sbrc		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_IDX				; Caractere emis ?
+C:00037c cffc      	rjmp		fifo_tx_to_send_sync_retry								; Non => Retry
          
-C:0003a9 fd94      	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_IDX	; FIFO/Tx vide ?
-C:0003aa cffa      	rjmp		fifo_tx_to_send_sync_retry								; Non => Retry
+C:00037d fd94      	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_TX_NOT_EMPTY_IDX	; FIFO/Tx vide ?
+C:00037e cffa      	rjmp		fifo_tx_to_send_sync_retry								; Non => Retry
          	; Fin: Emission, attente FIFO/Tx vide et dernier caractere emis
          
           fifo_tx_to_send_sync_rtn:
-C:0003ab 9508      	ret
+C:00037f 9508      	ret
          ; ---------
          
           const_for_bauds_rate:
           .db	0x01, 0x02, 0x3C, 0x01	; 19200 bauds	; TODO: Erreur de reception cote cible non systematique
-C:0003AC 01023C01
+C:000380 01023C01
           .db	0x03, 0x04, 0x78, 0x02	;  9600 bauds
-C:0003AE 03047802
+C:000382 03047802
           .db	0x07, 0x08, 0xF0, 0x04	;  4800 bauds
-C:0003B0 0708F004
+C:000384 0708F004
           .db	0x0F, 0x11, 0xE0, 0x08	;  2400 bauds
-C:0003B2 0F11E008
+C:000386 0F11E008
           .db	0x1F, 0x23, 0xC0, 0x10	;  1200 bauds
-C:0003B4 1F23C010
+C:000388 1F23C010
           .db	0x3E, 0x47, 0x80, 0x20	;   600 bauds
-C:0003B6 3E478020
+C:00038A 3E478020
           .db	0x7C, 0x8F, 0x00, 0x40	;   300 bauds
-C:0003B8 7C8F0040
+C:00038C 7C8F0040
           const_for_bauds_rate_end:
          
          ; End of file
@@ -3132,19 +3063,19 @@ C:0003B8 7C8F0040
          ; ---------
           eeprom_read_byte:
          	; Set address
-C:0003ba bbae      	out		EEARL, REG_X_LSB
-C:0003bb bbbf      	out		EEARH, REG_X_MSB
+C:00038e bbae      	out		EEARL, REG_X_LSB
+C:00038f bbbf      	out		EEARH, REG_X_MSB
          
          	; Lecture a l'adresse 'REG_X_MSB:REG_X_LSB'
           eeprom_read_byte_wait:
-C:0003bc 99e1      	sbic		EECR, EEPE
-C:0003bd cffe      	rjmp		eeprom_read_byte_wait
+C:000390 99e1      	sbic		EECR, EEPE
+C:000391 cffe      	rjmp		eeprom_read_byte_wait
          
-C:0003be 9ae0      	sbi		EECR, EERE
-C:0003bf b30d      	in			REG_TEMP_R16, EEDR
+C:000392 9ae0      	sbi		EECR, EERE
+C:000393 b30d      	in			REG_TEMP_R16, EEDR
          	; Fin: Lecture a l'adresse 'REG_X_MSB:REG_X_LSB'
          
-C:0003c0 9508      	ret
+C:000394 9508      	ret
          ; ---------
          
          ; ---------
@@ -3152,29 +3083,29 @@ C:0003c0 9508      	ret
          ; ---------
           eeprom_write_byte:
          	; Set address
-C:0003c1 bbae      	out		EEARL, REG_X_LSB
-C:0003c2 bbbf      	out		EEARH, REG_X_MSB
+C:000395 bbae      	out		EEARL, REG_X_LSB
+C:000396 bbbf      	out		EEARH, REG_X_MSB
          
          	; Set data
-C:0003c3 bb0d      	out		EEDR, REG_TEMP_R16
+C:000397 bb0d      	out		EEDR, REG_TEMP_R16
          
          	; Ecriture a l'adresse 'REG_X_MSB:REG_X_LSB' d'un byte
-C:0003c4 98e5      	cbi		EECR, EEPM1
-C:0003c5 98e4      	cbi		EECR, EEPM0
+C:000398 98e5      	cbi		EECR, EEPM1
+C:000399 98e4      	cbi		EECR, EEPM0
          
          	; Sequence interruptible
-C:0003c6 94f8      	cli
-C:0003c7 9ae2      	sbi		EECR, EEMPE		; Start EEPROM write
-C:0003c8 9ae1      	sbi		EECR, EEPE
-C:0003c9 9478      	sei
+C:00039a 94f8      	cli
+C:00039b 9ae2      	sbi		EECR, EEMPE		; Start EEPROM write
+C:00039c 9ae1      	sbi		EECR, EEPE
+C:00039d 9478      	sei
          	; Fin: Sequence interruptible
          	; Fin: Ecriture a l'adresse 'REG_X_MSB:REG_X_LSB' d'un byte
          
           eeprom_write_byte_wait:
-C:0003ca 99e1      	sbic		EECR, EEPE
-C:0003cb cffe      	rjmp		eeprom_write_byte_wait
+C:00039e 99e1      	sbic		EECR, EEPE
+C:00039f cffe      	rjmp		eeprom_write_byte_wait
          
-C:0003cc 9508      	ret
+C:0003a0 9508      	ret
          ; ---------
          
          ;--------------------
@@ -3182,66 +3113,66 @@ C:0003cc 9508      	ret
          ;--------------------
           set_infos_from_eeprom:
          	; => Prompt "### EEPROM..."
-C:0003cd e028      	ldi		REG_TEMP_R18, 8
-C:0003ce e0f7      	ldi		REG_Z_MSB, ((text_prompt_eeprom_version << 1) / 256)
-C:0003cf ede4      	ldi		REG_Z_LSB, ((text_prompt_eeprom_version << 1) % 256)
-C:0003d0 dfa8      	rcall		push_text_in_fifo_tx
+C:0003a1 e028      	ldi		REG_TEMP_R18, 8
+C:0003a2 e0f7      	ldi		REG_Z_MSB, ((text_prompt_eeprom_version << 1) / 256)
+C:0003a3 e7ec      	ldi		REG_Z_LSB, ((text_prompt_eeprom_version << 1) % 256)
+C:0003a4 dfa8      	rcall		push_text_in_fifo_tx
          
          	; Lecture de la version de l'EEPROM definie dans l'EEPROM
-C:0003d1 e0b0      	ldi		REG_X_MSB, high(EEPROM_ADDR_VERSION)
-C:0003d2 e0a0      	ldi		REG_X_LSB, low(EEPROM_ADDR_VERSION)
-C:0003d3 dfb9      	rcall		push_text_in_fifo_tx_from_eeprom
-C:0003d4 d2d6      	rcall		print_line_feed
+C:0003a5 e0b0      	ldi		REG_X_MSB, high(EEPROM_ADDR_VERSION)
+C:0003a6 e0a0      	ldi		REG_X_LSB, low(EEPROM_ADDR_VERSION)
+C:0003a7 dfb9      	rcall		push_text_in_fifo_tx_from_eeprom
+C:0003a8 d2d6      	rcall		print_line_feed
          
          	; => Prompt "### Type..."
-C:0003d5 e0f7      	ldi		REG_Z_MSB, ((text_prompt_type << 1) / 256)
-C:0003d6 eee2      	ldi		REG_Z_LSB, ((text_prompt_type << 1) % 256)
-C:0003d7 dfa1      	rcall		push_text_in_fifo_tx
+C:0003a9 e0f7      	ldi		REG_Z_MSB, ((text_prompt_type << 1) / 256)
+C:0003aa e8ea      	ldi		REG_Z_LSB, ((text_prompt_type << 1) % 256)
+C:0003ab dfa1      	rcall		push_text_in_fifo_tx
          
          	; Lecture du type de la platine defini dans l'EEPROM
-C:0003d8 e0b0      	ldi		REG_X_MSB, high(EEPROM_ADDR_TYPE);
-C:0003d9 e0a8      	ldi		REG_X_LSB, low(EEPROM_ADDR_TYPE);
-C:0003da dfdf      	rcall		eeprom_read_byte
+C:0003ac e0b0      	ldi		REG_X_MSB, high(EEPROM_ADDR_TYPE);
+C:0003ad e0a8      	ldi		REG_X_LSB, low(EEPROM_ADDR_TYPE);
+C:0003ae dfdf      	rcall		eeprom_read_byte
          
-C:0003db 9300 0145 	sts		G_HEADER_TYPE_PLATINE, REG_TEMP_R16
+C:0003af 9300 0145 	sts		G_HEADER_TYPE_PLATINE, REG_TEMP_R16
          
-C:0003dd d2b4      	rcall		convert_and_put_fifo_tx
-C:0003de d2cc      	rcall		print_line_feed
+C:0003b1 d2b4      	rcall		convert_and_put_fifo_tx
+C:0003b2 d2cc      	rcall		print_line_feed
          
          	; => Prompt "### Id..."
-C:0003df e0f7      	ldi		REG_Z_MSB, ((text_prompt_id << 1) / 256)
-C:0003e0 eeee      	ldi		REG_Z_LSB, ((text_prompt_id << 1) % 256)
-C:0003e1 df97      	rcall		push_text_in_fifo_tx
+C:0003b3 e0f7      	ldi		REG_Z_MSB, ((text_prompt_id << 1) / 256)
+C:0003b4 e9e6      	ldi		REG_Z_LSB, ((text_prompt_id << 1) % 256)
+C:0003b5 df97      	rcall		push_text_in_fifo_tx
          	
          	; Lecture de l'Id de la palatine defini dans l'EEPROM
-C:0003e2 e0b0      	ldi		REG_X_MSB, high(EEPROM_ADDR_ID);
-C:0003e3 e0a9      	ldi		REG_X_LSB, low(EEPROM_ADDR_ID);
-C:0003e4 dfd5      	rcall		eeprom_read_byte
+C:0003b6 e0b0      	ldi		REG_X_MSB, high(EEPROM_ADDR_ID);
+C:0003b7 e0a9      	ldi		REG_X_LSB, low(EEPROM_ADDR_ID);
+C:0003b8 dfd5      	rcall		eeprom_read_byte
          
-C:0003e5 9300 0146 	sts		G_HEADER_INDEX_PLATINE, REG_TEMP_R16
+C:0003b9 9300 0146 	sts		G_HEADER_INDEX_PLATINE, REG_TEMP_R16
          
-C:0003e7 d2aa      	rcall		convert_and_put_fifo_tx
-C:0003e8 d2c2      	rcall		print_line_feed
+C:0003bb d2aa      	rcall		convert_and_put_fifo_tx
+C:0003bc d2c2      	rcall		print_line_feed
          	; Fin: Preparation emission des prompts d'accueil
          
-C:0003e9 9508      	ret
+C:0003bd 9508      	ret
          ; ---------
          
           text_prompt_eeprom_version:
           .db	"### EEPROM: ", CHAR_NULL, CHAR_NULL
-C:0003EA 23232320454550524F4D3A200000
+C:0003BE 23232320454550524F4D3A200000
          
           text_prompt_type:
           .db	"### Type: ", CHAR_NULL, CHAR_NULL
-C:0003F1 23232320547970653A200000
+C:0003C5 23232320547970653A200000
          
           text_prompt_id:
           .db	"### Id: ", CHAR_NULL, CHAR_NULL
-C:0003F7 2323232049643A200000
+C:0003CB 2323232049643A200000
          
           text_eeprom_error:
           .db	"Err: EEPROM at ", CHAR_NULL
-C:0003FC 4572723A20454550524F4D2061742000
+C:0003D0 4572723A20454550524F4D2061742000
          
          ; End of file
          
@@ -3332,91 +3263,91 @@ D:000105    G_TEST_VALUES_ZONE:			.byte		(2 * 32)		; Page de 32 mots
           interpret_command:
          
           interpret_command_loop:
-C:000404 94f8      	cli
-C:000405 df00      	rcall		uart_fifo_rx_read			; Lecture atomique
-C:000406 9478      	sei
+C:0003d8 94f8      	cli
+C:0003d9 df00      	rcall		uart_fifo_rx_read			; Lecture atomique
+C:0003da 9478      	sei
          
-C:000407 f5be      	brtc		interpret_command_rtn	; Nouvelle donnee disponible ?
+C:0003db f5be      	brtc		interpret_command_rtn	; Nouvelle donnee disponible ?
          
-C:000408 9110 00fb 	lds		REG_TEMP_R17, G_TEST_FLAGS
+C:0003dc 9110 00fb 	lds		REG_TEMP_R17, G_TEST_FLAGS
          
          	; Oui. -> Caractere dans 'REG_R2'
-C:00040a 2d02      	mov		REG_TEMP_R16, REG_R2
-C:00040b 330c      	cpi		REG_TEMP_R16, CHAR_COMMAND_REC
-C:00040c f421      	brne		interpret_command_loop_more
+C:0003de 2d02      	mov		REG_TEMP_R16, REG_R2
+C:0003df 330c      	cpi		REG_TEMP_R16, CHAR_COMMAND_REC
+C:0003e0 f421      	brne		interpret_command_loop_more
          
          	; Le prochain caractere sera le type de la commande
-C:00040d 6011      	sbr		REG_TEMP_R17, FLG_TEST_COMMAND_TYPE_MSK
-C:00040e 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
-C:000410 cff3      	rjmp		interpret_command_loop
+C:0003e1 6011      	sbr		REG_TEMP_R17, FLG_TEST_COMMAND_TYPE_MSK
+C:0003e2 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
+C:0003e4 cff3      	rjmp		interpret_command_loop
          
           interpret_command_loop_more:
-C:000411 320d      	cpi		REG_TEMP_R16, CHAR_COMMAND_MORE
-C:000412 f421      	brne		interpret_command_loop_more_2
+C:0003e5 320d      	cpi		REG_TEMP_R16, CHAR_COMMAND_MORE
+C:0003e6 f421      	brne		interpret_command_loop_more_2
          
-C:000413 6014      	sbr		REG_TEMP_R17, FLG_TEST_COMMAND_MORE_MSK
-C:000414 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
-C:000416 cfed      	rjmp		interpret_command_loop
+C:0003e7 6014      	sbr		REG_TEMP_R17, FLG_TEST_COMMAND_MORE_MSK
+C:0003e8 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
+C:0003ea cfed      	rjmp		interpret_command_loop
          
           interpret_command_loop_more_2:
-C:000417 320b      	cpi		REG_TEMP_R16, CHAR_COMMAND_PLUS
-C:000418 f441      	brne		interpret_command_loop_more_2A
+C:0003eb 320b      	cpi		REG_TEMP_R16, CHAR_COMMAND_PLUS
+C:0003ec f441      	brne		interpret_command_loop_more_2A
          
          	; Effacement de 'G_TEST_VALUES_ZONE' sur le 1st 'CHAR_COMMAND_PLUS
-C:000419 ff13      	sbrs		REG_TEMP_R17, FLG_TEST_COMMAND_PLUS_IDX
-C:00041a d213      	rcall		raz_value_into_zone
+C:0003ed ff13      	sbrs		REG_TEMP_R17, FLG_TEST_COMMAND_PLUS_IDX
+C:0003ee d213      	rcall		raz_value_into_zone
          
          	; Ajout 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE' a 'G_TEST_VALUES_ZONE'
          	; precedent 'CHAR_COMMAND_PLUS'
-C:00041b fd13      	sbrc		REG_TEMP_R17, FLG_TEST_COMMAND_PLUS_IDX
-C:00041c d225      	rcall		add_value_into_zone
+C:0003ef fd13      	sbrc		REG_TEMP_R17, FLG_TEST_COMMAND_PLUS_IDX
+C:0003f0 d225      	rcall		add_value_into_zone
          
          	; Force maj 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
-C:00041d 601c      	sbr		REG_TEMP_R17, (FLG_TEST_COMMAND_MORE_MSK | FLG_TEST_COMMAND_PLUS_MSK)
-C:00041e 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
-C:000420 cfe3      	rjmp		interpret_command_loop
+C:0003f1 601c      	sbr		REG_TEMP_R17, (FLG_TEST_COMMAND_MORE_MSK | FLG_TEST_COMMAND_PLUS_MSK)
+C:0003f2 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
+C:0003f4 cfe3      	rjmp		interpret_command_loop
          
           interpret_command_loop_more_2A:
-C:000421 300a      	cpi		REG_TEMP_R16, CHAR_LF
-C:000422 f429      	brne		interpret_command_loop_more_3
+C:0003f5 300a      	cpi		REG_TEMP_R16, CHAR_LF
+C:0003f6 f429      	brne		interpret_command_loop_more_3
          
          	; Ajout 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE' a 'G_TEST_VALUES_ZONE'
-C:000423 fd13      	sbrc		REG_TEMP_R17, FLG_TEST_COMMAND_PLUS_IDX
-C:000424 d21d      	rcall		add_value_into_zone
+C:0003f7 fd13      	sbrc		REG_TEMP_R17, FLG_TEST_COMMAND_PLUS_IDX
+C:0003f8 d21d      	rcall		add_value_into_zone
          
-C:000425 d033      	rcall		exec_command								; Execution de la commande
+C:0003f9 d033      	rcall		exec_command								; Execution de la commande
          
          	; Lancement de l'emission
-C:000426 6490      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
-C:000427 c017      	rjmp		interpret_command_rtn
+C:0003fa 6490      	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
+C:0003fb c017      	rjmp		interpret_command_rtn
          
           interpret_command_loop_more_3:
-C:000428 ff10      	sbrs		REG_TEMP_R17, FLG_TEST_COMMAND_TYPE_IDX
-C:000429 c013      	rjmp		interpret_command_loop_more_4
+C:0003fc ff10      	sbrs		REG_TEMP_R17, FLG_TEST_COMMAND_TYPE_IDX
+C:0003fd c013      	rjmp		interpret_command_loop_more_4
          
-C:00042a 9300 00fc 	sts		G_TEST_COMMAND_TYPE, REG_TEMP_R16	; Save command type
+C:0003fe 9300 00fc 	sts		G_TEST_COMMAND_TYPE, REG_TEMP_R16	; Save command type
          
          	; Raz des donnees de la commande a recevoir
-C:00042c 2700      	clr		REG_TEMP_R16
-C:00042d 9300 00fd 	sts		G_TEST_VALUE_MSB, REG_TEMP_R16
-C:00042f 9300 00fe 	sts		G_TEST_VALUE_LSB, REG_TEMP_R16
-C:000431 9300 00ff 	sts		G_TEST_VALUE_MSB_MORE, REG_TEMP_R16
-C:000433 9300 0100 	sts		G_TEST_VALUE_LSB_MORE, REG_TEMP_R16
+C:000400 2700      	clr		REG_TEMP_R16
+C:000401 9300 00fd 	sts		G_TEST_VALUE_MSB, REG_TEMP_R16
+C:000403 9300 00fe 	sts		G_TEST_VALUE_LSB, REG_TEMP_R16
+C:000405 9300 00ff 	sts		G_TEST_VALUE_MSB_MORE, REG_TEMP_R16
+C:000407 9300 0100 	sts		G_TEST_VALUE_LSB_MORE, REG_TEMP_R16
          
-C:000435 9100 0103 	lds		REG_TEMP_R16, G_TEST_VALUES_IDX_WRK
-C:000437 9300 0104 	sts		G_TEST_VALUES_IDX, REG_TEMP_R16
+C:000409 9100 0103 	lds		REG_TEMP_R16, G_TEST_VALUES_IDX_WRK
+C:00040b 9300 0104 	sts		G_TEST_VALUES_IDX, REG_TEMP_R16
          
          	; Effacement pour prendre la valeur qui suit avec eventuellement des donnees a suivre
-C:000439 7f12      	cbr		REG_TEMP_R17, (FLG_TEST_COMMAND_TYPE_MSK | FLG_TEST_COMMAND_MORE_MSK | FLG_TEST_COMMAND_PLUS_MSK)
-C:00043a 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
-C:00043c cfc7      	rjmp		interpret_command_loop
+C:00040d 7f12      	cbr		REG_TEMP_R17, (FLG_TEST_COMMAND_TYPE_MSK | FLG_TEST_COMMAND_MORE_MSK | FLG_TEST_COMMAND_PLUS_MSK)
+C:00040e 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17
+C:000410 cfc7      	rjmp		interpret_command_loop
          
           interpret_command_loop_more_4:
-C:00043d d1c3      	rcall		char_to_hex_incremental		; Construction de 'G_TEST_VALUE_MSB:G_TEST_VALUE_LSB'
-C:00043e cfc5      	rjmp		interpret_command_loop
+C:000411 d1c3      	rcall		char_to_hex_incremental		; Construction de 'G_TEST_VALUE_MSB:G_TEST_VALUE_LSB'
+C:000412 cfc5      	rjmp		interpret_command_loop
          
           interpret_command_rtn:
-C:00043f 9508      	ret
+C:000413 9508      	ret
          ; ---------
          
          ; ---------
@@ -3427,109 +3358,109 @@ C:00043f 9508      	ret
          	; Echo de la commande reconnue avec uniquement l'adresse
          	; => ie. "[34>zA987-4321]"
          	;
-C:000440 9110 00fb 	lds		REG_TEMP_R17, G_TEST_FLAGS
-C:000442 7e1f      	cbr		REG_TEMP_R17, FLG_TEST_COMMAND_ERROR_MSK
+C:000414 9110 00fb 	lds		REG_TEMP_R17, G_TEST_FLAGS
+C:000416 7e1f      	cbr		REG_TEMP_R17, FLG_TEST_COMMAND_ERROR_MSK
          
-C:000443 e30e      	ldi		REG_TEMP_R16, CHAR_COMMAND_SEND
-C:000444 c004      	rjmp		print_command
+C:000417 e30e      	ldi		REG_TEMP_R16, CHAR_COMMAND_SEND
+C:000418 c004      	rjmp		print_command
          
           uos_print_command_ko:
           print_command_ko:
          	; Echo de la commande non reconnue avec ses parametres
          	; => ie. "34?zA987-4321" si commande non reconnue
          	;
-C:000445 9110 00fb 	lds		REG_TEMP_R17, G_TEST_FLAGS
-C:000447 6110      	sbr		REG_TEMP_R17, FLG_TEST_COMMAND_ERROR_MSK
+C:000419 9110 00fb 	lds		REG_TEMP_R17, G_TEST_FLAGS
+C:00041b 6110      	sbr		REG_TEMP_R17, FLG_TEST_COMMAND_ERROR_MSK
          
-C:000448 e30f      	ldi		REG_TEMP_R16, CHAR_COMMAND_UNKNOWN
+C:00041c e30f      	ldi		REG_TEMP_R16, CHAR_COMMAND_UNKNOWN
          
           print_command:
-C:000449 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17					; Maj Flag 'FLG_TEST_COMMAND_ERROR'
+C:00041d 9310 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R17					; Maj Flag 'FLG_TEST_COMMAND_ERROR'
          
-C:00044b df3c      	rcall		push_1_char_in_fifo_tx						; '>' eor '?'
+C:00041f df3c      	rcall		push_1_char_in_fifo_tx						; '>' eor '?'
          
-C:00044c 9100 00fc 	lds		REG_TEMP_R16, G_TEST_COMMAND_TYPE
-C:00044e df39      	rcall		push_1_char_in_fifo_tx
+C:000420 9100 00fc 	lds		REG_TEMP_R16, G_TEST_COMMAND_TYPE
+C:000422 df39      	rcall		push_1_char_in_fifo_tx
          
          	; 1st argument sur 16 bits de la commande
-C:00044f 9100 00fd 	lds		REG_TEMP_R16, G_TEST_VALUE_MSB
-C:000451 d240      	rcall		convert_and_put_fifo_tx
+C:000423 9100 00fd 	lds		REG_TEMP_R16, G_TEST_VALUE_MSB
+C:000425 d240      	rcall		convert_and_put_fifo_tx
          
-C:000452 9100 00fe 	lds		REG_TEMP_R16, G_TEST_VALUE_LSB
-C:000454 d23d      	rcall		convert_and_put_fifo_tx
+C:000426 9100 00fe 	lds		REG_TEMP_R16, G_TEST_VALUE_LSB
+C:000428 d23d      	rcall		convert_and_put_fifo_tx
          	; Fin: Echo de la commande avec uniquement l'adresse
          
-C:000455 e0fe      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
-C:000456 e0e2      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
-C:000457 df21      	rcall		push_text_in_fifo_tx
+C:000429 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
+C:00042a eaea      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
+C:00042b df21      	rcall		push_text_in_fifo_tx
          
-C:000458 9508      	ret
+C:00042c 9508      	ret
          ; ---------
          
          ; ---------
          ; Execution de la commande recue
          ; ---------
           exec_command:
-C:000459 e50b      	ldi		REG_TEMP_R16, '['
-C:00045a df2d      	rcall		push_1_char_in_fifo_tx
+C:00042d e50b      	ldi		REG_TEMP_R16, '['
+C:00042e df2d      	rcall		push_1_char_in_fifo_tx
          
          	; Comptabilisation et print des executions
-C:00045b 9100 0066 	lds		REG_TEMP_R16, G_NBR_VALUE_TRACE
-C:00045d 9503      	inc		REG_TEMP_R16
-C:00045e 9300 0066 	sts		G_NBR_VALUE_TRACE, REG_TEMP_R16
+C:00042f 9100 0066 	lds		REG_TEMP_R16, G_NBR_VALUE_TRACE
+C:000431 9503      	inc		REG_TEMP_R16
+C:000432 9300 0066 	sts		G_NBR_VALUE_TRACE, REG_TEMP_R16
          
          	; Compteur d'execution commande sur 8 bits
-C:000460 9100 0066 	lds		REG_TEMP_R16, G_NBR_VALUE_TRACE
-C:000462 d22f      	rcall		convert_and_put_fifo_tx
+C:000434 9100 0066 	lds		REG_TEMP_R16, G_NBR_VALUE_TRACE
+C:000436 d22f      	rcall		convert_and_put_fifo_tx
          
          	; Fin: Comptabilisation et print des executions
          
          	; Liste des commandes supportees
-C:000463 9100 00fc 	lds		REG_TEMP_R16, G_TEST_COMMAND_TYPE
+C:000437 9100 00fc 	lds		REG_TEMP_R16, G_TEST_COMMAND_TYPE
          
           exec_command_test_a_min:
-C:000465 3601      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_A_MIN
-C:000466 f0d1      	breq		exec_command_type_A
+C:000439 3601      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_A_MIN
+C:00043a f0d1      	breq		exec_command_type_A
          
           exec_command_test_b_maj:
-C:000467 3402      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_B_MAJ
-C:000468 f409      	brne		exec_command_test_f_min
-C:000469 c065      	rjmp		exec_command_type_B
+C:00043b 3402      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_B_MAJ
+C:00043c f409      	brne		exec_command_test_f_min
+C:00043d c065      	rjmp		exec_command_type_B
          
           exec_command_test_f_min:
-C:00046a 3606      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_F_MIN
-C:00046b f409      	brne		exec_command_test_s_read
-C:00046c c118      	rjmp		exec_command_type_f_min
+C:00043e 3606      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_F_MIN
+C:00043f f409      	brne		exec_command_test_s_read
+C:000440 c118      	rjmp		exec_command_type_f_min
          
           exec_command_test_s_read:
-C:00046d 3703      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_S_READ
-C:00046e f409      	brne		exec_command_test_s_write
-C:00046f c07d      	rjmp		exec_command_type_s_read
+C:000441 3703      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_S_READ
+C:000442 f409      	brne		exec_command_test_s_write
+C:000443 c07d      	rjmp		exec_command_type_s_read
          
           exec_command_test_s_write:
-C:000470 3503      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_S_WRITE
-C:000471 f409      	brne		exec_command_test_e_read
-C:000472 c09d      	rjmp		exec_command_type_s_write
+C:000444 3503      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_S_WRITE
+C:000445 f409      	brne		exec_command_test_e_read
+C:000446 c09d      	rjmp		exec_command_type_s_write
          
           exec_command_test_e_read:
-C:000473 3605      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_E_READ
-C:000474 f409      	brne		exec_command_test_e_write
-C:000475 c0bc      	rjmp		exec_command_type_e_read
+C:000447 3605      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_E_READ
+C:000448 f409      	brne		exec_command_test_e_write
+C:000449 c0bc      	rjmp		exec_command_type_e_read
          
           exec_command_test_e_write:
-C:000476 3405      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_E_WRITE
-C:000477 f409      	brne		exec_command_test_p
-C:000478 c0db      	rjmp		exec_command_type_e_write
+C:00044a 3405      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_E_WRITE
+C:00044b f409      	brne		exec_command_test_p
+C:00044c c0db      	rjmp		exec_command_type_e_write
          
           exec_command_test_p:
-C:000479 3700      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_P_READ
-C:00047a f409      	brne		exec_command_test_x
-C:00047b c138      	rjmp		exec_command_type_p_read
+C:00044d 3700      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_P_READ
+C:00044e f409      	brne		exec_command_test_x
+C:00044f c138      	rjmp		exec_command_type_p_read
          
           exec_command_test_x:
-C:00047c 3708      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_X
-C:00047d f409      	brne		exec_command_ko
-C:00047e c154      	rjmp		exec_command_type_x
+C:000450 3708      	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_X
+C:000451 f409      	brne		exec_command_ko
+C:000452 c154      	rjmp		exec_command_type_x
          	; Fin: Liste des commandes supportees par uOS
          
           exec_command_ko:
@@ -3538,10 +3469,10 @@ C:00047e c154      	rjmp		exec_command_type_x
          	;
           #ifdef USE_DS18B20
           #else
-C:00047f dfc5      	rcall		print_command_ko			; Commande non reconnue
+C:000453 dfc5      	rcall		print_command_ko			; Commande non reconnue
           #endif
          
-C:000480 9508      	ret
+C:000454 9508      	ret
          ; ---------
          
          ; ---------
@@ -3549,125 +3480,125 @@ C:000480 9508      	ret
          ; ---------
           exec_command_type_A:
          
-C:000481 dfbe      	rcall		print_command_ok
+C:000455 dfbe      	rcall		print_command_ok
          
-C:000482 27bb      	clr		REG_X_MSB			; Calcul a partir de l'adresse 0x0000
-C:000483 27aa      	clr		REG_X_LSB
+C:000456 27bb      	clr		REG_X_MSB			; Calcul a partir de l'adresse 0x0000
+C:000457 27aa      	clr		REG_X_LSB
          
          	; Raz CRC8
-C:000484 2700      	clr		REG_TEMP_R16
-C:000485 9300 0068 	sts		G_CALC_CRC8, REG_TEMP_R16
+C:000458 2700      	clr		REG_TEMP_R16
+C:000459 9300 0068 	sts		G_CALC_CRC8, REG_TEMP_R16
          
           exec_command_A_loop_0:
          	; Impression de 'X' ("[0xHHHH] ")
          	; Remarque: Division par 2 car dump de word ;-)
-C:000487 95b6      	lsr		REG_X_MSB
-C:000488 95a7      	ror		REG_X_LSB
-C:000489 d23a      	rcall		print_2_bytes_hexa
+C:00045b 95b6      	lsr		REG_X_MSB
+C:00045c 95a7      	ror		REG_X_LSB
+C:00045d d23a      	rcall		print_2_bytes_hexa
          
          	; Retablissement de 'X' qui est toujours pair ici
-C:00048a 0faa      	lsl		REG_X_LSB
-C:00048b 1fbb      	rol		REG_X_MSB
+C:00045e 0faa      	lsl		REG_X_LSB
+C:00045f 1fbb      	rol		REG_X_MSB
          
          	; Impression du dump ("[0x....]")
          	; => TODO: Si saut 'end_of_program' est de la forme 0xhhh0, pas de valeur apres [0x...]
-C:00048c e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
-C:00048d efec      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
-C:00048e deea      	rcall		push_text_in_fifo_tx
+C:000460 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
+C:000461 eae4      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
+C:000462 deea      	rcall		push_text_in_fifo_tx
          
-C:00048f e220      	ldi		REG_TEMP_R18, 32
+C:000463 e220      	ldi		REG_TEMP_R18, 32
          
           exec_command_A_loop_1:
          	; Valeur de la memoire programme indexee par 'REG_X_MSB:REG_X_LSB'
-C:000490 01fd      	movw		REG_Z_LSB, REG_X_LSB
-C:000491 9611      	adiw		REG_X_LSB, 1								; Preparation prochain byte
+C:000464 01fd      	movw		REG_Z_LSB, REG_X_LSB
+C:000465 9611      	adiw		REG_X_LSB, 1								; Preparation prochain byte
          
          	; Calcul jusqu'a l'adresse 'end_of_program' incluse
-C:000492 e001      	ldi		REG_TEMP_R16, 0x01
-C:000493 230a      	and		REG_TEMP_R16, REG_X_LSB
-C:000494 f059      	breq		exec_command_A_loop_1_cont_d			; Lecture par mot
+C:000466 e001      	ldi		REG_TEMP_R16, 0x01
+C:000467 230a      	and		REG_TEMP_R16, REG_X_LSB
+C:000468 f059      	breq		exec_command_A_loop_1_cont_d			; Lecture par mot
          
-C:000495 93bf      	push		REG_X_MSB
-C:000496 93af      	push		REG_X_LSB
-C:000497 95b6      	lsr		REG_X_MSB
-C:000498 95a7      	ror		REG_X_LSB
+C:000469 93bf      	push		REG_X_MSB
+C:00046a 93af      	push		REG_X_LSB
+C:00046b 95b6      	lsr		REG_X_MSB
+C:00046c 95a7      	ror		REG_X_LSB
          
-C:000499 e00b      	ldi		REG_TEMP_R16, low(end_of_program - 1)
-C:00049a 170a      	cp			REG_TEMP_R16, REG_X_LSB
+C:00046d ed0f      	ldi		REG_TEMP_R16, low(end_of_program - 1)
+C:00046e 170a      	cp			REG_TEMP_R16, REG_X_LSB
          
-C:00049b e007      	ldi		REG_TEMP_R16, high(end_of_program - 1)
-C:00049c 070b      	cpc		REG_TEMP_R16, REG_X_MSB
+C:00046f e006      	ldi		REG_TEMP_R16, high(end_of_program - 1)
+C:000470 070b      	cpc		REG_TEMP_R16, REG_X_MSB
          
-C:00049d 91af      	pop		REG_X_LSB
-C:00049e 91bf      	pop		REG_X_MSB
-C:00049f f092      	brmi		exec_command_A_end
+C:000471 91af      	pop		REG_X_LSB
+C:000472 91bf      	pop		REG_X_MSB
+C:000473 f092      	brmi		exec_command_A_end
          	; Fin: Calcul jusqu'a l'adresse 'end_of_program' incluse
          
           exec_command_A_loop_1_cont_d:
-C:0004a0 e001      	ldi		REG_TEMP_R16, 0x01
-C:0004a1 27e0      	eor		REG_Z_LSB, REG_TEMP_R16		; Lecture MSB puis LSB
-C:0004a2 9104      	lpm		REG_TEMP_R16, Z
-C:0004a3 930f      	push		REG_TEMP_R16
-C:0004a4 d1ed      	rcall		convert_and_put_fifo_tx
+C:000474 e001      	ldi		REG_TEMP_R16, 0x01
+C:000475 27e0      	eor		REG_Z_LSB, REG_TEMP_R16		; Lecture MSB puis LSB
+C:000476 9104      	lpm		REG_TEMP_R16, Z
+C:000477 930f      	push		REG_TEMP_R16
+C:000478 d1ed      	rcall		convert_and_put_fifo_tx
          
-C:0004a5 910f      	pop		REG_TEMP_R16
-C:0004a6 dc47      	rcall		calc_crc8_maxim
+C:000479 910f      	pop		REG_TEMP_R16
+C:00047a dc73      	rcall		calc_crc8_maxim
          
-C:0004a7 952a      	dec		REG_TEMP_R18
-C:0004a8 f739      	brne		exec_command_A_loop_1
+C:00047b 952a      	dec		REG_TEMP_R18
+C:00047c f739      	brne		exec_command_A_loop_1
          
-C:0004a9 e50d      	ldi		REG_TEMP_R16, ']'
-C:0004aa dedd      	rcall		push_1_char_in_fifo_tx
+C:00047d e50d      	ldi		REG_TEMP_R16, ']'
+C:00047e dedd      	rcall		push_1_char_in_fifo_tx
          
-C:0004ab 93af      	push		REG_X_LSB
-C:0004ac 91a0 0068 	lds		REG_X_LSB, G_CALC_CRC8
-C:0004ae d206      	rcall		print_1_byte_hexa
-C:0004af d1fb      	rcall		print_line_feed
-C:0004b0 91af      	pop		REG_X_LSB
+C:00047f 93af      	push		REG_X_LSB
+C:000480 91a0 0068 	lds		REG_X_LSB, G_CALC_CRC8
+C:000482 d206      	rcall		print_1_byte_hexa
+C:000483 d1fb      	rcall		print_line_feed
+C:000484 91af      	pop		REG_X_LSB
          
-C:0004b1 cfd5      	rjmp		exec_command_A_loop_0
+C:000485 cfd5      	rjmp		exec_command_A_loop_0
          
           exec_command_A_end:
-C:0004b2 e50d      	ldi		REG_TEMP_R16, ']'
-C:0004b3 ded4      	rcall		push_1_char_in_fifo_tx
+C:000486 e50d      	ldi		REG_TEMP_R16, ']'
+C:000487 ded4      	rcall		push_1_char_in_fifo_tx
          
-C:0004b4 93af      	push		REG_X_LSB
-C:0004b5 91a0 0068 	lds		REG_X_LSB, G_CALC_CRC8
-C:0004b7 d1fd      	rcall		print_1_byte_hexa
-C:0004b8 d1f2      	rcall		print_line_feed
-C:0004b9 91af      	pop		REG_X_LSB
+C:000488 93af      	push		REG_X_LSB
+C:000489 91a0 0068 	lds		REG_X_LSB, G_CALC_CRC8
+C:00048b d1fd      	rcall		print_1_byte_hexa
+C:00048c d1f2      	rcall		print_line_feed
+C:00048d 91af      	pop		REG_X_LSB
          
          	; Impression du resultat comme "[CRC8-MAXIM [0x0000][0x06f6][0x3c]]"
-C:0004ba 93ff      	push		REG_Z_MSB
-C:0004bb 93ef      	push		REG_Z_LSB
-C:0004bc e0fc      	ldi		REG_Z_MSB, ((text_crc8_maxim_label << 1) / 256)
-C:0004bd ecea      	ldi		REG_Z_LSB, ((text_crc8_maxim_label << 1) % 256)
-C:0004be deba      	rcall		push_text_in_fifo_tx
-C:0004bf 91ef      	pop		REG_Z_LSB
-C:0004c0 91ff      	pop		REG_Z_MSB
+C:00048e 93ff      	push		REG_Z_MSB
+C:00048f 93ef      	push		REG_Z_LSB
+C:000490 e0fc      	ldi		REG_Z_MSB, ((text_crc8_maxim_label << 1) / 256)
+C:000491 e7e2      	ldi		REG_Z_LSB, ((text_crc8_maxim_label << 1) % 256)
+C:000492 deba      	rcall		push_text_in_fifo_tx
+C:000493 91ef      	pop		REG_Z_LSB
+C:000494 91ff      	pop		REG_Z_MSB
          
-C:0004c1 e0d0      	ldi		REG_Y_MSB, 0
-C:0004c2 e0c0      	ldi		REG_Y_LSB, 0
-C:0004c3 d22a      	rcall		print_y_reg
+C:000495 e0d0      	ldi		REG_Y_MSB, 0
+C:000496 e0c0      	ldi		REG_Y_LSB, 0
+C:000497 d22a      	rcall		print_y_reg
          
          	; Recadrage pour une adresse "imprimable"
-C:0004c4 95f6      	lsr		REG_Z_MSB
-C:0004c5 95e7      	ror		REG_Z_LSB
-C:0004c6 9731      	sbiw		REG_Z_LSB, 1
-C:0004c7 d22f      	rcall		print_z_reg
+C:000498 95f6      	lsr		REG_Z_MSB
+C:000499 95e7      	ror		REG_Z_LSB
+C:00049a 9731      	sbiw		REG_Z_LSB, 1
+C:00049b d22f      	rcall		print_z_reg
          	; Fin: Impression du resultat comme "[CRC8-MAXIM [0x0000][0x06f6][0x3c]]"
          
-C:0004c8 93af      	push		REG_X_LSB
-C:0004c9 91a0 0068 	lds		REG_X_LSB, G_CALC_CRC8
-C:0004cb d1e9      	rcall		print_1_byte_hexa
-C:0004cc d1de      	rcall		print_line_feed
-C:0004cd 91af      	pop		REG_X_LSB
+C:00049c 93af      	push		REG_X_LSB
+C:00049d 91a0 0068 	lds		REG_X_LSB, G_CALC_CRC8
+C:00049f d1e9      	rcall		print_1_byte_hexa
+C:0004a0 d1de      	rcall		print_line_feed
+C:0004a1 91af      	pop		REG_X_LSB
          
           exec_command_A_rtn:
           #if 0
           #endif
          
-C:0004ce 9508      	ret
+C:0004a2 9508      	ret
          ; ---------
          
          ; ---------
@@ -3684,48 +3615,48 @@ C:0004ce 9508      	ret
          ; ---------
           exec_command_type_B:
          	; Recuperation de l'index
-C:0004cf 27bb      	clr		REG_X_MSB
-C:0004d0 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
+C:0004a3 27bb      	clr		REG_X_MSB
+C:0004a4 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
          
          	; Multiplication par 4 pour acceder a chaque quadruplet de la table 'const_for_bauds_rate'
          	; => Pas de report dans 'REG_X_MSB' car 6 resultats dans la plage [0, 4, 8, 12, 16, 20 et 24]]
-C:0004d2 0faa      	lsl		REG_X_LSB
-C:0004d3 0faa      	lsl		REG_X_LSB
+C:0004a6 0faa      	lsl		REG_X_LSB
+C:0004a7 0faa      	lsl		REG_X_LSB
          
-C:0004d4 e0f7      	ldi		REG_Z_MSB, high(const_for_bauds_rate << 1)
-C:0004d5 e5e8      	ldi		REG_Z_LSB, low(const_for_bauds_rate << 1)
-C:0004d6 0fea      	add		REG_Z_LSB, REG_X_LSB	
-C:0004d7 1ffb      	adc		REG_Z_MSB, REG_X_MSB	
+C:0004a8 e0f7      	ldi		REG_Z_MSB, high(const_for_bauds_rate << 1)
+C:0004a9 e0e0      	ldi		REG_Z_LSB, low(const_for_bauds_rate << 1)
+C:0004aa 0fea      	add		REG_Z_LSB, REG_X_LSB	
+C:0004ab 1ffb      	adc		REG_Z_MSB, REG_X_MSB	
          
          	; Adresse du dernier quadruplet cadree sur un mot
-C:0004d8 e710      	ldi		REG_TEMP_R17, low((const_for_bauds_rate_end - 1 - 1) << 1)
-C:0004d9 171e      	cp			REG_TEMP_R17, REG_Z_LSB
-C:0004da e017      	ldi		REG_TEMP_R17, high((const_for_bauds_rate_end - 1 - 1) << 1)
-C:0004db 071f      	cpc		REG_TEMP_R17, REG_Z_MSB
-C:0004dc f072      	brmi		exec_command_type_B_ko		; Z <= 'Adresse du dernier quadruplet' ?
+C:0004ac e118      	ldi		REG_TEMP_R17, low((const_for_bauds_rate_end - 1 - 1) << 1)
+C:0004ad 171e      	cp			REG_TEMP_R17, REG_Z_LSB
+C:0004ae e017      	ldi		REG_TEMP_R17, high((const_for_bauds_rate_end - 1 - 1) << 1)
+C:0004af 071f      	cpc		REG_TEMP_R17, REG_Z_MSB
+C:0004b0 f072      	brmi		exec_command_type_B_ko		; Z <= 'Adresse du dernier quadruplet' ?
          
           exec_command_type_B_ok:			; -> Yes (adresse de copie dans la plage ;-)
-C:0004dd e0b0      	ldi		REG_X_MSB, high(G_BAUDS_VALUE)
-C:0004de e8a9      	ldi		REG_X_LSB, low(G_BAUDS_VALUE)
+C:0004b1 e0b0      	ldi		REG_X_MSB, high(G_BAUDS_VALUE)
+C:0004b2 e8a9      	ldi		REG_X_LSB, low(G_BAUDS_VALUE)
          
          	; Recopie atomique...
-C:0004df 94f8      	cli
-C:0004e0 9105      	lpm		REG_TEMP_R16, Z+
-C:0004e1 930d      	st			X+, REG_TEMP_R16
-C:0004e2 9105      	lpm		REG_TEMP_R16, Z+
-C:0004e3 930d      	st			X+, REG_TEMP_R16
-C:0004e4 9105      	lpm		REG_TEMP_R16, Z+
-C:0004e5 930d      	st			X+, REG_TEMP_R16
-C:0004e6 9105      	lpm		REG_TEMP_R16, Z+
-C:0004e7 930d      	st			X+, REG_TEMP_R16
-C:0004e8 9478      	sei
+C:0004b3 94f8      	cli
+C:0004b4 9105      	lpm		REG_TEMP_R16, Z+
+C:0004b5 930d      	st			X+, REG_TEMP_R16
+C:0004b6 9105      	lpm		REG_TEMP_R16, Z+
+C:0004b7 930d      	st			X+, REG_TEMP_R16
+C:0004b8 9105      	lpm		REG_TEMP_R16, Z+
+C:0004b9 930d      	st			X+, REG_TEMP_R16
+C:0004ba 9105      	lpm		REG_TEMP_R16, Z+
+C:0004bb 930d      	st			X+, REG_TEMP_R16
+C:0004bc 9478      	sei
          
-C:0004e9 df56      	rcall		print_command_ok			; Commande executee
-C:0004ea 9508      	ret
+C:0004bd df56      	rcall		print_command_ok			; Commande executee
+C:0004be 9508      	ret
          
           exec_command_type_B_ko:					; -> No (adresse de copie hors de la plage ;-)
-C:0004eb df59      	rcall		print_command_ko			; Commande non executee (index trop grand)
-C:0004ec 9508      	ret
+C:0004bf df59      	rcall		print_command_ko			; Commande non executee (index trop grand)
+C:0004c0 9508      	ret
          ; ---------
          
          ; ---------
@@ -3740,69 +3671,69 @@ C:0004ec 9508      	ret
          ;          "[0xAAAA] [0xd0d1d2d3d4d5d6d7...]" (0xAAAA actualise @ adresse en cours)
          ; ---------
           exec_command_type_s_read:
-C:0004ed df52      	rcall		print_command_ok			; Commande reconnue
+C:0004c1 df52      	rcall		print_command_ok			; Commande reconnue
          
          	; Recuperation de l'adresse du 1st byte a lire
-C:0004ee 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
-C:0004f0 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
+C:0004c2 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
+C:0004c4 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
          
-C:0004f2 23bb      	tst		REG_X_MSB
-C:0004f3 f431      	brne		exec_command_type_s_read_cont_d
-C:0004f4 23aa      	tst		REG_X_LSB
-C:0004f5 f421      	brne		exec_command_type_s_read_cont_d
+C:0004c6 23bb      	tst		REG_X_MSB
+C:0004c7 f431      	brne		exec_command_type_s_read_cont_d
+C:0004c8 23aa      	tst		REG_X_LSB
+C:0004c9 f421      	brne		exec_command_type_s_read_cont_d
          
-C:0004f6 e0b0      	ldi		REG_X_MSB, (SRAM_START / 256)
-C:0004f7 e6a0      	ldi		REG_X_LSB, (SRAM_START % 256)
+C:0004ca e0b0      	ldi		REG_X_MSB, (SRAM_START / 256)
+C:0004cb e6a0      	ldi		REG_X_LSB, (SRAM_START % 256)
          
          	; Dump de toute la SRAM
          	; TODO: Calcul @ 'SRAM_START' et 'RAMEND'
-C:0004f8 e210      	ldi		REG_TEMP_R17, 32
-C:0004f9 c001      	rjmp		exec_command_type_s_read_loop_0
+C:0004cc e210      	ldi		REG_TEMP_R17, 32
+C:0004cd c001      	rjmp		exec_command_type_s_read_loop_0
          
           exec_command_type_s_read_cont_d:
          	; Dump sur 8 x 16 bytes
          	; TODO: Get 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
-C:0004fa e018      	ldi		REG_TEMP_R17, 8
+C:0004ce e018      	ldi		REG_TEMP_R17, 8
          
           exec_command_type_s_read_loop_0:
          	; Impression de 'X' ("[0xHHHH] ")
-C:0004fb d1c8      	rcall		print_2_bytes_hexa
+C:0004cf d1c8      	rcall		print_2_bytes_hexa
          
          	; Impression du dump ("[0x....]")
-C:0004fc e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
-C:0004fd efec      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
-C:0004fe de7a      	rcall		push_text_in_fifo_tx
+C:0004d0 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
+C:0004d1 eae4      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
+C:0004d2 de7a      	rcall		push_text_in_fifo_tx
          
-C:0004ff e120      	ldi		REG_TEMP_R18, 16
+C:0004d3 e120      	ldi		REG_TEMP_R18, 16
          
           exec_command_type_s_read_loop_1:
          	; Valeur de la SRAM indexee par 'REG_X_MSB:REG_X_LSB'
-C:000500 910d      	ld			REG_TEMP_R16, X+
-C:000501 d190      	rcall		convert_and_put_fifo_tx
+C:0004d4 910d      	ld			REG_TEMP_R16, X+
+C:0004d5 d190      	rcall		convert_and_put_fifo_tx
          
          	; Test limite 'RAMEND'
          	; => On suppose qu'au depart 'X <= RAMEND'
-C:000502 30b2      	cpi		REG_X_MSB, ((RAMEND + 1) / 256)
-C:000503 f421      	brne		exec_command_type_s_read_more2
-C:000504 36a0      	cpi		REG_X_LSB, ((RAMEND + 1) % 256)
-C:000505 f411      	brne		exec_command_type_s_read_more2
+C:0004d6 30b2      	cpi		REG_X_MSB, ((RAMEND + 1) / 256)
+C:0004d7 f421      	brne		exec_command_type_s_read_more2
+C:0004d8 36a0      	cpi		REG_X_LSB, ((RAMEND + 1) % 256)
+C:0004d9 f411      	brne		exec_command_type_s_read_more2
          
          	; Astuce pour gagner du code de presentation ;-)
-C:000506 e021      	ldi		REG_TEMP_R18, 1
-C:000507 e011      	ldi		REG_TEMP_R17, 1
+C:0004da e021      	ldi		REG_TEMP_R18, 1
+C:0004db e011      	ldi		REG_TEMP_R17, 1
          
           exec_command_type_s_read_more2:
-C:000508 952a      	dec		REG_TEMP_R18
-C:000509 f7b1      	brne		exec_command_type_s_read_loop_1
+C:0004dc 952a      	dec		REG_TEMP_R18
+C:0004dd f7b1      	brne		exec_command_type_s_read_loop_1
          
-C:00050a e0fe      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
-C:00050b e0e2      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
-C:00050c de6c      	rcall		push_text_in_fifo_tx
+C:0004de e0fd      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
+C:0004df eaea      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
+C:0004e0 de6c      	rcall		push_text_in_fifo_tx
          
-C:00050d 951a      	dec		REG_TEMP_R17
-C:00050e f761      	brne		exec_command_type_s_read_loop_0
+C:0004e1 951a      	dec		REG_TEMP_R17
+C:0004e2 f761      	brne		exec_command_type_s_read_loop_0
          
-C:00050f 9508      	ret
+C:0004e3 9508      	ret
          ; ---------
          
          ; ---------
@@ -3816,60 +3747,60 @@ C:00050f 9508      	ret
          ; Reponse: "[NN>SAAAA]"
          ; ---------
           exec_command_type_s_write:
-C:000510 df2f      	rcall		print_command_ok			; Commande reconnue
+C:0004e4 df2f      	rcall		print_command_ok			; Commande reconnue
          
          	; Prise du nombre de mots passes en arguments
-C:000511 91a0 0103 	lds		REG_X_LSB, G_TEST_VALUES_IDX_WRK
-C:000513 95a6      	lsr		REG_X_LSB									; REG_X_LSB /= 2 pour nbr de bytes a ecrire
+C:0004e5 91a0 0103 	lds		REG_X_LSB, G_TEST_VALUES_IDX_WRK
+C:0004e7 95a6      	lsr		REG_X_LSB									; REG_X_LSB /= 2 pour nbr de bytes a ecrire
          
-C:000514 2f2a      	mov		REG_TEMP_R18, REG_X_LSB
+C:0004e8 2f2a      	mov		REG_TEMP_R18, REG_X_LSB
          	; Fin: Prise du nombre de mots passes en arguments
          
          	; Recuperation de l'adresse du 1st byte a ecrire
-C:000515 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
-C:000517 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
+C:0004e9 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
+C:0004eb 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
          
          	; Test de 'REG_X_MSB:REG_X_LSB' dans la plage [SRAM_START, ..., 'G_SRAM_END_OF_USE'[
          	; => Adresse 'G_SRAM_END_OF_USE' exclue de la plage ;-)
-C:000519 e600      	ldi		REG_TEMP_R16, low(SRAM_START)
-C:00051a 17a0      	cp			REG_X_LSB, REG_TEMP_R16
-C:00051b e000      	ldi		REG_TEMP_R16, high(SRAM_START)
-C:00051c 07b0      	cpc		REG_X_MSB, REG_TEMP_R16
-C:00051d f090      	brlo		exec_command_type_s_write_out_of_range		; Saut si X <= 'Adresse du 1er byte de la SRAM'
+C:0004ed e600      	ldi		REG_TEMP_R16, low(SRAM_START)
+C:0004ee 17a0      	cp			REG_X_LSB, REG_TEMP_R16
+C:0004ef e000      	ldi		REG_TEMP_R16, high(SRAM_START)
+C:0004f0 07b0      	cpc		REG_X_MSB, REG_TEMP_R16
+C:0004f1 f090      	brlo		exec_command_type_s_write_out_of_range		; Saut si X <= 'Adresse du 1er byte de la SRAM'
          
-C:00051e e407      	ldi		REG_TEMP_R16, low(G_SRAM_END_OF_USE)
-C:00051f 17a0      	cp			REG_X_LSB, REG_TEMP_R16
-C:000520 e001      	ldi		REG_TEMP_R16, high(G_SRAM_END_OF_USE)
-C:000521 07b0      	cpc		REG_X_MSB, REG_TEMP_R16
-C:000522 f468      	brsh		exec_command_type_s_write_out_of_range		; Saut si X > 'Adresse du dernier byte utilise de la SRAM'
+C:0004f2 e407      	ldi		REG_TEMP_R16, low(G_SRAM_END_OF_USE)
+C:0004f3 17a0      	cp			REG_X_LSB, REG_TEMP_R16
+C:0004f4 e001      	ldi		REG_TEMP_R16, high(G_SRAM_END_OF_USE)
+C:0004f5 07b0      	cpc		REG_X_MSB, REG_TEMP_R16
+C:0004f6 f468      	brsh		exec_command_type_s_write_out_of_range		; Saut si X > 'Adresse du dernier byte utilise de la SRAM'
          
-C:000523 df1c      	rcall		print_command_ok			; Commande reconnue
+C:0004f7 df1c      	rcall		print_command_ok			; Commande reconnue
          
          	; Lecture des 'REG_TEMP_R18' mots de la SRAM dont seule la partie LSB sera ecrite
-C:000524 2f12      	mov		REG_TEMP_R17, REG_TEMP_R18
-C:000525 e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
-C:000526 e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
+C:0004f8 2f12      	mov		REG_TEMP_R17, REG_TEMP_R18
+C:0004f9 e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
+C:0004fa e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
          
           exec_command_type_s_write_loop:
-C:000527 94f8      	cli
+C:0004fb 94f8      	cli
          
-C:000528 8108      	ld			REG_TEMP_R16, Y
-C:000529 930c      	st			X, REG_TEMP_R16
+C:0004fc 8108      	ld			REG_TEMP_R16, Y
+C:0004fd 930c      	st			X, REG_TEMP_R16
          
-C:00052a 9611      	adiw		REG_X_LSB, 1			; Adresse SRAM suivante
-C:00052b 9622      	adiw		REG_Y_LSB, 2			; Saut au prochain mot
-C:00052c 951a      	dec		REG_TEMP_R17
-C:00052d f7c9      	brne		exec_command_type_s_write_loop
+C:0004fe 9611      	adiw		REG_X_LSB, 1			; Adresse SRAM suivante
+C:0004ff 9622      	adiw		REG_Y_LSB, 2			; Saut au prochain mot
+C:000500 951a      	dec		REG_TEMP_R17
+C:000501 f7c9      	brne		exec_command_type_s_write_loop
          
-C:00052e 9478      	sei
+C:000502 9478      	sei
          
-C:00052f c001      	rjmp		exec_command_type_s_write_end
+C:000503 c001      	rjmp		exec_command_type_s_write_end
          
           exec_command_type_s_write_out_of_range:
-C:000530 df14      	rcall		print_command_ko			; Commande non executee
+C:000504 df14      	rcall		print_command_ko			; Commande non executee
          
           exec_command_type_s_write_end:
-C:000531 9508      	ret
+C:000505 9508      	ret
          ; ---------
          
          ; ---------
@@ -3884,68 +3815,68 @@ C:000531 9508      	ret
          ;          "[0xAAAA] [0xd0d1d2d3d4d5d6d7...]" (0xAAAA actualise @ adresse en cours)
          ; ---------
           exec_command_type_e_read:
-C:000532 df0d      	rcall		print_command_ok			; Commande reconnue
+C:000506 df0d      	rcall		print_command_ok			; Commande reconnue
          
          	; Recuperation de l'adresse du 1st byte a lire
-C:000533 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
-C:000535 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
+C:000507 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
+C:000509 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
          
-C:000537 23bb      	tst		REG_X_MSB
-C:000538 f421      	brne		exec_command_type_e_read_cont_d
-C:000539 23aa      	tst		REG_X_LSB
-C:00053a f411      	brne		exec_command_type_e_read_cont_d
+C:00050b 23bb      	tst		REG_X_MSB
+C:00050c f421      	brne		exec_command_type_e_read_cont_d
+C:00050d 23aa      	tst		REG_X_LSB
+C:00050e f411      	brne		exec_command_type_e_read_cont_d
          
          	; Dump de toute l'EEPROM
          	; TODO: Calcul @ 'EEPROMEND'
-C:00053b e210      	ldi		REG_TEMP_R17, 32
-C:00053c c001      	rjmp		exec_command_type_e_read_loop_0
+C:00050f e210      	ldi		REG_TEMP_R17, 32
+C:000510 c001      	rjmp		exec_command_type_e_read_loop_0
          
           exec_command_type_e_read_cont_d:
          	; Dump sur 8 x 16 bytes
          	; TODO: Get 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
-C:00053d e018      	ldi		REG_TEMP_R17, 8
+C:000511 e018      	ldi		REG_TEMP_R17, 8
          
           exec_command_type_e_read_loop_0:
          	; Impression de 'X' ("[0xHHHH] ")
-C:00053e d185      	rcall		print_2_bytes_hexa
+C:000512 d185      	rcall		print_2_bytes_hexa
          
          	; Impression du dump ("[0x....]")
-C:00053f e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
-C:000540 efec      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
-C:000541 de37      	rcall		push_text_in_fifo_tx
+C:000513 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
+C:000514 eae4      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
+C:000515 de37      	rcall		push_text_in_fifo_tx
          
-C:000542 e120      	ldi		REG_TEMP_R18, 16
+C:000516 e120      	ldi		REG_TEMP_R18, 16
          
           exec_command_type_e_read_loop_1:
          	; Valeur de l'EEPROM indexee par 'REG_X_MSB:REG_X_LSB'
-C:000543 de76      	rcall		eeprom_read_byte
-C:000544 d14d      	rcall		convert_and_put_fifo_tx
+C:000517 de76      	rcall		eeprom_read_byte
+C:000518 d14d      	rcall		convert_and_put_fifo_tx
          
-C:000545 9611      	adiw		REG_X_LSB, 1
+C:000519 9611      	adiw		REG_X_LSB, 1
          
          	; Test limite 'EEPROMEND'
          	; => On suppose qu'au depart 'X <= EEPROMEND'
-C:000546 30b2      	cpi		REG_X_MSB, ((EEPROMEND + 1) / 256)
-C:000547 f421      	brne		exec_command_type_e_read_more2
-C:000548 30a0      	cpi		REG_X_LSB, ((EEPROMEND + 1) % 256)
-C:000549 f411      	brne		exec_command_type_e_read_more2
+C:00051a 30b2      	cpi		REG_X_MSB, ((EEPROMEND + 1) / 256)
+C:00051b f421      	brne		exec_command_type_e_read_more2
+C:00051c 30a0      	cpi		REG_X_LSB, ((EEPROMEND + 1) % 256)
+C:00051d f411      	brne		exec_command_type_e_read_more2
          
          	; Astuce pour gagner du code de presentation ;-)
-C:00054a e021      	ldi		REG_TEMP_R18, 1
-C:00054b e011      	ldi		REG_TEMP_R17, 1
+C:00051e e021      	ldi		REG_TEMP_R18, 1
+C:00051f e011      	ldi		REG_TEMP_R17, 1
          
           exec_command_type_e_read_more2:
-C:00054c 952a      	dec		REG_TEMP_R18
-C:00054d f7a9      	brne		exec_command_type_e_read_loop_1
+C:000520 952a      	dec		REG_TEMP_R18
+C:000521 f7a9      	brne		exec_command_type_e_read_loop_1
          
-C:00054e e0fe      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
-C:00054f e0e2      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
-C:000550 de28      	rcall		push_text_in_fifo_tx
+C:000522 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
+C:000523 eaea      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
+C:000524 de28      	rcall		push_text_in_fifo_tx
          
-C:000551 951a      	dec		REG_TEMP_R17
-C:000552 f759      	brne		exec_command_type_e_read_loop_0
+C:000525 951a      	dec		REG_TEMP_R17
+C:000526 f759      	brne		exec_command_type_e_read_loop_0
          
-C:000553 9508      	ret
+C:000527 9508      	ret
          ; ---------
          
          ; ---------
@@ -3957,76 +3888,76 @@ C:000553 9508      	ret
          ; ---------
           exec_command_type_e_write:
          	; Prise du nombre de mots passes en arguments
-C:000554 91a0 0103 	lds		REG_X_LSB, G_TEST_VALUES_IDX_WRK
-C:000556 95a6      	lsr		REG_X_LSB									; REG_X_LSB /= 2 pour nbr de bytes a ecrire
+C:000528 91a0 0103 	lds		REG_X_LSB, G_TEST_VALUES_IDX_WRK
+C:00052a 95a6      	lsr		REG_X_LSB									; REG_X_LSB /= 2 pour nbr de bytes a ecrire
          
-C:000557 2f2a      	mov		REG_TEMP_R18, REG_X_LSB
+C:00052b 2f2a      	mov		REG_TEMP_R18, REG_X_LSB
          	; Fin: Prise du nombre de mots passes en arguments
          
          	; Recuperation de l'adresse du 1st byte a ecrire
-C:000558 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
-C:00055a 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
+C:00052c 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
+C:00052e 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
          
          	; Test de 'REG_X_MSB:REG_X_LSB' dans la plage [0, ..., EEPROMEND] @ 'REG_TEMP_R18'
-C:00055c e001      	ldi		REG_TEMP_R16, low(EEPROMEND + 2)
-C:00055d e012      	ldi		REG_TEMP_R17, high(EEPROMEND + 2)
-C:00055e 1b02      	sub		REG_TEMP_R16, REG_TEMP_R18
-C:00055f 4010      	sbci		REG_TEMP_R17, 0					; Soustraction 16 bits (report de la Carry)
+C:000530 e001      	ldi		REG_TEMP_R16, low(EEPROMEND + 2)
+C:000531 e012      	ldi		REG_TEMP_R17, high(EEPROMEND + 2)
+C:000532 1b02      	sub		REG_TEMP_R16, REG_TEMP_R18
+C:000533 4010      	sbci		REG_TEMP_R17, 0					; Soustraction 16 bits (report de la Carry)
          
-C:000560 17a0      	cp			REG_X_LSB, REG_TEMP_R16		
-C:000561 07b1      	cpc		REG_X_MSB, REG_TEMP_R17		
-C:000562 f502      	brpl		exec_command_type_e_write_out_of_range
+C:000534 17a0      	cp			REG_X_LSB, REG_TEMP_R16		
+C:000535 07b1      	cpc		REG_X_MSB, REG_TEMP_R17		
+C:000536 f502      	brpl		exec_command_type_e_write_out_of_range
          	; Fin: Test de 'REG_X_MSB:REG_X_LSB' dans la plage [0, ..., EEPROMEND] @ 'REG_TEMP_R18'
          
-C:000563 dedc      	rcall		print_command_ok			; Commande reconnue
+C:000537 dedc      	rcall		print_command_ok			; Commande reconnue
          
          	; Lecture des 'REG_TEMP_R18' mots de la SRAM dont seule la partie LSB sera ecrite
-C:000564 2f12      	mov		REG_TEMP_R17, REG_TEMP_R18
-C:000565 e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
-C:000566 e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
+C:000538 2f12      	mov		REG_TEMP_R17, REG_TEMP_R18
+C:000539 e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
+C:00053a e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
          
          	; Clear error
-C:000567 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
-C:000569 7b0f      	cbr		REG_TEMP_R16, FLG_TEST_EEPROM_ERROR_MSK
-C:00056a 9300 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R16
+C:00053b 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
+C:00053d 7b0f      	cbr		REG_TEMP_R16, FLG_TEST_EEPROM_ERROR_MSK
+C:00053e 9300 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R16
          
           exec_command_type_e_write_loop:
-C:00056c 8108      	ld			REG_TEMP_R16, Y
-C:00056d de53      	rcall		eeprom_write_byte
+C:000540 8108      	ld			REG_TEMP_R16, Y
+C:000541 de53      	rcall		eeprom_write_byte
          
          	; Verification de l'ecriture
-C:00056e 2f20      	mov		REG_TEMP_R18, REG_TEMP_R16		; Save data writed
-C:00056f 2700      	clr		REG_TEMP_R16						; Raz before read eeprom @ 'X'
-C:000570 de49      	rcall		eeprom_read_byte	
+C:000542 2f20      	mov		REG_TEMP_R18, REG_TEMP_R16		; Save data writed
+C:000543 2700      	clr		REG_TEMP_R16						; Raz before read eeprom @ 'X'
+C:000544 de49      	rcall		eeprom_read_byte	
          
-C:000571 1302      	cpse		REG_TEMP_R16, REG_TEMP_R18
-C:000572 c005      	rjmp		exec_command_type_e_write_ko
+C:000545 1302      	cpse		REG_TEMP_R16, REG_TEMP_R18
+C:000546 c005      	rjmp		exec_command_type_e_write_ko
          	; Fin: Verification de l'ecriture
          
-C:000573 9611      	adiw		REG_X_LSB, 1			; Adresse EEPROM suivante
-C:000574 9622      	adiw		REG_Y_LSB, 2			; Saut au prochain mot
-C:000575 951a      	dec		REG_TEMP_R17
-C:000576 f7a9      	brne		exec_command_type_e_write_loop
+C:000547 9611      	adiw		REG_X_LSB, 1			; Adresse EEPROM suivante
+C:000548 9622      	adiw		REG_Y_LSB, 2			; Saut au prochain mot
+C:000549 951a      	dec		REG_TEMP_R17
+C:00054a f7a9      	brne		exec_command_type_e_write_loop
          
-C:000577 c00c      	rjmp		exec_command_type_e_write_end
+C:00054b c00c      	rjmp		exec_command_type_e_write_end
          
           exec_command_type_e_write_ko:
-C:000578 e0f7      	ldi      REG_Z_MSB, ((text_eeprom_error << 1) / 256)
-C:000579 efe8      	ldi      REG_Z_LSB, ((text_eeprom_error << 1) % 256)
-C:00057a ddfe      	rcall    push_text_in_fifo_tx
-C:00057b d148      	rcall		print_2_bytes_hexa
-C:00057c d12e      	rcall    print_line_feed
+C:00054c e0f7      	ldi      REG_Z_MSB, ((text_eeprom_error << 1) / 256)
+C:00054d eae0      	ldi      REG_Z_LSB, ((text_eeprom_error << 1) % 256)
+C:00054e ddfe      	rcall    push_text_in_fifo_tx
+C:00054f d148      	rcall		print_2_bytes_hexa
+C:000550 d12e      	rcall    print_line_feed
          
-C:00057d 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
-C:00057f 6400      	sbr		REG_TEMP_R16, FLG_TEST_EEPROM_ERROR_MSK
-C:000580 9300 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R16
-C:000582 c001      	rjmp		exec_command_type_e_write_end
+C:000551 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
+C:000553 6400      	sbr		REG_TEMP_R16, FLG_TEST_EEPROM_ERROR_MSK
+C:000554 9300 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R16
+C:000556 c001      	rjmp		exec_command_type_e_write_end
          
           exec_command_type_e_write_out_of_range:
-C:000583 dec1      	rcall		print_command_ko			; Commande non executee
+C:000557 dec1      	rcall		print_command_ko			; Commande non executee
          
           exec_command_type_e_write_end:
-C:000584 9508      	ret
+C:000558 9508      	ret
          ; ---------
          
          ; ---------
@@ -4034,79 +3965,79 @@ C:000584 9508      	ret
          ; => Lecture des fuses
          ; ---------
           exec_command_type_f_min:
-C:000585 deba      	rcall		print_command_ok			; Commande reconnue
+C:000559 deba      	rcall		print_command_ok			; Commande reconnue
          
          ; Definition du bit 'RSIG' car non attribue dans 'tn85def.inc'
           .equ	RSIG = 5		; Read Device Signature Imprint Table
          
          	; Signature...
-C:000586 e201      	ldi		REG_TEMP_R16, (1 << RSIG) | (1 << SPMEN)
-C:000587 bf07      	out		SPMCSR, REG_TEMP_R16
+C:00055a e201      	ldi		REG_TEMP_R16, (1 << RSIG) | (1 << SPMEN)
+C:00055b bf07      	out		SPMCSR, REG_TEMP_R16
          
-C:000588 e0f0      	ldi		REG_Z_MSB, 0x00
-C:000589 e0e0      	ldi		REG_Z_LSB, 0x00
-C:00058a 91a4      	lpm		REG_X_LSB, Z
-C:00058b d129      	rcall		print_1_byte_hexa
+C:00055c e0f0      	ldi		REG_Z_MSB, 0x00
+C:00055d e0e0      	ldi		REG_Z_LSB, 0x00
+C:00055e 91a4      	lpm		REG_X_LSB, Z
+C:00055f d129      	rcall		print_1_byte_hexa
          
-C:00058c e201      	ldi		REG_TEMP_R16, (1 << RSIG) | (1 << SPMEN)
-C:00058d bf07      	out		SPMCSR, REG_TEMP_R16
+C:000560 e201      	ldi		REG_TEMP_R16, (1 << RSIG) | (1 << SPMEN)
+C:000561 bf07      	out		SPMCSR, REG_TEMP_R16
          
-C:00058e e0f0      	ldi		REG_Z_MSB, 0x00
-C:00058f e0e2      	ldi		REG_Z_LSB, 0x02
-C:000590 91a4      	lpm		REG_X_LSB, Z
-C:000591 d123      	rcall		print_1_byte_hexa
+C:000562 e0f0      	ldi		REG_Z_MSB, 0x00
+C:000563 e0e2      	ldi		REG_Z_LSB, 0x02
+C:000564 91a4      	lpm		REG_X_LSB, Z
+C:000565 d123      	rcall		print_1_byte_hexa
          
-C:000592 e201      	ldi		REG_TEMP_R16, (1 << RSIG) | (1 << SPMEN)
-C:000593 bf07      	out		SPMCSR, REG_TEMP_R16
+C:000566 e201      	ldi		REG_TEMP_R16, (1 << RSIG) | (1 << SPMEN)
+C:000567 bf07      	out		SPMCSR, REG_TEMP_R16
          
-C:000594 e0f0      	ldi		REG_Z_MSB, 0x00
-C:000595 e0e4      	ldi		REG_Z_LSB, 0x04
-C:000596 91a4      	lpm		REG_X_LSB, Z
-C:000597 d11d      	rcall		print_1_byte_hexa
+C:000568 e0f0      	ldi		REG_Z_MSB, 0x00
+C:000569 e0e4      	ldi		REG_Z_LSB, 0x04
+C:00056a 91a4      	lpm		REG_X_LSB, Z
+C:00056b d11d      	rcall		print_1_byte_hexa
          
-C:000598 d112      	rcall		print_line_feed
+C:00056c d112      	rcall		print_line_feed
          	; Fin: Signature...
          
          	; Read Fuse Low Byte
-C:000599 e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
-C:00059a bf07      	out		SPMCSR, REG_TEMP_R16
+C:00056d e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
+C:00056e bf07      	out		SPMCSR, REG_TEMP_R16
          
-C:00059b e0f0      	ldi		REG_Z_MSB, 0x00
-C:00059c e0e0      	ldi		REG_Z_LSB, 0x00
-C:00059d 91a4      	lpm		REG_X_LSB, Z
-C:00059e d116      	rcall		print_1_byte_hexa
+C:00056f e0f0      	ldi		REG_Z_MSB, 0x00
+C:000570 e0e0      	ldi		REG_Z_LSB, 0x00
+C:000571 91a4      	lpm		REG_X_LSB, Z
+C:000572 d116      	rcall		print_1_byte_hexa
          
          	; Read Lock bits
-C:00059f e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
-C:0005a0 bf07      	out		SPMCSR, REG_TEMP_R16
+C:000573 e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
+C:000574 bf07      	out		SPMCSR, REG_TEMP_R16
          
-C:0005a1 e0f0      	ldi		REG_Z_MSB, 0x00
-C:0005a2 e0e1      	ldi		REG_Z_LSB, 0x01
-C:0005a3 91a4      	lpm		REG_X_LSB, Z
-C:0005a4 d110      	rcall		print_1_byte_hexa
+C:000575 e0f0      	ldi		REG_Z_MSB, 0x00
+C:000576 e0e1      	ldi		REG_Z_LSB, 0x01
+C:000577 91a4      	lpm		REG_X_LSB, Z
+C:000578 d110      	rcall		print_1_byte_hexa
          
          	; Read Read Fuse Extended Byte
-C:0005a5 e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
-C:0005a6 bf07      	out		SPMCSR, REG_TEMP_R16
+C:000579 e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
+C:00057a bf07      	out		SPMCSR, REG_TEMP_R16
          
-C:0005a7 e0f0      	ldi		REG_Z_MSB, 0x00
-C:0005a8 e0e2      	ldi		REG_Z_LSB, 0x02
-C:0005a9 91a4      	lpm		REG_X_LSB, Z
-C:0005aa d10a      	rcall		print_1_byte_hexa
+C:00057b e0f0      	ldi		REG_Z_MSB, 0x00
+C:00057c e0e2      	ldi		REG_Z_LSB, 0x02
+C:00057d 91a4      	lpm		REG_X_LSB, Z
+C:00057e d10a      	rcall		print_1_byte_hexa
          
          	; Read Fuse High Byte
-C:0005ab e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
-C:0005ac bf07      	out		SPMCSR, REG_TEMP_R16
+C:00057f e009      	ldi		REG_TEMP_R16, (1 << RFLB) | (1 << SELFPRGEN)
+C:000580 bf07      	out		SPMCSR, REG_TEMP_R16
          
-C:0005ad e0f0      	ldi		REG_Z_MSB, 0x00
-C:0005ae e0e3      	ldi		REG_Z_LSB, 0x03
-C:0005af 91a4      	lpm		REG_X_LSB, Z
-C:0005b0 d104      	rcall		print_1_byte_hexa
+C:000581 e0f0      	ldi		REG_Z_MSB, 0x00
+C:000582 e0e3      	ldi		REG_Z_LSB, 0x03
+C:000583 91a4      	lpm		REG_X_LSB, Z
+C:000584 d104      	rcall		print_1_byte_hexa
          
-C:0005b1 d0f9      	rcall		print_line_feed
+C:000585 d0f9      	rcall		print_line_feed
          
-C:0005b2 9468      	set													; Commande reconnue
-C:0005b3 9508      	ret
+C:000586 9468      	set													; Commande reconnue
+C:000587 9508      	ret
          ; ---------
          
          ; ---------
@@ -4120,57 +4051,57 @@ C:0005b3 9508      	ret
          ;          "[0xAAAA] [0xd0d1d2d3d4d5d6d7...]" (0xAAAA actualise @ adresse en cours)
          ; ---------
           exec_command_type_p_read:
-C:0005b4 de8b      	rcall		print_command_ok			; Commande reconnue
+C:000588 de8b      	rcall		print_command_ok			; Commande reconnue
          
          	; Recuperation de l'adresse du 1st byte a lire
-C:0005b5 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
-C:0005b7 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
+C:000589 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
+C:00058b 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB
          
          	; Adresse sur des mots
-C:0005b9 0faa      	lsl		REG_X_LSB
-C:0005ba 1fbb      	rol		REG_X_MSB
+C:00058d 0faa      	lsl		REG_X_LSB
+C:00058e 1fbb      	rol		REG_X_MSB
          
-C:0005bb e018      	ldi		REG_TEMP_R17, 8
+C:00058f e018      	ldi		REG_TEMP_R17, 8
          
           exec_command_type_p_read_loop_0:
          	; Impression de 'X' ("[0xHHHH] ")
          	; Remarque: Division par 2 car dump de word ;-)
-C:0005bc 93bf      	push		REG_X_MSB
-C:0005bd 93af      	push		REG_X_LSB
+C:000590 93bf      	push		REG_X_MSB
+C:000591 93af      	push		REG_X_LSB
          
-C:0005be 95b6      	lsr		REG_X_MSB
-C:0005bf 95a7      	ror		REG_X_LSB
-C:0005c0 d103      	rcall		print_2_bytes_hexa
+C:000592 95b6      	lsr		REG_X_MSB
+C:000593 95a7      	ror		REG_X_LSB
+C:000594 d103      	rcall		print_2_bytes_hexa
          
-C:0005c1 91af      	pop		REG_X_LSB
-C:0005c2 91bf      	pop		REG_X_MSB
+C:000595 91af      	pop		REG_X_LSB
+C:000596 91bf      	pop		REG_X_MSB
          
          	; Impression du dump ("[0x....]")
-C:0005c3 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
-C:0005c4 efec      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
-C:0005c5 ddb3      	rcall		push_text_in_fifo_tx
+C:000597 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
+C:000598 eae4      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
+C:000599 ddb3      	rcall		push_text_in_fifo_tx
          
-C:0005c6 e120      	ldi		REG_TEMP_R18, 16
+C:00059a e120      	ldi		REG_TEMP_R18, 16
          
           exec_command_type_p_read_loop_1:
          	; Valeur de la memoire programme indexee par 'REG_X_MSB:REG_X_LSB'
-C:0005c7 01fd      	movw		REG_Z_LSB, REG_X_LSB
-C:0005c8 9611      	adiw		REG_X_LSB, 1						; Preparation prochain byte
+C:00059b 01fd      	movw		REG_Z_LSB, REG_X_LSB
+C:00059c 9611      	adiw		REG_X_LSB, 1						; Preparation prochain byte
          
-C:0005c9 9104      	lpm		REG_TEMP_R16, Z
-C:0005ca d0c7      	rcall		convert_and_put_fifo_tx
+C:00059d 9104      	lpm		REG_TEMP_R16, Z
+C:00059e d0c7      	rcall		convert_and_put_fifo_tx
          
-C:0005cb 952a      	dec		REG_TEMP_R18
-C:0005cc f7d1      	brne		exec_command_type_p_read_loop_1
+C:00059f 952a      	dec		REG_TEMP_R18
+C:0005a0 f7d1      	brne		exec_command_type_p_read_loop_1
          
-C:0005cd e0fe      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
-C:0005ce e0e2      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
-C:0005cf dda9      	rcall		push_text_in_fifo_tx
+C:0005a1 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
+C:0005a2 eaea      	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
+C:0005a3 dda9      	rcall		push_text_in_fifo_tx
          
-C:0005d0 951a      	dec		REG_TEMP_R17
-C:0005d1 f751      	brne		exec_command_type_p_read_loop_0
+C:0005a4 951a      	dec		REG_TEMP_R17
+C:0005a5 f751      	brne		exec_command_type_p_read_loop_0
          
-C:0005d2 9508      	ret
+C:0005a6 9508      	ret
          ; ---------
          
          ; ---------
@@ -4178,25 +4109,25 @@ C:0005d2 9508      	ret
          ; => Execution d'une methode
          ; ---------
           exec_command_type_x:
-C:0005d3 de6c      	rcall		print_command_ok			; Commande reconnue
+C:0005a7 de6c      	rcall		print_command_ok			; Commande reconnue
          
          	; Recuperation de l'adresse d'execution
-C:0005d4 91f0 00fd 	lds		REG_Z_MSB, G_TEST_VALUE_MSB
-C:0005d6 91e0 00fe 	lds		REG_Z_LSB, G_TEST_VALUE_LSB
+C:0005a8 91f0 00fd 	lds		REG_Z_MSB, G_TEST_VALUE_MSB
+C:0005aa 91e0 00fe 	lds		REG_Z_LSB, G_TEST_VALUE_LSB
          
          	; Si execution du 'Reset' (adresse 0x0000)
          	; => Reinitialisation de 'SPH:SPL' a 'RAMEND'
-C:0005d8 23ff      	tst		REG_Z_MSB
-C:0005d9 f431      	brne		exec_command_type_x_more
+C:0005ac 23ff      	tst		REG_Z_MSB
+C:0005ad f431      	brne		exec_command_type_x_more
          
-C:0005da 23ee      	tst		REG_Z_LSB
-C:0005db f421      	brne		exec_command_type_x_more
+C:0005ae 23ee      	tst		REG_Z_LSB
+C:0005af f421      	brne		exec_command_type_x_more
          
-C:0005dc e002      	ldi		REG_TEMP_R16, high(RAMEND)
-C:0005dd bf0e      	out		SPH, REG_TEMP_R16
+C:0005b0 e002      	ldi		REG_TEMP_R16, high(RAMEND)
+C:0005b1 bf0e      	out		SPH, REG_TEMP_R16
          
-C:0005de e50f      	ldi		REG_TEMP_R16, low(RAMEND)
-C:0005df bf0d      	out		SPL, REG_TEMP_R16
+C:0005b2 e50f      	ldi		REG_TEMP_R16, low(RAMEND)
+C:0005b3 bf0d      	out		SPL, REG_TEMP_R16
          	; Fin: Si execution du 'Reset' (adresse 0x0000)
          
          	; Saut a un programme dont l'adresse est passe en argument
@@ -4204,7 +4135,7 @@ C:0005df bf0d      	out		SPL, REG_TEMP_R16
          	; => Remarque: Le 'ret' en fin de programme fera retourner apres
          	;              l'instruction 'rcall exec_command'
           exec_command_type_x_more:
-C:0005e0 9409      	ijmp
+C:0005b4 9409      	ijmp
          ; ---------
          
          ; ---------
@@ -4223,49 +4154,49 @@ C:0005e0 9409      	ijmp
          ; => Raz a la charge de l'interpretation de la valeur
          ; ---------
           char_to_dec_incremental:
-C:0005e1 93bf      	push		REG_X_MSB
-C:0005e2 93af      	push		REG_X_LSB
-C:0005e3 93df      	push		REG_Y_MSB
-C:0005e4 93cf      	push		REG_Y_LSB
-C:0005e5 930f      	push		REG_TEMP_R16
-C:0005e6 931f      	push		REG_TEMP_R17
+C:0005b5 93bf      	push		REG_X_MSB
+C:0005b6 93af      	push		REG_X_LSB
+C:0005b7 93df      	push		REG_Y_MSB
+C:0005b8 93cf      	push		REG_Y_LSB
+C:0005b9 930f      	push		REG_TEMP_R16
+C:0005ba 931f      	push		REG_TEMP_R17
          
-C:0005e7 91a0 0102 	lds		REG_X_LSB, G_TEST_VALUE_DEC_LSB	; Reprise valeur -> X
-C:0005e9 91b0 0101 	lds		REG_X_MSB, G_TEST_VALUE_DEC_MSB
+C:0005bb 91a0 0102 	lds		REG_X_LSB, G_TEST_VALUE_DEC_LSB	; Reprise valeur -> X
+C:0005bd 91b0 0101 	lds		REG_X_MSB, G_TEST_VALUE_DEC_MSB
          
          	; Multiplication par 10 = 2 x 5
-C:0005eb 0faa      	lsl		REG_X_LSB
-C:0005ec 1fbb      	rol		REG_X_MSB							; X = 2X
-C:0005ed 01ed      	movw		REG_Y_LSB, REG_X_LSB				; Y = 2X
+C:0005bf 0faa      	lsl		REG_X_LSB
+C:0005c0 1fbb      	rol		REG_X_MSB							; X = 2X
+C:0005c1 01ed      	movw		REG_Y_LSB, REG_X_LSB				; Y = 2X
          
          	; REG_TEMP_R17 = 4: 1st pass: X = 2X + 2X = 4X
          	; REG_TEMP_R17 = 3: 2nd pass: X = 4X + 2X = 6X
          	; REG_TEMP_R17 = 2: 3rd pass: X = 6X + 2X = 8X
          	; REG_TEMP_R17 = 1: 4th pass: X = 8X + 2X = 10X => Fin
          
-C:0005ee e014      	ldi		REG_TEMP_R17, 4
+C:0005c2 e014      	ldi		REG_TEMP_R17, 4
          
           char_to_dec_incremental_loop:
-C:0005ef 0fac      	add		REG_X_LSB, REG_Y_LSB				; X += 2X
-C:0005f0 1fbd      	adc		REG_X_MSB, REG_Y_MSB
-C:0005f1 951a      	dec		REG_TEMP_R17
-C:0005f2 f7e1      	brne		char_to_dec_incremental_loop
+C:0005c3 0fac      	add		REG_X_LSB, REG_Y_LSB				; X += 2X
+C:0005c4 1fbd      	adc		REG_X_MSB, REG_Y_MSB
+C:0005c5 951a      	dec		REG_TEMP_R17
+C:0005c6 f7e1      	brne		char_to_dec_incremental_loop
          
          	; Conversion et addition
-C:0005f3 5300      	subi		REG_TEMP_R16, '0'
-C:0005f4 0fa0      	add		REG_X_LSB, REG_TEMP_R16			; X += REG_TEMP_R16
-C:0005f5 1fb1      	adc		REG_X_MSB, REG_TEMP_R17			; X += 0 + C
+C:0005c7 5300      	subi		REG_TEMP_R16, '0'
+C:0005c8 0fa0      	add		REG_X_LSB, REG_TEMP_R16			; X += REG_TEMP_R16
+C:0005c9 1fb1      	adc		REG_X_MSB, REG_TEMP_R17			; X += 0 + C
          
-C:0005f6 93a0 0102 	sts		G_TEST_VALUE_DEC_LSB, REG_X_LSB
-C:0005f8 93b0 0101 	sts		G_TEST_VALUE_DEC_MSB, REG_X_MSB
+C:0005ca 93a0 0102 	sts		G_TEST_VALUE_DEC_LSB, REG_X_LSB
+C:0005cc 93b0 0101 	sts		G_TEST_VALUE_DEC_MSB, REG_X_MSB
          
-C:0005fa 911f      	pop		REG_TEMP_R17
-C:0005fb 910f      	pop		REG_TEMP_R16
-C:0005fc 91cf      	pop		REG_Y_LSB
-C:0005fd 91df      	pop		REG_Y_MSB
-C:0005fe 91af      	pop		REG_X_LSB
-C:0005ff 91bf      	pop		REG_X_MSB
-C:000600 9508      	ret
+C:0005ce 911f      	pop		REG_TEMP_R17
+C:0005cf 910f      	pop		REG_TEMP_R16
+C:0005d0 91cf      	pop		REG_Y_LSB
+C:0005d1 91df      	pop		REG_Y_MSB
+C:0005d2 91af      	pop		REG_X_LSB
+C:0005d3 91bf      	pop		REG_X_MSB
+C:0005d4 9508      	ret
          ; ---------
          
          ; ---------
@@ -4283,157 +4214,157 @@ C:000600 9508      	ret
          ; Retour ajoute a 'G_TEST_VALUE_MSB:G_TEST_VALUE_LSB'
          ; ---------
           char_to_hex_incremental:
-C:000601 930f      	push		REG_TEMP_R16
-C:000602 931f      	push		REG_TEMP_R17
+C:0005d5 930f      	push		REG_TEMP_R16
+C:0005d6 931f      	push		REG_TEMP_R17
          
          	; Discrimination...
-C:000603 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
-C:000605 fd02      	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_MORE_IDX
-C:000606 c005      	rjmp		char_to_hex_incremental_more
+C:0005d7 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
+C:0005d9 fd02      	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_MORE_IDX
+C:0005da c005      	rjmp		char_to_hex_incremental_more
          
-C:000607 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB			; Reprise valeur -> X
-C:000609 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
-C:00060b c004      	rjmp		char_to_hex_incremental_cont_d
+C:0005db 91a0 00fe 	lds		REG_X_LSB, G_TEST_VALUE_LSB			; Reprise valeur -> X
+C:0005dd 91b0 00fd 	lds		REG_X_MSB, G_TEST_VALUE_MSB
+C:0005df c004      	rjmp		char_to_hex_incremental_cont_d
          
           char_to_hex_incremental_more:
-C:00060c 91a0 0100 	lds		REG_X_LSB, G_TEST_VALUE_LSB_MORE		; Reprise valeur -> X
-C:00060e 91b0 00ff 	lds		REG_X_MSB, G_TEST_VALUE_MSB_MORE
+C:0005e0 91a0 0100 	lds		REG_X_LSB, G_TEST_VALUE_LSB_MORE		; Reprise valeur -> X
+C:0005e2 91b0 00ff 	lds		REG_X_MSB, G_TEST_VALUE_MSB_MORE
          	; Fin: Discrimination...
          
           char_to_hex_incremental_cont_d:
-C:000610 2d02      	mov		REG_TEMP_R16, REG_R2				; Recuperation valeur a concatener
+C:0005e4 2d02      	mov		REG_TEMP_R16, REG_R2				; Recuperation valeur a concatener
          
          	; REG_TEMP_R17 = 4: 1st pass: X = 2X
          	; REG_TEMP_R17 = 3: 2nd pass: X = 4X
          	; REG_TEMP_R17 = 2: 3rd pass: X = 8X
          	; REG_TEMP_R17 = 1: 4th pass: X = 16X => Fin
          
-C:000611 e014      	ldi		REG_TEMP_R17, 4
+C:0005e5 e014      	ldi		REG_TEMP_R17, 4
          
           char_to_hex_incremental_loop:
-C:000612 0faa      	lsl		REG_X_LSB				; X *= 2
-C:000613 1fbb      	rol		REG_X_MSB
-C:000614 951a      	dec		REG_TEMP_R17
-C:000615 f7e1      	brne		char_to_hex_incremental_loop
+C:0005e6 0faa      	lsl		REG_X_LSB				; X *= 2
+C:0005e7 1fbb      	rol		REG_X_MSB
+C:0005e8 951a      	dec		REG_TEMP_R17
+C:0005e9 f7e1      	brne		char_to_hex_incremental_loop
          
          	; Conversion ['0', ... , '9'] = [0x30, ... , 0x39] -> [0x0, ..., 0x9]
          	;            ['A', ... , 'F'] = [0x41, ... , 0x46] -> [0xa, ..., 0xf]
          	;            ['a', ... , 'f'] = [0x61, ... , 0x66] -> [0xa, ..., 0xf]
          	;
-C:000616 fd06      	sbrc		REG_TEMP_R16, IDX_BIT6			; ['0', ... , '9'] ?
-C:000617 c002      	rjmp		char_to_hex_incremental_a_f	; Non
+C:0005ea fd06      	sbrc		REG_TEMP_R16, IDX_BIT6			; ['0', ... , '9'] ?
+C:0005eb c002      	rjmp		char_to_hex_incremental_a_f	; Non
          
           char_to_hex_incremental_0_9:					; Oui
-C:000618 5300      	subi		REG_TEMP_R16, '0'
-C:000619 c002      	rjmp		char_to_hex_incremental_add
+C:0005ec 5300      	subi		REG_TEMP_R16, '0'
+C:0005ed c002      	rjmp		char_to_hex_incremental_add
          
           char_to_hex_incremental_a_f:
-C:00061a 7d0f      	cbr		REG_TEMP_R16, MSK_BIT5			; Lowercase -> Uppercase ('a' (0x61) -> 'A' (0x41))
-C:00061b 5307      	subi		REG_TEMP_R16, ('A' - 0xa)		; 'A' -> 0xa, ..., 'F' -> 0xf
+C:0005ee 7d0f      	cbr		REG_TEMP_R16, MSK_BIT5			; Lowercase -> Uppercase ('a' (0x61) -> 'A' (0x41))
+C:0005ef 5307      	subi		REG_TEMP_R16, ('A' - 0xa)		; 'A' -> 0xa, ..., 'F' -> 0xf
          
           char_to_hex_incremental_add:
-C:00061c 700f      	andi		REG_TEMP_R16, 0x0f				; Filtre Bits<3,0> (precaution ;-)
-C:00061d 2ba0      	or			REG_X_LSB, REG_TEMP_R16			; X |= REG_TEMP_R16
+C:0005f0 700f      	andi		REG_TEMP_R16, 0x0f				; Filtre Bits<3,0> (precaution ;-)
+C:0005f1 2ba0      	or			REG_X_LSB, REG_TEMP_R16			; X |= REG_TEMP_R16
          
          	; Discrimination...
-C:00061e 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
-C:000620 fd02      	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_MORE_IDX
-C:000621 c005      	rjmp		char_to_hex_incremental_more_2
+C:0005f2 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS
+C:0005f4 fd02      	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_MORE_IDX
+C:0005f5 c005      	rjmp		char_to_hex_incremental_more_2
          
-C:000622 93a0 00fe 	sts		G_TEST_VALUE_LSB, REG_X_LSB
-C:000624 93b0 00fd 	sts		G_TEST_VALUE_MSB, REG_X_MSB
-C:000626 c004      	rjmp		char_to_hex_incremental_end
+C:0005f6 93a0 00fe 	sts		G_TEST_VALUE_LSB, REG_X_LSB
+C:0005f8 93b0 00fd 	sts		G_TEST_VALUE_MSB, REG_X_MSB
+C:0005fa c004      	rjmp		char_to_hex_incremental_end
          
           char_to_hex_incremental_more_2:
-C:000627 93a0 0100 	sts		G_TEST_VALUE_LSB_MORE, REG_X_LSB
-C:000629 93b0 00ff 	sts		G_TEST_VALUE_MSB_MORE, REG_X_MSB
+C:0005fb 93a0 0100 	sts		G_TEST_VALUE_LSB_MORE, REG_X_LSB
+C:0005fd 93b0 00ff 	sts		G_TEST_VALUE_MSB_MORE, REG_X_MSB
          	; Fin: Discrimination...
          
           char_to_hex_incremental_end:
          
-C:00062b 911f      	pop		REG_TEMP_R17
-C:00062c 910f      	pop		REG_TEMP_R16
-C:00062d 9508      	ret
+C:0005ff 911f      	pop		REG_TEMP_R17
+C:000600 910f      	pop		REG_TEMP_R16
+C:000601 9508      	ret
          ; ---------
          
          ; ---------
          ; Raz de 'G_TEST_VALUES_ZONE'
          ; ---------
           raz_value_into_zone:
-C:00062e 93df      	push		REG_Y_MSB
-C:00062f 93cf      	push		REG_Y_LSB
-C:000630 930f      	push		REG_TEMP_R16
-C:000631 931f      	push		REG_TEMP_R17
+C:000602 93df      	push		REG_Y_MSB
+C:000603 93cf      	push		REG_Y_LSB
+C:000604 930f      	push		REG_TEMP_R16
+C:000605 931f      	push		REG_TEMP_R17
          
-C:000632 2700      	clr		REG_TEMP_R16
-C:000633 9300 0103 	sts		G_TEST_VALUES_IDX_WRK, REG_TEMP_R16
+C:000606 2700      	clr		REG_TEMP_R16
+C:000607 9300 0103 	sts		G_TEST_VALUES_IDX_WRK, REG_TEMP_R16
          
-C:000635 e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
-C:000636 e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
+C:000609 e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
+C:00060a e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
          
-C:000637 e200      	ldi		REG_TEMP_R16, 32
-C:000638 2711      	clr		REG_TEMP_R17
+C:00060b e200      	ldi		REG_TEMP_R16, 32
+C:00060c 2711      	clr		REG_TEMP_R17
          
           raz_value_into_zone_loop:
-C:000639 9319      	st			Y+, REG_TEMP_R17
-C:00063a 9319      	st			Y+, REG_TEMP_R17
+C:00060d 9319      	st			Y+, REG_TEMP_R17
+C:00060e 9319      	st			Y+, REG_TEMP_R17
          
-C:00063b 950a      	dec		REG_TEMP_R16
-C:00063c f7e1      	brne		raz_value_into_zone_loop
+C:00060f 950a      	dec		REG_TEMP_R16
+C:000610 f7e1      	brne		raz_value_into_zone_loop
          
-C:00063d 911f      	pop		REG_TEMP_R17
-C:00063e 910f      	pop		REG_TEMP_R16
-C:00063f 91cf      	pop		REG_Y_LSB
-C:000640 91df      	pop		REG_Y_MSB
+C:000611 911f      	pop		REG_TEMP_R17
+C:000612 910f      	pop		REG_TEMP_R16
+C:000613 91cf      	pop		REG_Y_LSB
+C:000614 91df      	pop		REG_Y_MSB
          
-C:000641 9508      	ret
+C:000615 9508      	ret
          ; ---------
          
          ; Recopie de 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE' a 'G_TEST_VALUES_ZONE'
          ; ---------
           add_value_into_zone:
-C:000642 93bf      	push		REG_X_MSB
-C:000643 93af      	push		REG_X_LSB
-C:000644 93df      	push		REG_Y_MSB
-C:000645 93cf      	push		REG_Y_LSB
-C:000646 930f      	push		REG_TEMP_R16
-C:000647 931f      	push		REG_TEMP_R17
+C:000616 93bf      	push		REG_X_MSB
+C:000617 93af      	push		REG_X_LSB
+C:000618 93df      	push		REG_Y_MSB
+C:000619 93cf      	push		REG_Y_LSB
+C:00061a 930f      	push		REG_TEMP_R16
+C:00061b 931f      	push		REG_TEMP_R17
          
-C:000648 9100 0103 	lds		REG_TEMP_R16, G_TEST_VALUES_IDX_WRK
-C:00064a e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
-C:00064b e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
-C:00064c 2711      	clr		REG_TEMP_R17
-C:00064d 0fc0      	add		REG_Y_LSB, REG_TEMP_R16
-C:00064e 1fd1      	adc		REG_Y_MSB, REG_TEMP_R17
+C:00061c 9100 0103 	lds		REG_TEMP_R16, G_TEST_VALUES_IDX_WRK
+C:00061e e0d1      	ldi		REG_Y_MSB, high(G_TEST_VALUES_ZONE)
+C:00061f e0c5      	ldi		REG_Y_LSB, low(G_TEST_VALUES_ZONE)
+C:000620 2711      	clr		REG_TEMP_R17
+C:000621 0fc0      	add		REG_Y_LSB, REG_TEMP_R16
+C:000622 1fd1      	adc		REG_Y_MSB, REG_TEMP_R17
          
-C:00064f 91b0 00ff 	lds		REG_X_MSB, G_TEST_VALUE_MSB_MORE
-C:000651 91a0 0100 	lds		REG_X_LSB, G_TEST_VALUE_LSB_MORE
+C:000623 91b0 00ff 	lds		REG_X_MSB, G_TEST_VALUE_MSB_MORE
+C:000625 91a0 0100 	lds		REG_X_LSB, G_TEST_VALUE_LSB_MORE
          
-C:000653 83a8      	std		Y+0, REG_X_LSB			; LSB en tete
-C:000654 83b9      	std		Y+1, REG_X_MSB
+C:000627 83a8      	std		Y+0, REG_X_LSB			; LSB en tete
+C:000628 83b9      	std		Y+1, REG_X_MSB
          
-C:000655 9503      	inc		REG_TEMP_R16			; Next word
-C:000656 9503      	inc		REG_TEMP_R16
-C:000657 9300 0103 	sts		G_TEST_VALUES_IDX_WRK, REG_TEMP_R16
+C:000629 9503      	inc		REG_TEMP_R16			; Next word
+C:00062a 9503      	inc		REG_TEMP_R16
+C:00062b 9300 0103 	sts		G_TEST_VALUES_IDX_WRK, REG_TEMP_R16
          
          	; Raz donnee
-C:000659 2700      	clr		REG_TEMP_R16
-C:00065a 9300 00ff 	sts		G_TEST_VALUE_MSB_MORE, REG_TEMP_R16
-C:00065c 9300 0100 	sts		G_TEST_VALUE_LSB_MORE, REG_TEMP_R16
+C:00062d 2700      	clr		REG_TEMP_R16
+C:00062e 9300 00ff 	sts		G_TEST_VALUE_MSB_MORE, REG_TEMP_R16
+C:000630 9300 0100 	sts		G_TEST_VALUE_LSB_MORE, REG_TEMP_R16
          
-C:00065e 911f      	pop		REG_TEMP_R17
-C:00065f 910f      	pop		REG_TEMP_R16
-C:000660 91cf      	pop		REG_Y_LSB
-C:000661 91df      	pop		REG_Y_MSB
-C:000662 91af      	pop		REG_X_LSB
-C:000663 91bf      	pop		REG_X_MSB
+C:000632 911f      	pop		REG_TEMP_R17
+C:000633 910f      	pop		REG_TEMP_R16
+C:000634 91cf      	pop		REG_Y_LSB
+C:000635 91df      	pop		REG_Y_MSB
+C:000636 91af      	pop		REG_X_LSB
+C:000637 91bf      	pop		REG_X_MSB
          
-C:000664 9508      	ret
+C:000638 9508      	ret
          ; ---------
          
           text_crc8_maxim_label:
           .db	"[CRC8-MAXIM ", CHAR_NULL, CHAR_NULL
-C:000665 5B435243382D4D4158494D200000
+C:000639 5B435243382D4D4158494D200000
          
          ; End of file
          
@@ -4472,52 +4403,52 @@ D:000146    G_HEADER_INDEX_PLATINE:		.byte		1		; Index de la platine lu de l'EEP
          ;    => Des carateres peuvent avoir ete perdus dans l'empilement dans la FIFO
          ;
           presentation_error:
-C:00066c fd86      	sbrc		REG_FLAGS_0, FLG_0_UART_RX_BYTE_START_ERROR_IDX
-C:00066d c00d      	rjmp		presentation_error_reinit
-C:00066e fd87      	sbrc		REG_FLAGS_0, FLG_0_UART_RX_BYTE_STOP_ERROR_IDX
-C:00066f c00b      	rjmp		presentation_error_reinit
-C:000670 fd91      	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_RX_FULL_IDX
-C:000671 c009      	rjmp		presentation_error_reinit
-C:000672 fd95      	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_IDX
-C:000673 c007      	rjmp		presentation_error_reinit
+C:000640 fd86      	sbrc		REG_FLAGS_0, FLG_0_UART_RX_BYTE_START_ERROR_IDX
+C:000641 c00d      	rjmp		presentation_error_reinit
+C:000642 fd87      	sbrc		REG_FLAGS_0, FLG_0_UART_RX_BYTE_STOP_ERROR_IDX
+C:000643 c00b      	rjmp		presentation_error_reinit
+C:000644 fd91      	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_RX_FULL_IDX
+C:000645 c009      	rjmp		presentation_error_reinit
+C:000646 fd95      	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_IDX
+C:000647 c007      	rjmp		presentation_error_reinit
          
           #ifndef USE_MINIMALIST
-C:000674 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS			; Prise des flags 'G_TEST_FLAGS'
+C:000648 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS			; Prise des flags 'G_TEST_FLAGS'
          
-C:000676 fd04      	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_IDX
-C:000677 c003      	rjmp		presentation_error_reinit
+C:00064a fd04      	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_IDX
+C:00064b c003      	rjmp		presentation_error_reinit
          
-C:000678 fd06      	sbrc		REG_TEMP_R16, FLG_TEST_EEPROM_ERROR_IDX
-C:000679 c001      	rjmp		presentation_error_reinit
+C:00064c fd06      	sbrc		REG_TEMP_R16, FLG_TEST_EEPROM_ERROR_IDX
+C:00064d c001      	rjmp		presentation_error_reinit
           #endif
          
-C:00067a c00e      	rjmp		presentation_error_rtn
+C:00064e c00e      	rjmp		presentation_error_rtn
          
           presentation_error_reinit:
          	; Reinitialisation timer 'TIMER_ERROR' tant que erreur(s) presente(s)
-C:00067b e011      	ldi		REG_TEMP_R17, TIMER_ERROR
-C:00067c ec28      	ldi		REG_TEMP_R18, (200 % 256)
-C:00067d e030      	ldi		REG_TEMP_R19, (200 / 256)
-C:00067e dbc1      	rcall		restart_timer
+C:00064f e011      	ldi		REG_TEMP_R17, TIMER_ERROR
+C:000650 ec28      	ldi		REG_TEMP_R18, (200 % 256)
+C:000651 e030      	ldi		REG_TEMP_R19, (200 / 256)
+C:000652 dbed      	rcall		restart_timer
          
           #ifndef USE_MINIMALIST
          	; Effacement de certaines erreurs non fugitives
-C:00067f 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS 
-C:000681 7e0f      	cbr		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_MSK
-C:000682 9300 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R16
+C:000653 9100 00fb 	lds		REG_TEMP_R16, G_TEST_FLAGS 
+C:000655 7e0f      	cbr		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_MSK
+C:000656 9300 00fb 	sts		G_TEST_FLAGS, REG_TEMP_R16
           #endif
          
-C:000684 94f8      	cli
-C:000685   +  	setLedRedOn
-C:000685 6890      sbr		REG_FLAGS_1, FLG_1_LED_RED_ON_MSK	
+C:000658 94f8      	cli
+C:000659   +  	setLedRedOn
+C:000659 6890      sbr		REG_FLAGS_1, FLG_1_LED_RED_ON_MSK	
 
-C:000686 7e7f      cbr		REG_PORTB_OUT, MSK_BIT_LED_RED
-C:000687 bb78      out		PORTB, REG_PORTB_OUT					
+C:00065a 7e7f      cbr		REG_PORTB_OUT, MSK_BIT_LED_RED
+C:00065b bb78      out		PORTB, REG_PORTB_OUT					
 
-C:000688 9478      	sei
+C:00065c 9478      	sei
          
           presentation_error_rtn:
-C:000689 9508      	ret
+C:00065d 9508      	ret
          ; ---------
          
          ; ---------
@@ -4525,16 +4456,16 @@ C:000689 9508      	ret
          ; Conversion en majuscule si 'text_convert_hex_to_maj_ascii_table' utilisee
          ; ---------
           convert_nibble_to_ascii:
-C:00068a 700f      	andi		REG_TEMP_R16, 0x0f
-C:00068b e0fe      	ldi		REG_Z_MSB, high(text_convert_hex_to_min_ascii_table << 1)
-C:00068c e0e8      	ldi		REG_Z_LSB, low(text_convert_hex_to_min_ascii_table << 1)
-C:00068d 0fe0      	add		REG_Z_LSB, REG_TEMP_R16
-C:00068e 2700      	clr		REG_TEMP_R16
-C:00068f 1ff0      	adc		REG_Z_MSB, REG_TEMP_R16
-C:000690 9104      	lpm		REG_TEMP_R16, Z
+C:00065e 700f      	andi		REG_TEMP_R16, 0x0f
+C:00065f e0fd      	ldi		REG_Z_MSB, high(text_convert_hex_to_min_ascii_table << 1)
+C:000660 ebe0      	ldi		REG_Z_LSB, low(text_convert_hex_to_min_ascii_table << 1)
+C:000661 0fe0      	add		REG_Z_LSB, REG_TEMP_R16
+C:000662 2700      	clr		REG_TEMP_R16
+C:000663 1ff0      	adc		REG_Z_MSB, REG_TEMP_R16
+C:000664 9104      	lpm		REG_TEMP_R16, Z
          
           convert_nibble_to_ascii_rtn:
-C:000691 9508      	ret
+C:000665 9508      	ret
          ; ---------
          
          ; ---------
@@ -4545,131 +4476,131 @@ C:000691 9508      	ret
          ;      rcall   convert_and_put_fifo_tx
          ; ---------
           convert_and_put_fifo_tx:
-C:000692 930f      	push		REG_TEMP_R16		; Sauvegarde de la valeur a convertir et ecrire
+C:000666 930f      	push		REG_TEMP_R16		; Sauvegarde de la valeur a convertir et ecrire
          
-C:000693 9502      	swap		REG_TEMP_R16		; Copie Bits<7-4> dans Bits<3-0>
-C:000694 dff5      	rcall		convert_nibble_to_ascii
-C:000695 dcf2      	rcall    push_1_char_in_fifo_tx
+C:000667 9502      	swap		REG_TEMP_R16		; Copie Bits<7-4> dans Bits<3-0>
+C:000668 dff5      	rcall		convert_nibble_to_ascii
+C:000669 dcf2      	rcall    push_1_char_in_fifo_tx
          
-C:000696 910f      	pop		REG_TEMP_R16		; Reprise de la valeur a convertir et ecrire
+C:00066a 910f      	pop		REG_TEMP_R16		; Reprise de la valeur a convertir et ecrire
          
-C:000697 dff2      	rcall		convert_nibble_to_ascii
-C:000698 dcef      	rcall    push_1_char_in_fifo_tx
+C:00066b dff2      	rcall		convert_nibble_to_ascii
+C:00066c dcef      	rcall    push_1_char_in_fifo_tx
          
-C:000699 9508      	ret
+C:00066d 9508      	ret
          ; ---------
          
           presentation_connexion:
-C:00069a ff90      	sbrs		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_IDX
-C:00069b c00c      	rjmp		presentation_connexion_fifo_rx_empty
+C:00066e ff90      	sbrs		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_IDX
+C:00066f c00c      	rjmp		presentation_connexion_fifo_rx_empty
          
           presentation_connexion_fifo_rx_not_empty:
          	; FIFO/Rx non vide
          	; Test si 'Non Connecte' ?
          	; => Si Oui: Changement chenillard
-C:00069c fd93      	sbrc		REG_FLAGS_1, FLG_1_CONNECTED_IDX
-C:00069d c005      	rjmp		presentation_connexion_reinit_timer
+C:000670 fd93      	sbrc		REG_FLAGS_1, FLG_1_CONNECTED_IDX
+C:000671 c005      	rjmp		presentation_connexion_reinit_timer
          
          	; Changement chenillard
-C:00069e ef0e      	ldi		REG_TEMP_R16, 0xFE
-C:00069f 9300 0064 	sts		G_CHENILLARD_MSB, REG_TEMP_R16
-C:0006a1 9300 0065 	sts		G_CHENILLARD_LSB, REG_TEMP_R16
+C:000672 ef0e      	ldi		REG_TEMP_R16, 0xFE
+C:000673 9300 0064 	sts		G_CHENILLARD_MSB, REG_TEMP_R16
+C:000675 9300 0065 	sts		G_CHENILLARD_LSB, REG_TEMP_R16
          
           presentation_connexion_reinit_timer:
          	; Reinitialisation timer 'TIMER_ERROR' tant que FIFO/Rx non vide
-C:0006a3 e010      	ldi		REG_TEMP_R17, TIMER_CONNECT
-C:0006a4 eb28      	ldi		REG_TEMP_R18, (3000 % 256)
-C:0006a5 e03b      	ldi		REG_TEMP_R19, (3000 / 256)
-C:0006a6 db99      	rcall		restart_timer
+C:000677 e010      	ldi		REG_TEMP_R17, TIMER_CONNECT
+C:000678 eb28      	ldi		REG_TEMP_R18, (3000 % 256)
+C:000679 e03b      	ldi		REG_TEMP_R19, (3000 / 256)
+C:00067a dbc5      	rcall		restart_timer
          
          	; Passage en mode 'Connecte' pour une presentation Led GREEN --\__/-----
-C:0006a7 6098      	sbr		REG_FLAGS_1, FLG_1_CONNECTED_MSK
+C:00067b 6098      	sbr		REG_FLAGS_1, FLG_1_CONNECTED_MSK
          	;rjmp		presentation_connexion_rtn
          
           presentation_connexion_fifo_rx_empty:
          	; Passage en mode 'Non Connecte' a l'expiration du timer 'TIMER_CONNECT'
          
           presentation_connexion_rtn:
-C:0006a8 9508      	ret
+C:00067c 9508      	ret
          ; ---------
          
          ; ---------
           uos_print_line_feed_skip:
           print_line_feed_skip:
-C:0006a9 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:0006aa 9508      	ret
+C:00067d fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:00067e 9508      	ret
          
           uos_print_line_feed:
           print_line_feed:
-C:0006ab 93ff      	push		REG_Z_MSB
-C:0006ac 93ef      	push		REG_Z_LSB
+C:00067f 93ff      	push		REG_Z_MSB
+C:000680 93ef      	push		REG_Z_LSB
          
-C:0006ad e0fe      	ldi		REG_Z_MSB, ((text_line_feed << 1) / 256)
-C:0006ae e0e6      	ldi		REG_Z_LSB, ((text_line_feed << 1) % 256)
-C:0006af dcc9      	rcall		push_text_in_fifo_tx
+C:000681 e0fd      	ldi		REG_Z_MSB, ((text_line_feed << 1) / 256)
+C:000682 eaee      	ldi		REG_Z_LSB, ((text_line_feed << 1) % 256)
+C:000683 dcc9      	rcall		push_text_in_fifo_tx
          
-C:0006b0 91ef      	pop		REG_Z_LSB
-C:0006b1 91ff      	pop		REG_Z_MSB
-C:0006b2 9508      	ret
+C:000684 91ef      	pop		REG_Z_LSB
+C:000685 91ff      	pop		REG_Z_MSB
+C:000686 9508      	ret
          ; ---------
          
          ; ---------
           uos_print_1_byte_hexa_skip:
           print_1_byte_hexa_skip:
-C:0006b3 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:0006b4 9508      	ret
+C:000687 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:000688 9508      	ret
          
           uos_print_1_byte_hexa:
           print_1_byte_hexa:
-C:0006b5 93ff      	push		REG_Z_MSB
-C:0006b6 93ef      	push		REG_Z_LSB
+C:000689 93ff      	push		REG_Z_MSB
+C:00068a 93ef      	push		REG_Z_LSB
          
          	; Emission en hexa du contenu de 'REG_X_LSB'
-C:0006b7 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
-C:0006b8 efec      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
-C:0006b9 dcbf      	rcall		push_text_in_fifo_tx
+C:00068b e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
+C:00068c eae4      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
+C:00068d dcbf      	rcall		push_text_in_fifo_tx
          
-C:0006ba 2f0a      	mov		REG_TEMP_R16, REG_X_LSB
-C:0006bb dfd6      	rcall		convert_and_put_fifo_tx
+C:00068e 2f0a      	mov		REG_TEMP_R16, REG_X_LSB
+C:00068f dfd6      	rcall		convert_and_put_fifo_tx
          
-C:0006bc e0fe      	ldi		REG_Z_MSB, ((text_hexa_value_end << 1) / 256)
-C:0006bd e0e0      	ldi		REG_Z_LSB, ((text_hexa_value_end << 1) % 256)
-C:0006be dcba      	rcall		push_text_in_fifo_tx
+C:000690 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value_end << 1) / 256)
+C:000691 eae8      	ldi		REG_Z_LSB, ((text_hexa_value_end << 1) % 256)
+C:000692 dcba      	rcall		push_text_in_fifo_tx
          
-C:0006bf 91ef      	pop		REG_Z_LSB
-C:0006c0 91ff      	pop		REG_Z_MSB
-C:0006c1 9508      	ret
+C:000693 91ef      	pop		REG_Z_LSB
+C:000694 91ff      	pop		REG_Z_MSB
+C:000695 9508      	ret
          ; ---------
          
          ; ---------
           uos_print_2_bytes_hexa_skip:
           print_2_bytes_hexa_skip:
-C:0006c2 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:0006c3 9508      	ret
+C:000696 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:000697 9508      	ret
          
           uos_print_2_bytes_hexa:
           print_2_bytes_hexa:
-C:0006c4 93ff      	push		REG_Z_MSB
-C:0006c5 93ef      	push		REG_Z_LSB
+C:000698 93ff      	push		REG_Z_MSB
+C:000699 93ef      	push		REG_Z_LSB
          
          	; Emission en hexa du contenu de 'REG_X_MSB:REG_X_LSB'
-C:0006c6 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
-C:0006c7 efec      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
-C:0006c8 dcb0      	rcall		push_text_in_fifo_tx
+C:00069a e0fd      	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
+C:00069b eae4      	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
+C:00069c dcb0      	rcall		push_text_in_fifo_tx
          
-C:0006c9 2f0b      	mov		REG_TEMP_R16, REG_X_MSB
-C:0006ca dfc7      	rcall		convert_and_put_fifo_tx
+C:00069d 2f0b      	mov		REG_TEMP_R16, REG_X_MSB
+C:00069e dfc7      	rcall		convert_and_put_fifo_tx
          
-C:0006cb 2f0a      	mov		REG_TEMP_R16, REG_X_LSB
-C:0006cc dfc5      	rcall		convert_and_put_fifo_tx
+C:00069f 2f0a      	mov		REG_TEMP_R16, REG_X_LSB
+C:0006a0 dfc5      	rcall		convert_and_put_fifo_tx
          
-C:0006cd e0fe      	ldi		REG_Z_MSB, ((text_hexa_value_end << 1) / 256)
-C:0006ce e0e0      	ldi		REG_Z_LSB, ((text_hexa_value_end << 1) % 256)
-C:0006cf dca9      	rcall		push_text_in_fifo_tx
+C:0006a1 e0fd      	ldi		REG_Z_MSB, ((text_hexa_value_end << 1) / 256)
+C:0006a2 eae8      	ldi		REG_Z_LSB, ((text_hexa_value_end << 1) % 256)
+C:0006a3 dca9      	rcall		push_text_in_fifo_tx
          
-C:0006d0 91ef      	pop		REG_Z_LSB
-C:0006d1 91ff      	pop		REG_Z_MSB
-C:0006d2 9508      	ret
+C:0006a4 91ef      	pop		REG_Z_LSB
+C:0006a5 91ff      	pop		REG_Z_MSB
+C:0006a6 9508      	ret
          ; ---------
          
          ; ---------
@@ -4677,34 +4608,34 @@ C:0006d2 9508      	ret
          ; ---------
           uos_print_mark_skip:
           print_mark_skip:
-C:0006d3 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:0006d4 9508      	ret
+C:0006a7 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:0006a8 9508      	ret
          
           print_mark:
-C:0006d5 930f      	push		REG_TEMP_R16
-C:0006d6 e003      	ldi		REG_TEMP_R16, 3
+C:0006a9 930f      	push		REG_TEMP_R16
+C:0006aa e003      	ldi		REG_TEMP_R16, 3
          
           print_mark_loop:
-C:0006d7 930f      	push		REG_TEMP_R16
-C:0006d8 3002      	cpi		REG_TEMP_R16, 2
-C:0006d9 f411      	brne		print_mark_loop_a
-C:0006da 2f01      	mov		REG_TEMP_R16, REG_TEMP_R17
-C:0006db c001      	rjmp		print_mark_loop_b
+C:0006ab 930f      	push		REG_TEMP_R16
+C:0006ac 3002      	cpi		REG_TEMP_R16, 2
+C:0006ad f411      	brne		print_mark_loop_a
+C:0006ae 2f01      	mov		REG_TEMP_R16, REG_TEMP_R17
+C:0006af c001      	rjmp		print_mark_loop_b
          
           print_mark_loop_a:
-C:0006dc e20d      	ldi		REG_TEMP_R16, '-'
+C:0006b0 e20d      	ldi		REG_TEMP_R16, '-'
          
           print_mark_loop_b:
-C:0006dd dcaa      	rcall		push_1_char_in_fifo_tx
-C:0006de 910f      	pop		REG_TEMP_R16
-C:0006df 950a      	dec		REG_TEMP_R16
-C:0006e0 f7b1      	brne		print_mark_loop
+C:0006b1 dcaa      	rcall		push_1_char_in_fifo_tx
+C:0006b2 910f      	pop		REG_TEMP_R16
+C:0006b3 950a      	dec		REG_TEMP_R16
+C:0006b4 f7b1      	brne		print_mark_loop
          
-C:0006e1 dfc9      	rcall		print_line_feed
+C:0006b5 dfc9      	rcall		print_line_feed
          
-C:0006e2 910f      	pop		REG_TEMP_R16
+C:0006b6 910f      	pop		REG_TEMP_R16
          
-C:0006e3 9508      	ret
+C:0006b7 9508      	ret
          ; ---------
          
          ; ---------
@@ -4712,19 +4643,19 @@ C:0006e3 9508      	ret
          ; ---------
           uos_print_x_reg_skip:
           print_x_reg_skip:
-C:0006e4 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:0006e5 9508      	ret
+C:0006b8 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:0006b9 9508      	ret
          
           uos_print_x_reg:
           print_x_reg:
-C:0006e6 93ff      	push		REG_Z_MSB
-C:0006e7 93ef      	push		REG_Z_LSB
+C:0006ba 93ff      	push		REG_Z_MSB
+C:0006bb 93ef      	push		REG_Z_LSB
          
-C:0006e8 dfdb      	rcall		print_2_bytes_hexa
+C:0006bc dfdb      	rcall		print_2_bytes_hexa
          
-C:0006e9 91ef      	pop		REG_Z_LSB
-C:0006ea 91ff      	pop		REG_Z_MSB
-C:0006eb 9508      	ret
+C:0006bd 91ef      	pop		REG_Z_LSB
+C:0006be 91ff      	pop		REG_Z_MSB
+C:0006bf 9508      	ret
          ; ---------
          
          ; ---------
@@ -4732,20 +4663,20 @@ C:0006eb 9508      	ret
          ; ---------
           uos_print_y_reg_skip:
           print_y_reg_skip:
-C:0006ec fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:0006ed 9508      	ret
+C:0006c0 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:0006c1 9508      	ret
          
           uos_print_y_reg:
           print_y_reg:
-C:0006ee 93bf      	push		REG_X_MSB
-C:0006ef 93af      	push		REG_X_LSB
+C:0006c2 93bf      	push		REG_X_MSB
+C:0006c3 93af      	push		REG_X_LSB
          
-C:0006f0 01de      	movw		REG_X_LSB, REG_Y_LSB
-C:0006f1 dff4      	rcall		print_x_reg
+C:0006c4 01de      	movw		REG_X_LSB, REG_Y_LSB
+C:0006c5 dff4      	rcall		print_x_reg
          
-C:0006f2 91af      	pop		REG_X_LSB
-C:0006f3 91bf      	pop		REG_X_MSB
-C:0006f4 9508      	ret
+C:0006c6 91af      	pop		REG_X_LSB
+C:0006c7 91bf      	pop		REG_X_MSB
+C:0006c8 9508      	ret
          ; ---------
          
          ; ---------
@@ -4753,44 +4684,44 @@ C:0006f4 9508      	ret
          ; ---------
           uos_print_z_reg_skip:
           print_z_reg_skip:
-C:0006f5 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
-C:0006f6 9508      	ret
+C:0006c9 fd85      	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
+C:0006ca 9508      	ret
          
           uos_print_z_reg:
           print_z_reg:
-C:0006f7 93bf      	push		REG_X_MSB
-C:0006f8 93af      	push		REG_X_LSB
+C:0006cb 93bf      	push		REG_X_MSB
+C:0006cc 93af      	push		REG_X_LSB
          
-C:0006f9 01df      	movw		REG_X_LSB, REG_Z_LSB
-C:0006fa dfeb      	rcall		print_x_reg
+C:0006cd 01df      	movw		REG_X_LSB, REG_Z_LSB
+C:0006ce dfeb      	rcall		print_x_reg
          
-C:0006fb 91af      	pop		REG_X_LSB
-C:0006fc 91bf      	pop		REG_X_MSB
-C:0006fd 9508      	ret
+C:0006cf 91af      	pop		REG_X_LSB
+C:0006d0 91bf      	pop		REG_X_MSB
+C:0006d1 9508      	ret
          ; ---------
          
           text_hexa_value:
           .db	"[0x", CHAR_NULL
-C:0006FE 5B307800
+C:0006D2 5B307800
          
           text_hexa_value_end:
           .db	"]", CHAR_NULL
-C:000700 5D00
+C:0006D4 5D00
          
           text_hexa_value_lf_end:
           .db	"]", CHAR_LF, CHAR_NULL, CHAR_NULL
-C:000701 5D0A0000
+C:0006D5 5D0A0000
          
           text_line_feed:
           .db	CHAR_LF, CHAR_NULL
-C:000703 0A00
+C:0006D7 0A00
          
           #if 0		; Provision pour une conversion en majuscule
           #endif
          
           text_convert_hex_to_min_ascii_table:
           .db	"0123456789abcdef"
-C:000704 30313233343536373839616263646566
+C:0006D8 30313233343536373839616263646566
          
          ; End of file
          
@@ -4809,11 +4740,11 @@ Used memory blocks:
    code      :  Start = 0x0000, End = 0x003E, Length = 0x003F (63 words), Overlap=N
    code      :  Start = 0x003F, End = 0x0109, Length = 0x00CB (203 words), Overlap=N
    code      :  Start = 0x010A, End = 0x01FC, Length = 0x00F3 (243 words), Overlap=N
-   code      :  Start = 0x01FD, End = 0x02E3, Length = 0x00E7 (231 words), Overlap=N
-   code      :  Start = 0x02E4, End = 0x03B9, Length = 0x00D6 (214 words), Overlap=N
-   code      :  Start = 0x03BA, End = 0x0403, Length = 0x004A (74 words), Overlap=N
-   code      :  Start = 0x0404, End = 0x066B, Length = 0x0268 (616 words), Overlap=N
-   code      :  Start = 0x066C, End = 0x070B, Length = 0x00A0 (160 words), Overlap=N
+   code      :  Start = 0x01FD, End = 0x02B7, Length = 0x00BB (187 words), Overlap=N
+   code      :  Start = 0x02B8, End = 0x038D, Length = 0x00D6 (214 words), Overlap=N
+   code      :  Start = 0x038E, End = 0x03D7, Length = 0x004A (74 words), Overlap=N
+   code      :  Start = 0x03D8, End = 0x063F, Length = 0x0268 (616 words), Overlap=N
+   code      :  Start = 0x0640, End = 0x06DF, Length = 0x00A0 (160 words), Overlap=N
    data      :  Start = 0x0060, End = 0x0067, Length = 0x0008 (8 bytes), Overlap=N
    data      :  Start = 0x0068, End = 0x0068, Length = 0x0001 (1 byte), Overlap=N
    data      :  Start = 0x0069, End = 0x0088, Length = 0x0020 (32 bytes), Overlap=N
@@ -4824,7 +4755,7 @@ Used memory blocks:
 
 
 Segment usage:
-   Code      :      1804 words (3608 bytes)
+   Code      :      1760 words (3520 bytes)
    Data      :       232 bytes
    EEPROM    :         0 bytes
 
