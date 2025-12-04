@@ -27,7 +27,7 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
 
 ## 📎 Applications
 uOS permet de développer des programmes utilisant ses ressources sans avoir à les réécrire comme:
-* 📈 La gestion complète de 5 capteurs de température DS18B20 sur un bus 1-Wire (cf. ![Projet DS18B20](../DS18B20))
+* 📈 La gestion complète de 4 capteurs de température DS18B20 sur un bus 1-Wire (cf. ![Projet DS18B20](../DS18B20))
 
 ## 🛄 Organisation du projet
 uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
