@@ -1,5 +1,18 @@
-# Liste des commandes / réponses supportées par uOS
-# -------------------------------------------------
+@ -------------------------------------------------
+@ Liste des commandes / réponses supportées par uOS
+@ -------------------------------------------------
+@ Commandes de lecture:
+@ - "<a" -> Calcul du CRC8-MAXIM du programme en mémoire flash
+@ - "<e" -> Lecture des 512 octets de l'EEPROM de l'ATtiny85
+@ - "<f" -> Lecture de la signature et des fusibles de l'ATtiny85
+@ - "<p" -> Dump mémoire sur 64 mots du programme en mémoire flash à partir d'une adresse donnée
+@ - "<s" -> Lecture partielle ou complète de la SRAM de l'ATtiny85
+@
+@ Commandes en écriture:
+@ - "<B" -> Reconfiguration de la vitesse de l'UART (Rx et Tx)
+@ - "<E" -> Ecriture d'un ou plusieurs octets dans l'EEPROM de l'ATtiny85
+@ - "<S" -> Ecriture d'un ou plusieurs octets dans la SRAM de l'ATtiny85
+@ -------------------------------------------------
 
 @ => les versions de uOS et/ou de l'EEPROM peuvent changer suivant l'état de développement
 @ => Les Ids de réponses (ie. # 4080 peuvent varier suivant les copier/coller des commandes/réponses)
@@ -19,10 +32,44 @@
 # 4066: [[### Type: 78]]
 # 4067: [[### Id: 00]]
 
-@ Réponses à la commande "<f"
-@ ---------------------------
+@ Réponse à la commande "<a"
+@ --------------------------
+@ Calcul du CRC8-MAXIM du programme uOS [0x0000, ..., 0x070b]
+@ --------------------------
+>>> Send command [<a] (2 bytes)
+#  204: [[[02>a0000]]]
+#  205: [[[0x0000][0xc010c00ec1b7c106c00bc00ac009c008c007c006c005c004c003c002c0010000][0x5c]]]
+#  206: [[[0x0010][0xc0c5d02dd03dd05ed093e01fe72de030d2169478e0f0e5ead35cd3af6490ff80][0x74]]]
+#  207: [[[0x0020][0xc00991100063931000627f8ed1e6d2bcd66ad3dad36ed639cff2232320235441][0x67]]]
+#  208: [[[0x0030][0x6974796e3538755f534f24206552697669736e6f203a2e3134312420000aef0f][0x54]]]
+...
+#  314: [[[0x06d0][0x930f3002f4112f01c001e20ddcb1910f950af7b1dfc9910f9508fd85950893ff][0xd7]]]
+#  315: [[[0x06e0][0x93efdfdb91ef91ff9508fd85950893bf93af01dedff491af91bf9508fd859508][0xf0]]]
+#  316: [[[0x06f0][0x93bf93af01dfdfeb91af91bf9508305b0078005d0a5d0000000a313033323534][0x0c]]]
+#  317: [[[0x0700][0x37363938626164636665435b43522d38414d4958204d0000][0x01]]]
+#  318: [[[CRC8-MAXIM [0x0000][0x070b][0x01]]]
+@ --------------------------
+
+@ Réponse à la commande "<e"
+@ --------------------------
+@ Dump des 512 octets de l'EEPROM
+@ --------------------------
+>>> Send command [<e] (2 bytes)
+#  322: [[15>e0000]]
+        Addr   0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F   0123456789ABCDEF
+#  324: 0000  31 2e 32 2e 36 00 00 00  78 00 00 00 00 00 00 03  |1.2.6...x.......|
+#  325: 0010  1e 1f 25 29 2b 2f 35 3b  3d 43 47 49 ff 53 59 61  |..%)+/5;=CGI.SYa|
+#  326: 0020  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+#  327: 0030  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+...
+#  353: 01d0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+#  354: 01e0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+#  355: 01f0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+
+@ Réponse à la commande "<f"
+@ --------------------------
 @ Lecture de la signature et des fusibles
-@ ---------------------------
+@ --------------------------
 >>> Send command [<f] (2 bytes)
 # 4080: [[02>f0000]]
 # 4082: [[0x1e][0x93][0x0b]]
@@ -34,7 +81,7 @@
 @    => Lock:     [0xff]
 @    => Extended: [0xff]
 @    => High:     [0xd7]
-@ ---------------------------
+@ --------------------------
 
 @ Réponse à la commande "<p"
 @ --------------------------
@@ -84,6 +131,7 @@
 
 @ --------------------------
 @ Dump de toute la mémoire SRAM
+@ => Les octets à 0xff permettre de connaître l'occupation de la SRAM
 @ --------------------------
 >>> Send command [<s] (2 bytes)
 #  110: [[0b>s0000]]
@@ -122,25 +170,21 @@
 #  143: 0250  02 02 03 8c 06 89 04 f9  04 28 00 2b 04 28 00 2b  |.........(.+.(.+|
 @ --------------------------
 
-@ Réponse à la commande "<e"
-@ --------------------------
-@ Dump des 512 premiers octets de l'EEPROM
-@ --------------------------
->>> Send command [<e] (2 bytes)
-#  322: [[15>e0000]]
-        Addr   0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F   0123456789ABCDEF
-#  324: 0000  31 2e 32 2e 36 00 00 00  78 00 00 00 00 00 00 00  |1.2.6...x.......|
-#  325: 0010  1e 1f 25 29 2b 2f 35 3b  3d 43 47 49 ff 53 59 61  |..%)+/5;=CGI.SYa|
-#  326: 0020  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-#  327: 0030  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-...
-#  353: 01d0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-#  354: 01e0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-#  355: 01f0  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+@ Commande de reconfiguration de la vitesse de l'UART (Rx et Tx)
+@ ---------------------
+@ Les vitesses de 300, 600, 1200, 2400, 4800, 9600 et 19200 bauds sont configurables par:
+@ - "<B0": 19200 bauds
+@ - "<B1":  9600 bauds 
+@ - "<B2":  4800 bauds 
+@ - "<B3":  2400 bauds
+@ - "<B4":  1200 bauds
+@ - "<B5":   600 bauds
+@ - "<B6":   300 bauds
+@ ---------------------
 
 @ Réponse à la commande "<E"
 @ --------------------------
-@ Ecriture de 3 octets dans l'EEPROM à l'adresse 0x20 et suivantes
+@ Ecriture de 3 octets dans l'EEPROM à l'adresse 0x20 et les 2 suivantes
 @ --------------------------
 >>> Send command [<E20+ab+cd+ef] (13 bytes)
 #  411: [[17>E0020]]
@@ -157,22 +201,26 @@
 ...
 @ ---------------------
 
-@ Réponse à la commande "<a"
+@ Réponse à la commande "<S"
 @ --------------------------
-@ Calcul du CRC8-MAXIM du programme uOS [0x0000, ..., 0x070b]
+@ Ecriture de l'octet 0x02 dans la SRAM à l'adresse 0x180 correspond
+@ au nombre de capteurs DS18B20 à détecter et gérer dans le cas où le
+@ programme DS18B20 est flashé
 @ --------------------------
->>> Send command [<a] (2 bytes)
-#  204: [[[02>a0000]]]
-#  205: [[[0x0000][0xc010c00ec1b7c106c00bc00ac009c008c007c006c005c004c003c002c0010000][0x5c]]]
-#  206: [[[0x0010][0xc0c5d02dd03dd05ed093e01fe72de030d2169478e0f0e5ead35cd3af6490ff80][0x74]]]
-#  207: [[[0x0020][0xc00991100063931000627f8ed1e6d2bcd66ad3dad36ed639cff2232320235441][0x67]]]
-#  208: [[[0x0030][0x6974796e3538755f534f24206552697669736e6f203a2e3134312420000aef0f][0x54]]]
+>>> Send command [<S180+2] (7 bytes)
+#  694: [[0c>S0180]]
+@ ---------------------
+
+@ ---------------------
+@ Relecture de l'adresse 0x180 et suivantes
+@ ---------------------
+>>> Send command [<s180] (5 bytes)
+#  760: [[0f>s0180]]
+        Addr   0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F   0123456789ABCDEF
+#  762: 0180  02 10 01 cb 06 22 60 45  1c 73 28 2b 06 22 60 43  |....."`E.s(+."`C|
+#  763: 0190  40 56 28 00 00 00 00 00  00 00 00 00 00 00 00 00  |@V(.............|
+#  764: 01a0  00 00 00 06 03 01 02 01  08 08 8d c1 02 ef 17 31  |...............1|
 ...
-#  314: [[[0x06d0][0x930f3002f4112f01c001e20ddcb1910f950af7b1dfc9910f9508fd85950893ff][0xd7]]]
-#  315: [[[0x06e0][0x93efdfdb91ef91ff9508fd85950893bf93af01dedff491af91bf9508fd859508][0xf0]]]
-#  316: [[[0x06f0][0x93bf93af01dfdfeb91af91bf9508305b0078005d0a5d0000000a313033323534][0x0c]]]
-#  317: [[[0x0700][0x37363938626164636665435b43522d38414d4958204d0000][0x01]]]
-#  318: [[[CRC8-MAXIM [0x0000][0x070b][0x01]]]
-@ --------------------------
+@ ---------------------
 
 # Fin du fichier
