@@ -52,7 +52,7 @@ DS18B20 est organisé au sein des fichiers suivants dont les sources sont fourni
 * **ATtiny85_DS18B20_1_Wire_Commands.asm**
      * Gestion des commandes du monde 1-Wire:
           * Commandes ROM standards (Read Rom [33h], Match Rom [55H] et Search ROM [F0h])
-          * Commandes specifiques au DS18B20
+          * Commandes spécifiques au DS18B20
                * Convert T [44h]
                * Read Scratchpad [BEh]
                * Copy Scratchpad [48h]
