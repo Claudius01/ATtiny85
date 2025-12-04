@@ -4,12 +4,12 @@
 ; => Le traitement associe a chaque timer est effectue dans l'ordre de son index
 #define	NBR_TIMER							16
 
-#define	TIMER_CONNECT						10
-#define	TIMER_ERROR							11
-#define	TIMER_APPUI_BOUTON_LED			12
-#define	TIMER_APPUI_BOUTON_DETECT		13
-#define	TIMER_RXD_ANTI_REBONDS			14
-#define	TIMER_LED_GREEN					15
+#define	TIMER_CONNECT						0
+#define	TIMER_ERROR							1
+#define	TIMER_APPUI_BOUTON_LED			2
+#define	TIMER_APPUI_BOUTON_DETECT		3
+#define	TIMER_RXD_ANTI_REBONDS			4
+#define	TIMER_LED_GREEN					5
 
 .dseg
 

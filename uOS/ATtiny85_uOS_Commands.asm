@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Commands.asm,v 1.5 2025/11/29 13:43:23 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Commands.asm,v 1.9 2025/12/02 14:31:06 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Commands.h"
 
@@ -223,20 +223,14 @@ exec_command_test_x:
 	rjmp		exec_command_type_x
 	; Fin: Liste des commandes supportees par uOS
 
-#if USE_DS18B20
-exec_command_test_c:
-	cpi		REG_TEMP_R16, CHAR_TYPE_COMMAND_C_MAJ
-	brne		exec_command_ko
-	rjmp		exec_command_type_C
-	; Fin: Liste des commandes supportees par DS18B20
-#endif
-
 exec_command_ko:
 	; La commande n'est pas supportee par uOS
 	; => Prolongement si module 'DS18B20' defini
 	;
-#if USE_DS18B20
+#ifdef USE_DS18B20
+#ifndef USE_MINIMALIST
 	rcall		exec_command_ds18b20
+#endif
 #else
 	rcall		print_command_ko			; Commande non reconnue
 #endif
@@ -285,7 +279,7 @@ exec_command_A_loop_1:
 	; Calcul jusqu'a l'adresse 'end_of_program' incluse
 	ldi		REG_TEMP_R16, 0x01
 	and		REG_TEMP_R16, REG_X_LSB
-	breq		exec_command_A_loop_1_cont_d	; Lecture par mot
+	breq		exec_command_A_loop_1_cont_d			; Lecture par mot
 
 	push		REG_X_MSB
 	push		REG_X_LSB
@@ -330,6 +324,33 @@ exec_command_A_loop_1_cont_d:
 exec_command_A_end:
 	ldi		REG_TEMP_R16, ']'
 	rcall		push_1_char_in_fifo_tx
+
+	push		REG_X_LSB
+	lds		REG_X_LSB, G_CALC_CRC8
+	rcall		print_1_byte_hexa
+	rcall		print_line_feed
+	pop		REG_X_LSB
+
+	; Impression du resultat comme "[CRC8-MAXIM [0x0000][0x06f6][0x3c]]"
+	push		REG_Z_MSB
+	push		REG_Z_LSB
+	ldi		REG_Z_MSB, ((text_crc8_maxim_label << 1) / 256)
+	ldi		REG_Z_LSB, ((text_crc8_maxim_label << 1) % 256)
+	rcall		push_text_in_fifo_tx
+	pop		REG_Z_LSB
+	pop		REG_Z_MSB
+
+	ldi		REG_Y_MSB, 0
+	ldi		REG_Y_LSB, 0
+	rcall		print_y_reg
+
+	; Recadrage pour une adresse "imprimable"
+	lsr		REG_Z_MSB
+	ror		REG_Z_LSB
+	sbiw		REG_Z_LSB, 1
+	rcall		print_z_reg
+	; Fin: Impression du resultat comme "[CRC8-MAXIM [0x0000][0x06f6][0x3c]]"
+
 	push		REG_X_LSB
 	lds		REG_X_LSB, G_CALC_CRC8
 	rcall		print_1_byte_hexa
@@ -337,11 +358,14 @@ exec_command_A_end:
 	pop		REG_X_LSB
 
 exec_command_A_rtn:
+#if 0
 	ldi		REG_TEMP_R17, 'c'
 	rcall		print_mark
 	lds		REG_X_LSB, G_CALC_CRC8
 	rcall		print_1_byte_hexa
 	rcall		print_line_feed
+#endif
+
 	ret
 ; ---------
 
@@ -1106,5 +1130,8 @@ add_value_into_zone:
 	ret
 ; ---------
 
-; Endo of file
+text_crc8_maxim_label:
+.db	"[CRC8-MAXIM ", CHAR_NULL, CHAR_NULL
+
+; End of file
 

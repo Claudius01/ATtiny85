@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Print.asm,v 1.8 2025/11/29 13:43:23 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Print.asm,v 1.11 2025/12/02 13:27:20 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Print.h"
 
@@ -25,6 +25,7 @@ presentation_error:
 	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_IDX
 	rjmp		presentation_error_reinit
 
+#ifndef USE_MINIMALIST
 	lds		REG_TEMP_R16, G_TEST_FLAGS			; Prise des flags 'G_TEST_FLAGS'
 
 	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_IDX
@@ -32,6 +33,7 @@ presentation_error:
 
 	sbrc		REG_TEMP_R16, FLG_TEST_EEPROM_ERROR_IDX
 	rjmp		presentation_error_reinit
+#endif
 
 	rjmp		presentation_error_rtn
 
@@ -42,10 +44,12 @@ presentation_error_reinit:
 	ldi		REG_TEMP_R19, (200 / 256)
 	rcall		restart_timer
 
+#ifndef USE_MINIMALIST
 	; Effacement de certaines erreurs non fugitives
 	lds		REG_TEMP_R16, G_TEST_FLAGS 
 	cbr		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_MSK
 	sts		G_TEST_FLAGS, REG_TEMP_R16
+#endif
 
 	cli
 	setLedRedOn

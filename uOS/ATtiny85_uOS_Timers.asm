@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.6 2025/11/26 15:12:02 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.12 2025/12/04 10:34:39 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Timers.h"
 
@@ -9,22 +9,22 @@
 ; => Cf. 'NBR_TIMER' -> Nombre de taches d'execution definies
 ; ---------
 vector_timers:
-	rjmp		exec_timer_0							; Timer #0
-	rjmp		exec_timer_1							; Timer #1
-	rjmp		exec_timer_2							; Timer #2
-	rjmp		exec_timer_3							; Timer #3
-	rjmp		exec_timer_4							; Timer #4
-	rjmp		exec_timer_5							; Timer #5
+	rjmp		exec_timer_connect					; Timer #0
+	rjmp		exec_timer_error						; Timer #1
+	rjmp		exec_timer_push_button_led			; Timer #2
+	rjmp		exec_timer_push_button_detect		; Timer #3
+	rjmp		exec_timer_anti_rebound				; Timer #4
+	rjmp		exec_timer_led_green					; Timer #5
 	rjmp		exec_timer_6							; Timer #6
 	rjmp		exec_timer_7							; Timer #7
 	rjmp		exec_timer_8							; Timer #8
 	rjmp		exec_timer_9							; Timer #9
-	rjmp		exec_timer_connect					; Timer #10
-	rjmp		exec_timer_error						; Timer #11
-	rjmp		exec_timer_push_button_led			; Timer #12
-	rjmp		exec_timer_push_button_detect		; Timer #13
-	rjmp		exec_timer_anti_rebound				; Timer #14
-	rjmp		exec_timer_led_green					; Timer #15
+	rjmp		exec_timer_10							; Timer #10
+	rjmp		exec_timer_11							; Timer #11
+	rjmp		exec_timer_12							; Timer #12
+	rjmp		exec_timer_13							; Timer #13
+	rjmp		exec_timer_14							; Timer #14
+	rjmp		exec_timer_15							; Timer #15
 
 ; ---------
 ; Gestion des timers 16 bits; Durees [0, 1 mS, ..., ~65 Sec]
@@ -259,79 +259,6 @@ test_timer_rtn:
 ; ---------
 
 ; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_0:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_1:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_2:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_3:
-#if USE_DS18B20
-	rcall		exec_timer_3_ds18b20
-#endif
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_4:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_5:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_6:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_7:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_8:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_9:
-	ret
-; ---------
-
-; ---------
 ; TIMER_CONNECT
 ; ---------
 exec_timer_connect:
@@ -391,56 +318,6 @@ exec_timer_push_button_detect:
 	ldi		REG_Z_LSB, ((text_appui_bouton << 1) % 256)
 	rcall		push_text_in_fifo_tx
 
-	lds		REG_TEMP_R16, G_NBR_VALUE_TRACE
-	rcall		convert_and_put_fifo_tx
-	; Fin: Emission en hexa du compteur 'G_NBR_VALUE_TRACE'
-
-	; Emission en hexa du compteur 'G_NBR_ERRORS'
-	ldi		REG_Z_MSB, ((text_appui_bouton_value_hexa << 1) / 256)
-	ldi		REG_Z_LSB, ((text_appui_bouton_value_hexa << 1) % 256)
-	rcall		push_text_in_fifo_tx
-
-	lds		REG_TEMP_R16, G_NBR_ERRORS
-	rcall		convert_and_put_fifo_tx
-	; Fin: Emission en hexa du compteur 'G_NBR_ERRORS'
-
-	; Emission en hexa de 'ASCII' de 'G_TEST_COMMAND_TYPE'
-	ldi		REG_Z_MSB, ((text_appui_bouton_value_ascii << 1) / 256)
-	ldi		REG_Z_LSB, ((text_appui_bouton_value_ascii << 1) % 256)
-	rcall		push_text_in_fifo_tx
-
-	lds		REG_TEMP_R16, G_TEST_COMMAND_TYPE
-	rcall		push_1_char_in_fifo_tx
-	; Fin: Emission en ASCII de 'G_TEST_COMMAND_TYPE'
-
-	; Emission en hexa de 'G_TEST_VALUE_MSB:G_TEST_VALUE_LSB'
-	ldi		REG_Z_MSB, ((text_appui_bouton_value_hexa << 1) / 256)
-	ldi		REG_Z_LSB, ((text_appui_bouton_value_hexa << 1) % 256)
-	rcall		push_text_in_fifo_tx
-
-	lds		REG_TEMP_R16, G_TEST_VALUE_MSB
-	rcall		convert_and_put_fifo_tx
-
-	lds		REG_TEMP_R16, G_TEST_VALUE_LSB
-	rcall		convert_and_put_fifo_tx
-	; Fin: Emission en hexa de 'G_TEST_VALUE_MSB:G_TEST_VALUE_LSB'
-
-	; Emission en hexa de 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
-	ldi		REG_Z_MSB, ((text_appui_bouton_value_hexa << 1) / 256)
-	ldi		REG_Z_LSB, ((text_appui_bouton_value_hexa << 1) % 256)
-	rcall		push_text_in_fifo_tx
-
-	lds		REG_TEMP_R16, G_TEST_VALUE_MSB_MORE
-	rcall		convert_and_put_fifo_tx
-
-	lds		REG_TEMP_R16, G_TEST_VALUE_LSB_MORE
-	rcall		convert_and_put_fifo_tx
-	; Fin: Emission en hexa de 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
-
-	ldi		REG_Z_MSB, ((text_appui_bouton_end << 1) / 256)
-	ldi		REG_Z_LSB, ((text_appui_bouton_end << 1) % 256)
-	rcall		push_text_in_fifo_tx
-
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 
 	ret
@@ -492,17 +369,81 @@ exec_timer_led_green_more:									; Ici, G_CHENILLARD_MSB<7> reflete la Carry
 	ret
 ; ---------
 
+; ---------
+; Timer #6 for DS18B20
+; ---------
+exec_timer_6:
+#ifdef USE_DS18B20
+	rcall		exec_timer_ds18b20
+#endif
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_7:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_8:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_9:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_10:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_11:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_12:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_13:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_14:
+	ret
+; ---------
+
+; ---------
+; TIMER_SPARE
+; ---------
+exec_timer_15:
+	ret
+; ---------
+
 text_appui_bouton:
-.db	"### Appui bouton [0x", CHAR_NULL, CHAR_NULL
-
-text_appui_bouton_value_hexa:
-.db	"] [0x", CHAR_NULL
-
-text_appui_bouton_value_ascii:
-.db	"] [", CHAR_NULL
-
-text_appui_bouton_end:
-.db	"] ", CHAR_LF, CHAR_NULL
+.db	"### Button action", CHAR_LF, CHAR_NULL, CHAR_NULL
 
 ; End of file
 
