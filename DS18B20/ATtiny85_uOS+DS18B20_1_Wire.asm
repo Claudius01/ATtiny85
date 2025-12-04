@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20_1_Wire.asm,v 1.7 2025/11/29 12:31:38 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_1_Wire.asm,v 1.9 2025/12/03 07:29:24 administrateur Exp $"
 
 ; ---------
 ; ds18b20_write_8_bits_command
@@ -7,7 +7,7 @@
 ; => LSB en tete
 ; ---------
 ds18b20_write_8_bits_command:
-	ldi		REG_TEMP_R18, 8
+	ldi		REG_TEMP_R18, NBR_BITS_TO_SHIFT
 
 ds18b20_write_8_bits_command_loop:
 	ror		REG_TEMP_R16
@@ -27,12 +27,12 @@ ds18b20_write_8_bits_command_loop:
 ; Lecture de la reponse sur 72 bits disponible dans [G_DS18B20_BYTES_RESP, ..., (G_DS18B20_BYTES_RESP + 8)]
 ; ---------
 ds18b20_read_response_72_bits:
-	ldi		REG_TEMP_R19, 9
+	ldi		REG_TEMP_R19, (72 / 8)
 	ldi		REG_TEMP_R18, 72
 	rjmp		ds18b20_read_response_x_bits_loop
 
 ds18b20_read_response_64_bits:
-	ldi		REG_TEMP_R19, 8
+	ldi		REG_TEMP_R19, (64 / 8)
 	ldi		REG_TEMP_R18, 64
 
 ds18b20_read_response_x_bits_loop:
@@ -130,6 +130,80 @@ ds18b20_read_bit:
 
 	sbi		DDRB, IDX_BIT_1_WIRE			; <PORTB<2> en sortie avant de sortir
 
+	ret
+; ---------
+
+; ---------
+; Propagation de la Carry et decalage d'un bit a droite
+; sur les 'REG_TEMP_R19' bytes a partir de 'G_DS18B20_BYTES_RESP'
+; ou a partir de 'G_DS18B20_BYTES_ROM'
+; ---------
+ds18b20_shift_right_resp:
+; ---------
+	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_RESP)
+	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_RESP)
+	rjmp		ds18b20_shift_right
+
+ds18b20_shift_right_rom:
+	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_ROM)
+	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_ROM)
+	;rjmp		ds18b20_shift_right
+
+ds18b20_shift_right:
+
+	push		REG_TEMP_R19
+
+ds18b20_shift_right_resp_loop:
+#if USE_DS18B20_TRACE
+	in			REG_SAVE_SREG, SREG				; Save SREG
+
+	mov		REG_X_MSB, REG_Y_MSB
+	mov		REG_X_LSB, REG_Y_LSB
+	rcall		uos_print_2_bytes_hexa_skip
+#endif
+
+	ld			REG_TEMP_R16, Y
+
+#if USE_DS18B20_TRACE
+	mov		REG_X_LSB, REG_TEMP_R16
+	push		REG_TEMP_R16
+	rcall		uos_print_1_byte_hexa_skip
+	rcall		uos_print_line_feed_skip
+	pop		REG_TEMP_R16
+	out		SREG, REG_SAVE_SREG				; Restore SREG
+#endif
+
+	ror		REG_TEMP_R16
+	st			Y+, REG_TEMP_R16	
+
+	dec		REG_TEMP_R19
+	brne		ds18b20_shift_right_resp_loop
+
+	pop		REG_TEMP_R19
+	ret
+; ---------
+
+; ---------
+; Propagation de la Carry et decalage d'un bit a droite
+; sur les 'REG_TEMP_R19' bytes a partir de 'G_DS18B20_BYTES_SEND'
+; ---------
+ds18b20_shift_right_send:
+; ---------
+	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_SEND)
+	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_SEND)
+
+	push		REG_TEMP_R19
+
+ds18b20_shift_right_send_loop:
+	ld			REG_TEMP_R16, Y
+
+	ror		REG_TEMP_R16
+	st			Y+, REG_TEMP_R16	
+
+	dec		REG_TEMP_R19
+	brne		ds18b20_shift_right_send_loop
+
+	pop		REG_TEMP_R19
 	ret
 ; ---------
 

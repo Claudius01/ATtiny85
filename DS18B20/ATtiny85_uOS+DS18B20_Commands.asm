@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20_Commands.asm,v 1.8 2025/11/29 16:23:51 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_Commands.asm,v 1.9 2025/12/03 14:53:40 administrateur Exp $"
 
 ; Prolongation des commandes non supportees par uOS
 
@@ -92,26 +92,26 @@ exec_command_type_C_get_params:
    lds      REG_X_LSB, G_TEST_VALUE_LSB
 
 	; Test de l'Id capteur avec comme convention:
-	; - Si 'G_DS18B20_NBR_ROM' == 0 -> Erreur
-	; - Si 'REG_X_LSB' == 0 -> Adressage des capteurs #0, #1, #2, ..., #(G_DS18B20_NBR_ROM - 1)
-	; - Si 'REG_X_LSB' dans la plage [1, 2, ..., G_DS18B20_NBR_ROM] -> Adressage du capteur #'REG_X_LSB'
+	; - Si 'G_DS18B20_NBR_ROM_FOUND' == 0 -> Erreur
+	; - Si 'REG_X_LSB' == 0 -> Adressage des capteurs #0, #1, #2, ..., #(G_DS18B20_NBR_ROM_FOUND - 1)
+	; - Si 'REG_X_LSB' dans la plage [1, 2, ..., G_DS18B20_NBR_ROM_FOUND] -> Adressage du capteur #'REG_X_LSB'
 	; - Sinon -> Erreur	
-	lds		REG_TEMP_R16, G_DS18B20_NBR_ROM
+	lds		REG_TEMP_R16, G_DS18B20_NBR_ROM_FOUND
 	tst		REG_TEMP_R16
 	breq		exec_command_type_C_not_valid
 
 	tst		REG_X_LSB
 	breq		exec_command_type_C_all_capteur		; Balayage des 'G_DS18B20_NBR_ROM' capteurs
 
-	cp			REG_TEMP_R16, REG_X_LSB					; REG_X_LSB dans la plage [1, 2, ..., G_DS18B20_NBR_ROM]
+	cp			REG_TEMP_R16, REG_X_LSB					; REG_X_LSB dans la plage [1, 2, ..., G_DS18B20_NBR_ROM_FOUND]
 	clr		REG_TEMP_R16
 	cpc		REG_TEMP_R16, REG_X_MSB
 	brpl		exec_command_type_C_this_capteur
 
-	rjmp		exec_command_type_C_not_valid			; #Id hors plage @ 'G_DS18B20_NBR_ROM'
+	rjmp		exec_command_type_C_not_valid			; #Id hors plage @ 'G_DS18B20_NBR_ROM_FOUND'
 
 exec_command_type_C_all_capteur:
-	lds		REG_TEMP_R18, G_DS18B20_NBR_ROM
+	lds		REG_TEMP_R18, G_DS18B20_NBR_ROM_FOUND
 
 exec_command_type_C_all_capteur_loop:
 	push		REG_TEMP_R18
@@ -126,7 +126,7 @@ exec_command_type_C_all_capteur_loop:
 	rjmp		exec_command_type_C_end
 
 exec_command_type_C_this_capteur:
-	dec		REG_X_LSB									; Formatage #Id dans la plage [0, 1, ..., (G_DS18B20_NBR_ROM - 1)]
+	dec		REG_X_LSB									; Formatage #Id dans la plage [0, 1, ..., (G_DS18B20_NBR_ROM_FOUND - 1)]
 	sts		(G_FRAME_ALL_INFOS + 0), REG_X_LSB
 
    ldi      REG_TEMP_R17, 'C'

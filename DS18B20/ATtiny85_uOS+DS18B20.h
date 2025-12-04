@@ -1,10 +1,16 @@
-; "$Id: ATtiny85_uOS+DS18B20.h,v 1.7 2025/11/29 16:23:51 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.h,v 1.12 2025/12/03 17:46:55 administrateur Exp $"
 
 #define	USE_DS18B20_TRACE				0
 
-#define	IDX_BIT_1_WIRE					IDX_BIT2
+; Support de 4 capteurs ('DS18B20_NBR_ROM_TO_DETECT' inferieur ou egal a 'DS18B20_NBR_ROM_GESTION')
+#define	DS18B20_NBR_ROM_TO_DETECT	4
 
-#define	DS18B20_TIMER_1_SEC			3				; Timer pour les mesures des temperatures et les emissions de trames
+#define	DS18B20_NBR_ROM_GESTION		8		; Gestion interne des ROM a concurence de 8 max (NE PAS MODIFIER)
+
+#define	IDX_BIT_1_WIRE					IDX_BIT2
+#define	NBR_BITS_TO_SHIFT				8
+
+#define	DS18B20_TIMER_1_SEC			6		; Timer pour les mesures des temperatures et les emissions de trames
 
 #define	CHAR_TYPE_COMMAND_C_MAJ		'C'
 #define	CHAR_TYPE_COMMAND_T_MAJ		'T'
@@ -22,7 +28,8 @@
 #define	FLG_DS18B20_TRACE_IDX		IDX_BIT3		; Trace Enable (1) /Disable (0) (0 by default)
 #define	FLG_TEST_CONFIG_ERROR_IDX	IDX_BIT7
 
-#define	EEPROM_ADDR_PRIMES			16
+#define	EEPROM_ADDR_NBR_DS18B20_TO_DETECT			15
+#define	EEPROM_ADDR_PRIMES								16
 
 .dseg
 
@@ -47,22 +54,15 @@ G_DS18B20_COUNTER:				.byte		1
 G_DS18B20_COUNTER_INIT:			.byte		1
 G_DS18B20_NBR_BITS_RETRY:		.byte		1		; Numero de la passe ((1 << n) - 1) <= au nbr de bits inconnus
 G_DS18B20_PATTERN:				.byte		1		; Pattern a tester
-G_DS18B20_NBR_BITS_0_1:			.byte		1		; Nbr de bits inconnus (retour de 0x00) a balayer)
+G_DS18B20_NBR_BITS_0_1:			.byte		1		; Nbr de bits inconnus (retour de 0x00) a balayer
 G_DS18B20_NBR_BITS_0_1_MAX: 	.byte		1		; Nbr de bits inconnus maximal (pour verification @ pattern a tester
-G_DS18B20_NBR_ROM:				.byte		1		; Nbr de ROM trouve
+G_DS18B20_NBR_ROM_FOUND:		.byte		1		; Nbr de ROM trouve
 G_DS18B20_NBR_ROM_MAX:			.byte		1		; Nbr de ROM maximal supporte (lu depuis l'EEPROM)
 G_DS18B20_ROM_IDX_WRK:			.byte		1		; Index dans la table des ROM a rechercher / trouve
 G_DS18B20_ROM_IDX:				.byte		1		; Index du ROM "matche" dans la plage [0, 1, 2, etc.]
 
-; Reservation pour 8 capteurs
-G_DS18B20_ROM_0:					.byte		8		; 1st ROM
-G_DS18B20_ROM_1:					.byte		8		; 2nd ROM
-G_DS18B20_ROM_2:					.byte		8		; 3rd ROM
-G_DS18B20_ROM_3:					.byte		8		; 4th ROM
-G_DS18B20_ROM_4:					.byte		8		; 5th ROM
-G_DS18B20_ROM_5:					.byte		8		; 6th ROM
-G_DS18B20_ROM_6:					.byte		8		; 7th ROM
-G_DS18B20_ROM_7:					.byte		8		; 8th ROM
+; Reservation pour 'DS18B20_NBR_ROM_TO_DETECT' capteurs (ROM)
+G_DS18B20_ROM_0:					.byte		(DS18B20_NBR_ROM_TO_DETECT * 8)	; Reservation pour 'DS18B20_NBR_ROM_TO_DETECT' ROM
 
 ; Position des donnees '<NAME>' dans 'G_DS18B20_BYTES_RESP' a recopier @ FRAME_IDX_<NAME>
 ; ie. "0xB9 10 7F FF 7F C9 16 01  36"
@@ -106,15 +106,9 @@ G_DS18B20_ALR_NBR_ROM:				.byte		1		; Nombre de ROM trouve
 G_DS18B20_ALR_NBR_ROM_MAX:			.byte		1		; Nombre de ROM maximal supporte (lu depuis l'EEPROM)
 G_DS18B20_ALR_ROM_IDX_WRK:			.byte		1		; Index dans la table des ROM a rechercher / trouve
 
-; Reservation pour 8 capteurs
-G_DS18B20_ALR_ROM_0:					.byte		8		; 1st ROM
-G_DS18B20_ALR_ROM_1:					.byte		8		; 2nd ROM
-G_DS18B20_ALR_ROM_2:					.byte		8		; 3rd ROM
-G_DS18B20_ALR_ROM_3:					.byte		8		; 4th ROM
-G_DS18B20_ALR_ROM_4:					.byte		8		; 5th ROM
-G_DS18B20_ALR_ROM_5:					.byte		8		; 6th ROM
-G_DS18B20_ALR_ROM_6:					.byte		8		; 7th ROM
-G_DS18B20_ALR_ROM_7:					.byte		8		; 8th ROM
+; Reservation pour 2 capteurs en alarme dans la version "minimaliste"
+; => Sinon reservation pour 4 capteurs en alarme
+G_DS18B20_ALR_ROM_0:					.byte		(DS18B20_NBR_ROM_TO_DETECT * 8)	; Reservation pour 'DS18B20_NBR_ROM_TO_DETECT' ALR
 
 ; Reservation pour le header
 G_DS18B20_FRAME_HEADER:				.byte		6
@@ -128,14 +122,8 @@ G_DS18B20_FRAME_HEADER:				.byte		6
 ;
 #define	G_FRAME_ALL_INFOS			G_DS18B20_ALR_ROM_0
 
+; Reservation pour 'DS18B20_NBR_ROM_TO_DETECT' capteurs (ALR)
 #define	G_DS18B20_FRAME_0			(G_DS18B20_ALR_ROM_0 + 1)
-#define	G_DS18B20_FRAME_1			(G_DS18B20_ALR_ROM_1 + 1)
-#define	G_DS18B20_FRAME_2			(G_DS18B20_ALR_ROM_2 + 1)
-#define	G_DS18B20_FRAME_3			(G_DS18B20_ALR_ROM_3 + 1)
-#define	G_DS18B20_FRAME_4			(G_DS18B20_ALR_ROM_4 + 1)
-#define	G_DS18B20_FRAME_5			(G_DS18B20_ALR_ROM_5 + 1)
-#define	G_DS18B20_FRAME_6			(G_DS18B20_ALR_ROM_6 + 1)
-#define	G_DS18B20_FRAME_7			(G_DS18B20_ALR_ROM_7 + 1)
 
 ; End of file
 

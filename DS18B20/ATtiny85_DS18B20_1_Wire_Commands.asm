@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.7 2025/11/29 16:23:51 administrateur Exp $
+; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.12 2025/12/03 16:45:55 administrateur Exp $
 
 .include		"ATtiny85_DS18B20_1_Wire_Commands.h"
 
@@ -32,7 +32,7 @@ ds18b20_read_rom:
 	rcall		ds18b20_print_response
 
 	; Test du CRC8
-	ldi		REG_TEMP_R16, 8								; 8 bytes pour le calcul sur les ROM
+	ldi		REG_TEMP_R16, NBR_BITS_TO_SHIFT			; 8 bytes pour le calcul sur les ROM
 	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_RESP)	; Adresse de 'G_DS18B20_BYTES_RESP'
 	ldi		REG_Y_LSB, low(G_DS18B20_BYTES_RESP)
 
@@ -159,7 +159,7 @@ ds18b20_match_rom:
 	push		REG_TEMP_R16
 	push		REG_TEMP_R16
 	ldi		REG_TEMP_R16, 'M'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	call		uos_push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
@@ -236,19 +236,16 @@ ds18b20_search_rom:
 	sts		G_DS18B20_PATTERN, REG_TEMP_R16
 
 	clr		REG_TEMP_R16
-	sts		G_DS18B20_NBR_ROM, REG_TEMP_R16
+	sts		G_DS18B20_NBR_ROM_FOUND, REG_TEMP_R16
 	sts		G_DS18B20_ROM_IDX_WRK, REG_TEMP_R16
 	sts		G_DS18B20_NBR_BITS_0_1_MAX, REG_TEMP_R16
 
 	; Effacement des ROM a rechercher
 	rcall		ds18b20_clear_rom	
 
-	lds		REG_TEMP_R16, G_DS18B20_NBR_ROM_MAX
+	lds		REG_TEMP_R16, DS18B20_NBR_ROM_GESTION
 	tst		REG_TEMP_R16
 	brne		ds18b20_search_rom_cont_d
-
-	ldi		REG_TEMP_R16, 8
-	sts		G_DS18B20_NBR_ROM_MAX, REG_TEMP_R16
 
 ds18b20_search_rom_cont_d:
 	clr		REG_TEMP_R16
@@ -330,7 +327,7 @@ ds18b20_search_rom_loop_c:
 
 ds18b20_search_rom_loop_0:
 	clc
-	ldi		REG_TEMP_R19, 8
+	ldi		REG_TEMP_R19, NBR_BITS_TO_SHIFT
 	rcall		ds18b20_shift_right_rom
 
 	clc
@@ -338,7 +335,7 @@ ds18b20_search_rom_loop_0:
 
 ds18b20_search_rom_loop_1:
 	sec
-	ldi		REG_TEMP_R19, 8
+	ldi		REG_TEMP_R19, NBR_BITS_TO_SHIFT
 	rcall		ds18b20_shift_right_rom
 
 	sec
@@ -374,10 +371,10 @@ ds18b20_search_rom_abort:
 ds18b20_search_rom_end:
 	sei
 
-	ldi		REG_TEMP_R18, 8
+	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 	rcall		ds18b20_print_response
 
-	ldi		REG_TEMP_R18, 8
+	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 	rcall		ds18b20_print_rom
 
 	; Copy of ROM found in 'G_DS18B20_BYTES_ROM' to 'G_DS18B20_ROM_0' @ 'G_DS18B20_ROM_IDX'
@@ -389,9 +386,9 @@ ds18b20_search_rom_end:
 
 	rcall		ds18b20_copy_rom
 
-	lds		REG_TEMP_R16, G_DS18B20_NBR_ROM
+	lds		REG_TEMP_R16, G_DS18B20_NBR_ROM_FOUND
 	inc		REG_TEMP_R16
-	sts		G_DS18B20_NBR_ROM, REG_TEMP_R16
+	sts		G_DS18B20_NBR_ROM_FOUND, REG_TEMP_R16
 
 	lds		REG_TEMP_R17, G_DS18B20_NBR_ROM_MAX
 	cp			REG_TEMP_R16, REG_TEMP_R17
@@ -493,7 +490,7 @@ ds18b20_search_alarm:
 	tst		REG_TEMP_R16
 	brne		ds18b20_search_alr_cont_d
 
-	ldi		REG_TEMP_R16, 8
+	ldi		REG_TEMP_R16, DS18B20_NBR_ROM_GESTION
 	sts		G_DS18B20_ALR_NBR_ROM_MAX, REG_TEMP_R16
 
 ds18b20_search_alr_cont_d:
@@ -576,7 +573,7 @@ ds18b20_search_alr_loop_c:
 
 ds18b20_search_alr_loop_0:
 	clc
-	ldi		REG_TEMP_R19, 8
+	ldi		REG_TEMP_R19, NBR_BITS_TO_SHIFT
 	rcall		ds18b20_shift_right_rom
 
 	clc
@@ -584,7 +581,7 @@ ds18b20_search_alr_loop_0:
 
 ds18b20_search_alr_loop_1:
 	sec
-	ldi		REG_TEMP_R19, 8
+	ldi		REG_TEMP_R19, NBR_BITS_TO_SHIFT
 	rcall		ds18b20_shift_right_rom
 
 	sec
@@ -620,10 +617,10 @@ ds18b20_search_alr_abort:
 ds18b20_search_alr_end:
 	sei
 
-	ldi		REG_TEMP_R18, 8
+	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 	rcall		ds18b20_print_response
 
-	ldi		REG_TEMP_R18, 8
+	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 	rcall		ds18b20_print_rom
 
 	; Copy of ROM found in 'G_DS18B20_BYTES_ROM' to 'G_DS18B20_ALR_ROM_0' @ 'G_DS18B20_ALR_ROM_IDX'
@@ -750,7 +747,7 @@ ds18b20_match_rom_x:
 	brtc		ds18b20_match_rom_x_not_detect
 
 ds18b20_match_rom_x_cont_d:
-	ldi		REG_TEMP_R16, 8
+	ldi		REG_TEMP_R16, DS18B20_NBR_ROM_GESTION
 
 ds18b20_match_rom_x_loop:
 	ld			REG_TEMP_R17, X+

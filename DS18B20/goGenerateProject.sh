@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.2 2025/12/02 14:30:54 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.4 2025/12/04 10:35:32 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
@@ -93,7 +93,7 @@ if [ $? -eq 0 ]; then
 	echo
 	echo "Generate the eeprom content"
 	echo
-	genHexFile -o ./eeprom_uOS.hex -T 1 -t BYTE -i 0x1234
+	genHexFile -o ./eeprom_4xds18b20.hex -T 1 -t BYTE
 fi
 
 echo "################## End of production of '${PROJECTS_FILE}' ##################"
