@@ -12,7 +12,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
      * Ajout de la commande "<C" pour la configuration des seuils et de la résolution de chaque capteur détecté
      * Ajout de la commande "<T" pour l'activation/déactivation des traces (pas de traces par défaut)
      * Cf. § [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
-* Emission d'une trame complète préfixée par '$' avec un CRC8-MAXIM terminal suivi d'un '\n' contenant:
+* Emission d'une trame complète préfixée par '$' au format hexadécimal asci, avec un CRC8-MAXIM terminal suivi d'un '\n' contenant:
      * Un *header* avec:
          * Le numéro de type de la platine lu de l'EEPROM
          * L'*Id* de la platine lu de l'EEPROM
@@ -28,7 +28,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * La résolution de la mesure
          * L'état de l'alarme (Tc ≤ Tl ou Tc ≥ Th)
          * Un CRC8-MAXIM pour garantir l'intégrité des informations de chaque cpateur et de l'ensemble de la trame émise        
-     * Cf. le fichier [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
+     * Cf. le fichier [Commandes/Réponses](Tests/Commands+Responses.txt) pour l'interprétation de la trame
 * Après agrégation, ci-après le résultat d'une expérience sur 30 minutes avec 3 capteurs qui consiste à:
      * Mesurer la température d'un 1st capteur (sonde #1) plongé dans un récipient d'eau qui a été portée à ébullition
      * Mesurer la température d'un 2nd capteur (sonde #2) plongé dans un récipient rempli de glaçons
@@ -108,6 +108,6 @@ Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'i
 ## ❗Évolutions envisagées
 - Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
 - Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour permettre le support d'autres périphériques non disponibles sur le bus 1-Wire
-
-Le but étant de proposer une platine avec la cohabitation de divers périphériques connectés sur le bus 1-Wire ou I2C
+- Utilisation d'un code correcteur d'erreurs en vue d'une transmission de la trame depuis plusieurs platines sur un bus radio afin de pallier les éventuelles colisions ou erreurs de transmission
+- Proposer une platine avec la cohabitation de divers périphériques connectés sur le bus 1-Wire et I2C
 
