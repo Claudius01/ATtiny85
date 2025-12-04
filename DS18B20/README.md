@@ -65,11 +65,12 @@ Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemb
 DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de l'ATtiny85
 * 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un ATtiny45 utilisant la version minimaliste de uOS avec:
      * La gestion de 2 capteurs
+     * La limitations à 10 *timers*
      * La suppression des commandes/réponses (seuils de température et résolution lus de l'EEPROM)
      * L'abandon des détections d'apparition des alarmes
      * *Á compléter*
 
-## ❗Évolutions apportées à uOS pour accueillir DS18B20
+## ❗ Évolutions apportées à uOS pour accueillir DS18B20
 Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'initialisation de la SRAM de DS18B20, la prolongation de commandes non supportées par uOS et la définition d'un *timer* supplémentaire
 
 - Ajouts dans **ATtiny85-uOS.asm** de l'appel à l'initialisation (méthode **setup**) et changement des 2 adresses de fin du programme et de la SRAM utilisée (en fin de fichier) qui seront définies dans **ATtiny85-uOS_DS18B20.asm**
@@ -93,10 +94,10 @@ Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'i
 `     rcall   print_command_ko     ; Commande non reconnue`<br/>
 `#endif`<br/>
 
-- Surcharge dans **ATtiny85-uOS_Timers.asm** de la définition du *timer* #6 pour le cadencement des mesures de températures et l'émission de la trame
+- Déroutement dans **ATtiny85-uOS_Timers.asm** de l'exécution du *timer* #6 pour le cadencement des mesures de températures et l'émission de la trame
 
 `; ---------`<br/>
-`; Timer #6 for DS18B20`<br/>
+`; Timer #6 pour DS18B20`<br/>
 `; ---------`<br/>
 `exec_timer_6:`<br/>
 `#ifdef USE_DS18B20`<br/>
@@ -105,9 +106,9 @@ Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'i
 `     ret`<br/>
 `; ---------`<br/>
 
-## ❗Évolutions envisagées
+## ⏳ Évolutions envisagées
 - Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
-- Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour permettre le support d'autres périphériques non disponibles sur le bus 1-Wire
-- Utilisation d'un code correcteur d'erreurs en vue d'une transmission de la trame depuis plusieurs platines sur un bus radio afin de pallier les éventuelles colisions ou erreurs de transmission
-- Proposer une platine avec la cohabitation de divers périphériques connectés sur le bus 1-Wire et I2C
+- Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour permettre le support d'autres périphériques non disponibles sur le bus 1-Wire afin de proposer une platine avec la cohabitation de divers circuits connectés sur le bus 1-Wire et I2C
+- Utilisation d'un code correcteur d'erreurs en vue d'une transmission de la trame depuis plusieurs platines sur un bus radio afin de pallier les éventuelles collisions ou erreurs de transmission
+- *Á compléter*
 
