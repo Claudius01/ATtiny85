@@ -119,7 +119,7 @@ Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'i
 `; ---------`<br/>
 
 ## ⏳ Évolutions envisagées
-- Remplacement d'un DS18B20 par un autre périphérique comme une horloge RTC, un capteur d'humidité, etc.
+- Remplacement des DS18B20 par d'autre périphériques comme une horloge RTC, un capteur d'humidité, etc.
 - Accueil de la gestion d'un bus I2C en parallèle du bus 1-Wire pour permettre le support d'autres périphériques non disponibles sur le bus 1-Wire afin de proposer une platine avec la cohabitation de divers circuits connectés sur le bus 1-Wire et I2C
 - Utilisation d'un code correcteur d'erreurs en vue d'une transmission de la trame depuis plusieurs platines sur un bus radio afin de pallier les éventuelles collisions ou erreurs de transmission
 - *Á compléter*
