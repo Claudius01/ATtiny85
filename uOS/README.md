@@ -78,3 +78,7 @@ uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**
     * etc.
 * Développements sous Linux (distribution Ubuntu 24.04.3 LTS)
 * *Á compléter*
+
+## ⏳ Évolutions envisagées
+- Mise en veille du µC pour limiter la consommation dans le cas d'une alimentation au moyen de piles
+- *Á compléter*
