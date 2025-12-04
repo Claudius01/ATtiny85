@@ -26,7 +26,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions 
          * La température Th du seuil haut
          * La température Tl du seuil bas
          * La résolution de la mesure
-         * L'état de l'alarme (Tc > Th ou Tc < Tl)
+         * L'état de l'alarme (Tc ≤ Tl ou Tc ≥ Th)
          * Un CRC8-MAXIM pour garantir l'intégrité des informations de chaque cpateur et de l'ensemble de la trame émise        
      * Cf. le fichier [Commandes/Réponses](Tests/Commands+Responses.txt) pour plus de détails
 * Après agrégation, ci-après le résultat d'une expérience sur 30 minutes avec 3 capteurs qui consiste à:
