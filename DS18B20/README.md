@@ -72,8 +72,6 @@ DS18B20 utilise les 32 premiers octets l'EEPROM de l'ATtiny85 dont la structure 
 
 Le contenu peut-être programmé depuis un fichier au format Hex (Intel) au moyen de la commande d'écriture offert par uOS "`<E0+data0+data1+data2+...`" (cf. [eeprom_4xds18b20.hex](Products/eeprom_4xds18b20.hex))
 
-Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel)) ainsi que les fichiers '.lst' et '.map'
-
 ## ⚓ Occupation mémoires
 DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de l'**ATtiny85**
 * 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** utilisant la version minimaliste de uOS avec:
@@ -117,6 +115,23 @@ Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'i
 `#endif`<br/>
 `     ret`<br/>
 `; ---------`<br/>
+
+## 🛠️ Environnement de développement
+* [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
+    * Accueillir les sauts **rjmp** et appels **rcall** relatifs
+    * Ajouter des messages de *warning* comme:
+        * "*ATtiny85_uOS+DS18B20.asm(1326) : Warning : Improve: Replace absolute by a relative branch (-2048 <= k <= 2047)*"
+        * "*ATtiny85_uOS.asm(80) : Warning : Improve: Skip equal to 0*"
+    * *Á compléter*
+* Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel)) ainsi que les fichiers '.lst' et '.map'
+* Gestion des sources sous [CVS](https://tuteurs.ens.fr/logiciels/cvs/) permettant de faire évoluer le programme "prudemment" avec notamment:
+    * Un retour arrière facilité
+    * La différence entre différents développements versionnés
+    * La pose d'un marqueur symbolique sur une révision d'un ou plusieurs fichiers
+    * La création d'une branche sur le projet
+    * etc.
+* Développements sous Linux (distribution Ubuntu 24.04.3 LTS)
+* *Á compléter*
 
 ## ⏳ Évolutions envisagées
 - Remplacement des DS18B20 par d'autre périphériques comme une horloge RTC, un capteur d'humidité, etc.
