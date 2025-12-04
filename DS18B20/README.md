@@ -70,7 +70,9 @@ DS18B20 utilise les 32 premiers octets l'EEPROM de l'ATtiny85 dont la structure 
 `   unsigned char  primes[16];          // Liste de 16 nombres premiers (cadencement de l'emission de la trame)`<br/>
 `} ST_EEPROM_DS18B20;`
 
-Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
+Le contenu peut-être programmé depuis un fichier au format Hex (Intel) comme celui-ci au moyen de la commande d'écriture offert par uOS "`<E0+data0+data1+data2+...+data255`" (cf. [eeprom_4xds18b20.hex](Products/eeprom_4xds18b20.hex))
+
+Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel)) ainsi que les fichiers '.lst' et '.map'
 
 ## ⚓ Occupation mémoires
 DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de l'**ATtiny85**
