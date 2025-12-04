@@ -4,7 +4,7 @@ Projet basé sur une platine d'essais pouvant gérer jusqu'à 4 capteurs de temp
 
 ![Platine d'essais DS18B20](Platine-ATtiny85-4xDS18B20.png)
 
-La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les évolutions suivantes:
+La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les fonctionnalités supplémentaires suivantes:
 * La gestion du bus 1-Wire avec la "découverte" des capteurs qui peuvent être déconnectés/reconnectés du bus à chaud à concurence du nombre de capteurs à détecter et lu dans l'EEPROM
      * 📔 Le nombre de capteurs à gérer peut ainsi être "bridé" à 1, 2 ou 3 capteurs DS18B20
 * Led jaune allumée fugitivement pour en plus indiquer l'activité sur le bus 1-Wire
@@ -58,6 +58,17 @@ DS18B20 est organisé au sein des fichiers suivants dont les sources sont fourni
                * Copy Scratchpad [48h]
                * Write Scratchpad [4Eh]
                * Alarm Search [ECh]
+
+DS18B20 utilise les 32 premiers octets l'EEPROM de l'ATtiny85 dont la structure en langage C est la suivante:
+
+`typedef struct {`<br/>
+`   char           version[7+1];        // Version de l'eeprom avec un '\0' terminal`<br/>
+`   unsigned char  platine_type;        // Type de la platine`<br/>
+`   unsigned char  platine_id;          // Id de la platine`<br/>
+`   unsigned char  padding[5];          // Padding...`<br/>
+`   unsigned char  nbr_ds18b20;         // Nombre de capteurs DS18B20 (1, 2, 3 ou 4)`<br/>
+`   unsigned char  primes[16];          // Liste de 16 nombres premiers (cadencement de l'emission de la trame)`<br/>
+`} ST_EEPROM_DS18B20;`
 
 Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
 
