@@ -68,6 +68,19 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 
 Le fusible *Low Byte* est programmé à 0xF1: La source de l'horloge est interne et pilotée par la PLL interne de 64 MHz
 
+| Fuse Lock Byte | Bit No | Description | Valeur | Action |
+| :--- | :---: | :--- | :---: | :--- |
+| - | 7 | - |  - | non programmé |
+| - | 6 | - |  - | non programmé |
+| - | 5 | - |  - | non programmé |
+| - | 4 | - |  - | non programmé |
+| - | 3 | - | - | non programmé |
+| - | 2 | - | - | non programmé |
+| LB2 | 1 | Lock bit | 1 | non programmé |
+| LB1 | 0 | Lock bit |  1 | non programmé |
+
+Le fusible *Lock Byte* est programmé à 0xFF: Aucune fonction de verrouillage de la mémoire n'est activée
+
 ## ⚓ Occupation mémoires
 uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**ATtiny85**
 * 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** avec:
