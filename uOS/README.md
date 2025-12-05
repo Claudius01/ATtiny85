@@ -105,7 +105,7 @@ Le fusible *Extended Byte* est laissé non programmé à 0xFF: Les instructions 
 | BODLEVEL1 | 1 | Brown-out Detector trigger level | 1 | non programmé |
 | BODLEVEL0 | 0 | Brown-out Detector trigger level |  1 | non programmé |
 
-Le fusible *Extended Byte* est programmé à 0xD7:
+Le fusible *High Byte* est programmé à 0xD7:
 * RESET externe autorisé
 * *DebugWIRE* non autorisé
 * Programmation type *Serial* et téléchargement de données autorisés
