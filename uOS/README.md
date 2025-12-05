@@ -54,6 +54,20 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * **ATtiny85_uOS_Print.asm** et **ATtiny85_uOS_Print.h**
      * Formatage des émissions (textes, données décimales et hexadécimales, ...)
 
+## 🏁 Fusibles
+| Fuse Low Byte | Bit No | Description | Valeur | Action |
+| :--- | :---: | :--- | :---: | :--- |
+| CKDIV8 | 7 | Clock divided by 8 |  1 | non programmé |
+| CKOUT | 6 | Clock output enabled |  1 | non programmé |
+| SUT1 | 5 | Start-up time setting |  1 | non programmé |
+| SUT0 | 4 | Start-up time setting |  1 | non programmé |
+| CKSEL3 | 3 | Clock source setting | 0 | programmé |
+| CKSEL2 | 2 | Clock source setting | 0 | programmé |
+| CKSEL1 | 1 | Clock source setting | 0 | programmé |
+| CKSEL0 | 0 | Clock source setting |  1 | non programmé |
+
+Le fusible *Low Byte* est programmé à 0xF1: La source de l'horloge est interne et pilotée par la PLL interne de 64 MHz
+
 ## ⚓ Occupation mémoires
 uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**ATtiny85**
 * 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** avec:
