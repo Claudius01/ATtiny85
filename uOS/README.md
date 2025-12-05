@@ -79,7 +79,39 @@ Le fusible *Low Byte* est programmé à 0xF1: La source de l'horloge est interne
 | LB2 | 1 | Lock bit | 1 | non programmé |
 | LB1 | 0 | Lock bit |  1 | non programmé |
 
-Le fusible *Lock Byte* est programmé à 0xFF: Aucune fonction de verrouillage de la mémoire n'est activée
+Le fusible *Lock Byte* est laissé non programmé à 0xFF: Aucune fonction de verrouillage de la mémoire n'est activée
+
+| Fuse Extended Byte | Bit No | Description | Valeur | Action |
+| :--- | :---: | :--- | :---: | :--- |
+| - | 7 | - |  - | non programmé |
+| - | 6 | - |  - | non programmé |
+| - | 5 | - |  - | non programmé |
+| - | 4 | - |  - | non programmé |
+| - | 3 | - | - | non programmé |
+| - | 2 | - | - | non programmé |
+| - | 1 | - | 1 | non programmé |
+| SELFPRGEN | 0 | Self-programming enabled |  1 | non programmé |
+
+Le fusible *Extended Byte* est laissé non programmé à 0xFF: Les instructions SPM sont inhibées
+
+| Fuse High Byte | Bit No | Description | Valeur | Action |
+| :--- | :---: | :--- | :---: | :--- |
+| RSTDISBL | 7 | External reset disabled |  1 | non programmé |
+| DWEN | 6 | DebugWIRE enabled | 1 | non programmé |
+| SPIEN | 5 | Serial program and data download enabled |  0 | programmé |
+| WDTON | 4 | Watchdog timer always on |  1 | non programmé |
+| EESAVE | 3 | EEPROM preserves chip erase | 0 | programmé |
+| BODLEVEL2 | 2 | Brown-out Detector trigger level | 1 | non programmé |
+| BODLEVEL1 | 1 | Brown-out Detector trigger level | 1 | non programmé |
+| BODLEVEL0 | 0 | Brown-out Detector trigger level |  1 | non programmé |
+
+Le fusible *Extended Byte* est programmé à 0xD7:
+* RESET externe autorisé
+* *DebugWIRE* non autorisé
+* Programmation type *Serial* et téléchargement de données autorisés
+* *Timer Watchdog" toujours à *off*
+* EEPROM préservée à l'effacement de l'ATtiny85
+* Niveau de déclenchement du détecteur de sous-tension non activé
 
 ## ⚓ Occupation mémoires
 uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**ATtiny85**
