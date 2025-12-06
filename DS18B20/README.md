@@ -66,7 +66,8 @@ DS18B20 utilise les 32 premiers octets l'EEPROM de l'ATtiny85 dont la structure 
 `   char           version[7+1];        // Version de l'eeprom avec un '\0' terminal`<br/>
 `   unsigned char  platine_type;        // Type de la platine`<br/>
 `   unsigned char  platine_id;          // Id de la platine`<br/>
-`   unsigned char  padding[5];          // Padding...`<br/>
+`   unsigned char  bauds_index;         // Index de Bauds 0: 19200 bauds, 1: 9600 bauds, ..., 6: 300 bauds`<br/>
+`   unsigned char  padding[4];          // Padding...`<br/>
 `   unsigned char  nbr_ds18b20;         // Nombre de capteurs DS18B20 (1, 2, 3 ou 4)`<br/>
 `   unsigned char  primes[16];          // Liste de 16 nombres premiers (cadencement de l'emission de la trame)`<br/>
 `} ST_EEPROM_DS18B20;`
