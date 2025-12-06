@@ -140,4 +140,5 @@ uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**
 
 ## ⏳ Évolutions envisagées
 - Mise en veille du µC pour limiter la consommation dans le cas d'une alimentation au moyen de piles
+- Utilisation de l'USI pour la gestion de l'UART
 - *Á compléter*
