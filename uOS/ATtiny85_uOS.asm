@@ -1,16 +1,11 @@
-; "$Id: ATtiny85_uOS.asm,v 1.13 2025/11/29 13:43:23 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.17 2025/12/02 13:27:20 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
-;
-; r1.2 - Reprise du projet 'ATtiny85_P5' en integrant les sources inclus:
-;        .include   "ATtiny85_uOS_P5.tst"
-;        .include   "ATtiny85_uOS_P5.sub"
-;
-;      - Suppression des directives de plus utilisees et du code mort
 ;
 ; - Avertissement: Etude pour l'utilisation d'un ATtiny85-20
 ;   => Le DigiSpark utilise un ATtiny85-10 cadence a 10 Mhz
 ;
+; - TODO: Version minimaliste: Allumage fixe de la Led RED au RESET 
 
 .include		"tn85def.inc"              ; Labels and identifiers for tiny85
 
@@ -77,6 +72,8 @@ usi_ovf_isr:
 ; en // des traitements executes dans la boucle #1
 ;
 main:
+
+setup:	; Remarque: Equivalent de la methode 'setup()' dans l'ecosysteme Arduino ;-)
 	rcall		init_sram_fill			; Initialisation de la SRAM
 	rcall		init_sram_values		; Initialisation de valeurs particulieres
 	rcall		init_hard				; Initialisation du materiel
@@ -99,17 +96,18 @@ main:
 	rcall		set_infos_from_eeprom
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
-	; Fin: Preparation emission du prompt d'accueil
+	; Fin: Preparation emission des prompts d'accueil ('whoami' et 'eeprom')
 
-#if USE_DS18B20
+#ifdef USE_DS18B20
 	rcall		ds18b20_begin
 #endif
 
-main_loop:
+loop:		; Remarque: Equivalent de la methode 'loop()' dans l'ecosysteme Arduino ;-)
 	; Gestion de l'attente expiration des 1ms
 	sbrs		REG_FLAGS_0, FLG_0_PERIODE_1MS_IDX		; 1mS expiree ?
-	rjmp		main_loop_more									; Non
+	rjmp		loop_background								; Non -> Traitements en fond de tache
 
+	; Oui -> Traitements toutes les 1mS
 	; => Expiration de 1mS => Nouvelle periode de 1mS
 	; => call 'gestion_timer' (execution du traitement associe a chaque timer qui expire)
 	; => reinitialisation 'G_TICK_1MS' (copie atomique ;-)
@@ -130,13 +128,16 @@ main_loop:
 	; Presentation sur Led GREEN mode "Connecte/Non Connecte"
 	rcall		presentation_connexion
 
+#ifndef USE_MINIMALIST
 	; Interpretation de la commande recue
 	rcall		interpret_command
+#endif
 
 	; ---
 	; Fin: Traitements toutes les 1mS
 
-main_loop_more:
+loop_background:
+	; Traitements en background
 	; Test et emission eventuelle d'un caractere de la FIFO/Tx
 	; => Effectue des que possible des lors que 'FLG_1_UART_FIFO_TX_TO_SEND'
 	;    est a 1 et que 'FLG_0_UART_TX_TO_SEND' est a 0
@@ -146,11 +147,11 @@ main_loop_more:
 	; Presentation erreurs sur Led RED Externe
 	rcall		presentation_error
 
-main_loop_end:
-	rjmp		main_loop
+loop_end:
+	rjmp		loop
 
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.13 $", CHAR_LF, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.17 $", CHAR_LF, CHAR_NULL
 
 .include		"ATtiny85_uOS_Macros.def"
 
@@ -159,10 +160,14 @@ text_whoami:
 .include		"ATtiny85_uOS_Timers.asm"
 .include		"ATtiny85_uOS_Uart.asm"
 .include		"ATtiny85_uOS_Eeprom.asm"
+
+#ifndef USE_MINIMALIST
 .include		"ATtiny85_uOS_Commands.asm"
+#endif
+
 .include		"ATtiny85_uOS_Print.asm"
 
-#if !USE_DS18B20
+#ifndef USE_DS18B20
 end_of_program:
 
 .dseg

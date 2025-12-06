@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Uart.h,v 1.2 2025/11/25 18:30:47 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Uart.h,v 1.3 2025/12/05 17:18:56 administrateur Exp $"
 
 #define	SIZE_UART_FIFO_RX		(1 << 5)		; 32 bytes -> Puissance de 2 pour un modulo par masque avec (SIZE_UART_FIFO_RX -1)
 #define	SIZE_UART_FIFO_TX		(1 << 6)		; 64 bytes -> Puissance de 2 pour un modulo par masque avec (SIZE_UART_FIFO_TX - 1)
@@ -26,6 +26,8 @@
 ;#define	DURATION_DETECT_LINE_IDLE				(11 * 4 * 26 * 2)
 
 .dseg
+G_BAUDS_IDX:								.byte		1	; Index des valeurs de bauds dans 'const_for_bauds_rate'
+
 G_BAUDS_VALUE:								.byte		1
 G_DURATION_DETECT_LINE_IDLE_MSB:		.byte		1
 G_DURATION_DETECT_LINE_IDLE_LSB:		.byte		1

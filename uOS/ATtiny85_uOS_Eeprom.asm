@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.4 2025/11/25 18:30:47 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.5 2025/12/05 17:18:56 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Eeprom.h"
 
@@ -90,7 +90,7 @@ set_infos_from_eeprom:
 	ldi		REG_Z_LSB, ((text_prompt_id << 1) % 256)
 	rcall		push_text_in_fifo_tx
 	
-	; Lecture de l'Id de la palatine defini dans l'EEPROM
+	; Lecture de l'Id de la platine defini dans l'EEPROM
 	ldi		REG_X_MSB, high(EEPROM_ADDR_ID);
 	ldi		REG_X_LSB, low(EEPROM_ADDR_ID);
 	rcall		eeprom_read_byte

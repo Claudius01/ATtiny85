@@ -1,6 +1,4 @@
-; "$Id: ATtiny85_uOS.h,v 1.7 2025/11/28 14:03:22 administrateur Exp $"
-
-#define	USE_PROGRAM_ADDON				0
+; "$Id: ATtiny85_uOS.h,v 1.8 2025/12/01 16:40:31 administrateur Exp $"
 
 ; Registres de travail (dedies)
 ;

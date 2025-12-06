@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.4 2025/11/28 14:03:22 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.6 2025/12/05 17:18:56 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Misc.h"
 
@@ -71,8 +71,10 @@ init_sram_values:
 	sts		G_UART_CPT_LINE_IDLE_LSB, REG_TEMP_R17
 	; Fin: Preparation reception bit RXD
 
+	; Initialisation des definitions pour la vitesse UART/Rx et UART/Tx
+#if 0
+	; TODO: => Reprise de la prise 'const_for_bauds_rate'
 	ldi		REG_TEMP_R16, NBR_BAUDS_VALUE
-	sts		G_BAUDS_VALUE, REG_TEMP_R16
 
 	ldi		REG_TEMP_R16, (DURATION_DETECT_LINE_IDLE / 256)
 	sts		G_DURATION_DETECT_LINE_IDLE_MSB, REG_TEMP_R16
@@ -81,6 +83,46 @@ init_sram_values:
 
 	ldi		REG_TEMP_R16, DURATION_WAIT_READ_BIT_START
 	sts		G_DURATION_WAIT_READ_BIT_START, REG_TEMP_R16
+#else
+	; Reprise des definitions de 'const_for_bauds_rate'
+	; @ 'G_BAUDS_IDX' recopie de l'EEPROM
+
+   ; Lecture de l'index des Bauds
+	ldi		REG_X_MSB, high(EEPROM_ADDR_BAUDS_IDX);
+	ldi		REG_X_LSB, low(EEPROM_ADDR_BAUDS_IDX);
+	rcall		eeprom_read_byte
+
+	; Test dans la plage [0, 1, ..., 6]
+	; => Forcage a 1 pour 9600 bauds si pas dans la plage
+	cpi		REG_TEMP_R16, (6 + 1)
+	brlo		init_sram_values_set_bauds_index
+	ldi		REG_TEMP_R16, 1
+
+init_sram_values_set_bauds_index:
+	sts		G_BAUDS_IDX, REG_TEMP_R16
+
+	ldi		REG_Z_MSB, high(const_for_bauds_rate << 1)
+	ldi		REG_Z_LSB, low(const_for_bauds_rate << 1)
+
+	; Pointage sur l'adresse ('const_for_bauds_rate' + 4 * 'G_BAUDS_IDX')
+	lds		REG_TEMP_R16, G_BAUDS_IDX
+	lsl		REG_TEMP_R16						; x 2
+	lsl		REG_TEMP_R16						; x 2
+	add		REG_Z_LSB, REG_TEMP_R16
+	clr		REG_TEMP_R16						; Report de la Carry
+	adc		REG_Z_MSB, REG_TEMP_R16
+
+	; Lecture des 4 definitions...
+	lpm		REG_TEMP_R17, Z+
+	sts		G_BAUDS_VALUE, REG_TEMP_R17
+	lpm		REG_TEMP_R17, Z+
+	sts		G_DURATION_DETECT_LINE_IDLE_MSB, REG_TEMP_R17
+	lpm		REG_TEMP_R17, Z+
+	sts		G_DURATION_DETECT_LINE_IDLE_LSB, REG_TEMP_R17
+	lpm		REG_TEMP_R17, Z+
+	sts		G_DURATION_WAIT_READ_BIT_START, REG_TEMP_R17
+#endif
+	; Fin: Initialisation des definitions pour la vitesse UART/Rx et UART/Tx
 
 	ldi		REG_TEMP_R16, CPT_CALIBRATION
 	sts		G_CALIBRATION, REG_TEMP_R16
