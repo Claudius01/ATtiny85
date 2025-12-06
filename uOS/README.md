@@ -1,6 +1,6 @@
 # ⭕ uOS
 Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivantes:
-* Cadencement matériel fixé à 26 µS
+* Cadencement matériel fixé à 26 µS justifié par la gestion logicielle de l'UART jusqu'à 19200 bauds
 * Gestion de 3 Leds et de l'appui simple sur le bouton:
     * Led verte allumée fugitivement pour l'activité en fond de tâche
     * Led jaune allumée fugitivement pour la détection de l'appui bouton
@@ -14,8 +14,8 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
          * La détection de l'appui bouton
          * Les détections des anti-rebonds sur UART/RX qui est connecté au bouton
          * L'allumage fugitif de la Led verte 
-* Gestion d'une liaison UART *full duplex* de 300 bauds à 19200 bauds reconfigurable à chaud
-* Gestion des interruptions 
+* Gestion d'une liaison UART *full duplex* de 300 bauds à 19200 bauds définis dans l'EEPROM (9600 bauds par defaut) et reconfigurable à chaud
+* Gestion des 2 interruptions *TIMER1_COMPA* et *PCINT0*
 * Support des commandes permettant notamment:
     * Le *dump* du programme à partir d'une adresse donnée
     * Le calcul du [CRC8-MAXIM](https://crccalc.com/?crc=123456789&method=CRC-8/MAXIM-DOW&datatype=hex&outtype=hex) du programme *flashé* à des fins de vérification
