@@ -82,19 +82,6 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
      * L'abandon des détections d'apparition des alarmes
      * *Á compléter*
 
-## ❗ Évolutions apportées à uOS pour accueillir DS18B20
-Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'initialisation de la SRAM de DS18B20, la prolongation de commandes non supportées par uOS et la définition d'un *timer* supplémentaire (uOS utilisant les premiers *timers* #0 à #5)
-
-Ces évolutions sont conditionnées par la directive `USE_DS18B20`
-
-- Ajout dans **ATtiny85-uOS_Commands.asm** (méthode **exec_command**) de l'appel aux traitements des 2 nouvelles commandes "<C" et "<T"
-
-`#ifdef USE_DS18B20`<br/>
-`     rcall   exec_command_ds18b20`<br/>
-`#else`<br/>
-`     rcall   print_command_ko     ; Commande non reconnue`<br/>
-`#endif`<br/>
-
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
     * Accueillir les sauts **rjmp** et appels **rcall** relatifs
