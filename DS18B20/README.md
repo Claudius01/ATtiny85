@@ -84,20 +84,8 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 
 ## ❗ Évolutions apportées à uOS pour accueillir DS18B20
 Les évolutions très limitées dans uOS qui suivent permettent d'accueillir l'initialisation de la SRAM de DS18B20, la prolongation de commandes non supportées par uOS et la définition d'un *timer* supplémentaire (uOS utilisant les premiers *timers* #0 à #5)
+
 Ces évolutions sont conditionnées par la directive `USE_DS18B20`
-
-- Ajouts dans **ATtiny85-uOS.asm** de l'appel à l'initialisation (méthode **setup**) et changement des 2 adresses de fin du programme et de la SRAM utilisée (en fin de fichier) qui seront définies dans **ATtiny85-uOS_DS18B20.asm**
-
-`#ifdef USE_DS18B20`<br/>
-`    rcall   ds18b20_begin`<br/>
-`#endif`<br/>
-
-`#ifndef USE_DS18B20`<br/>
-`end_of_program:`<br/>
-
-`.dseg`<br/>
-`G_SRAM_END_OF_USE:      .byte    1`<br/>
-`#endif`<br/>
 
 - Ajout dans **ATtiny85-uOS_Commands.asm** (méthode **exec_command**) de l'appel aux traitements des 2 nouvelles commandes "<C" et "<T"
 
