@@ -95,18 +95,6 @@ Ces évolutions sont conditionnées par la directive `USE_DS18B20`
 `     rcall   print_command_ko     ; Commande non reconnue`<br/>
 `#endif`<br/>
 
-- Déroutement dans **ATtiny85-uOS_Timers.asm** de l'exécution du *timer* #6 pour le cadencement des mesures de températures et l'émission de la trame
-
-`; ---------`<br/>
-`; Timer #6 pour DS18B20`<br/>
-`; ---------`<br/>
-`exec_timer_6:`<br/>
-`#ifdef USE_DS18B20`<br/>
-`     rcall   exec_timer_ds18b20`<br/>
-`#endif`<br/>
-`     ret`<br/>
-`; ---------`<br/>
-
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
     * Accueillir les sauts **rjmp** et appels **rcall** relatifs
