@@ -109,7 +109,7 @@ Le fusible *High Byte* est programmé à 0xD7:
 * RESET externe autorisé
 * *DebugWIRE* non autorisé
 * Programmation type *Serial* et téléchargement de données autorisés
-* *Timer Watchdog" toujours à *off*
+* *Timer Watchdog* toujours à *off*
 * EEPROM préservée à l'effacement de l'ATtiny85
 * Niveau de déclenchement du détecteur de sous-tension non activé
 
