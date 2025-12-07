@@ -66,8 +66,8 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 | CKSEL1 | 1 | Clock source setting | 0 | programmé |
 | CKSEL0 | 0 | Clock source setting |  1 | non programmé |
 
-Le fusible *Low Byte* est programmé à 0xF1: La source de l'horloge est interne et pilotée par la PLL interne de 64 MHz
-📔 Á noter que le fusible `CKOUT` peut être programmé, auquel cas la sortie `CLK` est dispoblible sur PB4 permettant de qualifier au moyen d'un scope la vitesse de l'ATtiny85
+* Le fusible *Low Byte* est programmé à 0xF1: La source de l'horloge est interne et pilotée par la PLL interne de 64 MHz
+* 📔 Á noter que le fusible `CKOUT` peut être programmé, auquel cas la sortie `CLK` est dispoblible sur PB4 permettant de qualifier au moyen d'un scope la vitesse de l'ATtiny85
 
 | Fuse Lock Byte | Bit No | Description | Valeur | Action |
 | :--- | :---: | :--- | :---: | :--- |
