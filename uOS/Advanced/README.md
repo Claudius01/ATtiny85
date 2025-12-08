@@ -7,7 +7,7 @@
   * L'action sur le bouton
   * etc.
 
-- De plus, ce programme *addon*  bénificera des ressources de uOS sans avoir à les réécrire comme:
+- De plus, ce programme *addon* bénéficiera des ressources de uOS sans avoir à les réécrire comme:
   * L'UART/Tx et UART/Rx
   * La gestion des *timers*
   * Les commandes de uOS
