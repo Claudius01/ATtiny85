@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.h,v 1.8 2025/12/01 16:40:31 administrateur Exp $"
+; "$Id: ATtiny85_uOS.h,v 1.9 2025/12/08 18:07:37 administrateur Exp $"
 
 ; Registres de travail (dedies)
 ;
@@ -100,6 +100,9 @@
 #define	FLG_BEHAVIOR_MARK_IN_TIM1_COMPA_IDX		IDX_BIT0	; Pulse --\__/--... en entree/sortie de l'It 'tim1_compa_isr'
 #define	FLG_BEHAVIOR_MARK_IN_PCINT0_IDX			IDX_BIT1	; Pulse --\__/--... en entree/sortie de l'It 'pcint0_isr'
 #define	FLG_BEHAVIOR_MARK_IN_RX_REC_BIT_IDX		IDX_BIT2	; Pulse --\__/--... en entree/sortie de 'tim1_compa_isr_rx_rec_bit'
+
+#define	FLG_BEHAVIOR_ADDON_FOUND_IDX				IDX_BIT4	; Programme ADDON trouve (prolongations traitements)
+#define	FLG_BEHAVIOR_ADDON_FOUND_MSK				MSK_BIT4
 
 #define	CPT_CALIBRATION								2
 #define	FLG_BEHAVIOR_CALIBRATION_1_uS				IDX_BIT7

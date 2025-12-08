@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.6 2025/12/05 17:18:56 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.9 2025/12/08 18:07:37 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Misc.h"
 
@@ -72,18 +72,6 @@ init_sram_values:
 	; Fin: Preparation reception bit RXD
 
 	; Initialisation des definitions pour la vitesse UART/Rx et UART/Tx
-#if 0
-	; TODO: => Reprise de la prise 'const_for_bauds_rate'
-	ldi		REG_TEMP_R16, NBR_BAUDS_VALUE
-
-	ldi		REG_TEMP_R16, (DURATION_DETECT_LINE_IDLE / 256)
-	sts		G_DURATION_DETECT_LINE_IDLE_MSB, REG_TEMP_R16
-	ldi		REG_TEMP_R17, (DURATION_DETECT_LINE_IDLE % 256)
-	sts		G_DURATION_DETECT_LINE_IDLE_LSB, REG_TEMP_R17
-
-	ldi		REG_TEMP_R16, DURATION_WAIT_READ_BIT_START
-	sts		G_DURATION_WAIT_READ_BIT_START, REG_TEMP_R16
-#else
 	; Reprise des definitions de 'const_for_bauds_rate'
 	; @ 'G_BAUDS_IDX' recopie de l'EEPROM
 
@@ -121,7 +109,6 @@ init_sram_values_set_bauds_index:
 	sts		G_DURATION_DETECT_LINE_IDLE_LSB, REG_TEMP_R17
 	lpm		REG_TEMP_R17, Z+
 	sts		G_DURATION_WAIT_READ_BIT_START, REG_TEMP_R17
-#endif
 	; Fin: Initialisation des definitions pour la vitesse UART/Rx et UART/Tx
 
 	ldi		REG_TEMP_R16, CPT_CALIBRATION
@@ -132,50 +119,59 @@ init_sram_values_set_bauds_index:
 
 ; ---------
 ; Initialisation du materiel
-; - Cadencement a 26uS par le timer materiel #1 (ATtiny85 cadence a 10MHz - 100nS / cycle)
+; - Cadencement a 26uS par le timer materiel #1 (ATtiny85 cadence a 16 MHz - 62.5 nS / cycle)
 ; - Detection changement d'etat sur RXD sur la pin PINB<0> (PCINT0)
 ;
 ; Registres utilises (non sauvegardes/restaures):
 ;    REG_TEMP_R16 -> Valeur d'initialisation des registres materiels
 ;
-; Calculs pour le cadencement @ a la vitesse de l'UART logiciel (ATtiny85-10 cadence a 10MHz)
-; - Periode de PCK et CK: 100nS
-;   => Prescaler sur PCK: 1, 1/2, 1/4 et 1/8
-; - Nombre d'echantillons pour determiner la periode de chaque bit de l'UART logiciel: 4
-;   => Pour echantillonner 1 bit a:
-;      - 9600 bauds (104 uS) -> echantillonage toutes les  26 uS -> OCR1C = 208 si prescaler /2
-;      - 9600 bauds (104 uS) -> echantillonage toutes les  26 uS -> OCR1C = 104 si prescaler /4 (periode exacte du baud ;-)
-;      - 9600 bauds (104 uS) -> echantillonage toutes les  26 uS -> OCR1C =  52 si prescaler /8
-;
-;      - 4800 bauds (208 uS) -> echantillonage toutes les  52 uS -> OCR1C = 208 si prescaler /4 (periode exacte du baud ;-)
-;      - 4800 bauds (208 uS) -> echantillonage toutes les  52 uS -> OCR1C = 104 si prescaler /8
-;
-;      - 2400 bauds (416 uS) -> echantillonage toutes les 104 uS -> OCR1C = 208 si prescaler /8
-;
-;      => "Fuse Low Byte" configure comme suit:
-;               - 0xF1 correspondant a:
-;                 - CKDIV8
-;                 - CKOUT
-;                 - SUT1
-;                 - SUT0
-;                 - CKSEL0
-;
-;      - 19200 bauds (52 uS) -> echantillonage toutes les  13 uS -> OCR1C = 104 si prescaler /4 
+; Calculs pour le cadencement @ a la vitesse de l'UART logiciel (ATtiny85 cadence a 16 MHz)
+; - Periode de PCK et CK: 62.5 nS
+;   => Le but est de cadencer par debordement Timer/Counter1 a 26 uS 
+;      => 26 uS correspondent a 26000/62.5 = 416 cycles d'horloge a 16 MHz
+;         => 416 etant > 255 -> le prescaler TCCR1 est requis avec CS1[3:0]: Clock Select Bits 3, 2, 1, and 0
+;         => Prescaler sur PCK: 1/2, 1/4, 1/8, 1/16 et 1/32
+;            avec 5 configurations possibles; a savoir:
+;            - 208 si prescaler /2  CS1[3:0]: 0010
+;            - 104 si prescaler /4  CS1[3:0]: 0011
+;            -  52 si prescaler /8  CS1[3:0]: 0100
+;            -  26 si prescaler /16 CS1[3:0]: 0101
+;            -  13 si prescaler /32 CS1[3:0]: 0110
 ; ---------
 init_hard:
 	; Configuration du timer materiel #1 pour une It toutes les 26uS
 	ldi		REG_TEMP_R16, (MSK_BIT_PULSE_IT | MSK_BIT_LED_RED | MSK_BIT_LED_GREEN | MSK_BIT_LED_YELLOW | MSK_BIT_LED_RED_INT)
 	out		DDRB, REG_TEMP_R16
 
+	; Initialisation du cadencement a 26 uS
 	; TCCR1: Timer/Counter1 Control Register
 	; - CTC1: Set Timer/Counter on Compare Match
-	; - CS1[3:0]: Clock Select Bits 1 and 0: PCK/4 ou CK/4
-	ldi		REG_TEMP_R16, (1 << CTC1 | 1 << CS11 | 1 << CS10)
-	out		TCCR1, REG_TEMP_R16
-
 	; OCR1C: Timer/Counter1 Output Compare RegisterC (value)
-	ldi		REG_TEMP_R16, 104				; Cadencement a 26uS = (104 uS / 4) avec un ATtiny85-20 (20 MHz)
-	out		OCR1C, REG_TEMP_R16
+	ldi		REG_TEMP_R16, (1 << CTC1 | 1 << CS11)					; CS1[3:0]: 0010
+	ldi		REG_TEMP_R17, (416 / 2)										; prescaler /2
+
+#if 0		; Sequences d'initialisations a titre de documentation ;-)
+	ldi		REG_TEMP_R16, (1 << CTC1 | 1 << CS11)					; CS1[3:0]: 0010
+	ldi		REG_TEMP_R17, (416 / 2)										; prescaler /2
+
+	ldi		REG_TEMP_R16, (1 << CTC1 | 1 << CS11 | 1 << CS10)	; CS1[3:0]: 0011
+	ldi		REG_TEMP_R17, (416 / 4)										; prescaler /4
+
+	ldi		REG_TEMP_R16, (1 << CTC1 | 1 << CS12)					; CS1[3:0]: 0100
+	ldi		REG_TEMP_R17, (416 / 8)										; prescaler /8
+
+	ldi		REG_TEMP_R16, (1 << CTC1 | 1 << CS12 | 1 << CS10)	; CS1[3:0]: 0101
+	ldi		REG_TEMP_R17, (416 / 16)									; prescaler /16
+
+	; Remarque: Dysfonctionnement avec 'prescaler /32' ?!..
+	ldi		REG_TEMP_R16, (1 << CTC1 | 1 << CS12 | 1 << CS11)	; CS1[3:0]: 0110
+	ldi		REG_TEMP_R17, (416 / 32)									; prescaler /32
+#endif
+
+	out		TCCR1, REG_TEMP_R16
+	nop
+	out		OCR1C, REG_TEMP_R17
+	; Fin: Initialisation du cadencement a 26 uS
 
 	; TIMSK: Timer/Counter Interrupt Mask Register
 	; - OCIE1A: Timer/Counter1 Output Compare Interrupt Enable
@@ -230,7 +226,7 @@ delay_big_more_1:
 ; ---------
 
 ; ---------
-; delay_1uS avec un ATtiny85 10MHz
+; delay_1uS avec un ATtiny85 16 MHz
 ; => Delai de 1uS
 ;
 delay_1uS:
@@ -247,19 +243,19 @@ delay_1uS:
 	nop				;   + 1
 #endif
 
-	ret				;   + 4 = xx Cycles = 1uS
+	ret				;   + 4 = 18 Cycles ~= 1uS
 ; ---------
 
 ; ---------
-; delay_1uS avec un ATtiny85 20MHz
+; delay_1uS avec un ATtiny85 cadence a 16 MHz (62.5 nS / cycle)
 ; avec calibration...
 ;
 ; Warning: 'G_CALIBRATION' != 0
 ;
 ; Nbr de cycles @ 'REG_R5'
 ; - REG_R1 = 1 -> 12 cycles
-; - REG_R1 = 2 -> 15 cycles (+3 cycles)  => Valeur mesuree de ~1uS ;-)
-; - REG_R1 = 3 -> 18 cycles (+3 cycles)
+; - REG_R1 = 2 -> 15 cycles (+3 cycles) -> 15 * 62.5 nS = 0.9375 uS => Valeur mesuree de ~1uS ;-)
+; - REG_R1 = 3 -> 18 cycles (+3 cycles) -> 18 * 65.5 nS = 1.125 uS
 ; - etc.
 ;
 uos_delay_1uS:

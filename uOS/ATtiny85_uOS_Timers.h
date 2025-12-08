@@ -17,5 +17,11 @@
 G_TIMER_0:						.byte		2
 G_TIMER_SPACE:					.byte		2 * (NBR_TIMER - 1)
 
+; Contextes sur 16 bits des 'NBR_TIMER' accedees par indexation @ 'G_TIMER_ADDRESS_0'
+; => Le contexte est en fait l'adresse d'execution du callback
+;    => TODO: A renommer...
+G_TIMER_ADDRESS_0:			.byte		2	; 2 bytes pour le contexte
+G_TIMER_ADDRESS_SPACE_0:	.byte		2 * (NBR_TIMER - 1)
+
 ; End of file
 

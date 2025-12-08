@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Uart.asm,v 1.4 2025/11/29 13:43:23 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Uart.asm,v 1.5 2025/12/08 13:24:43 administrateur Exp $"
 
 .include    "ATtiny85_uOS_Uart.h"
 
@@ -17,7 +17,9 @@ test_detect_line_idle:
 	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_LED
 	ldi		REG_TEMP_R18, (100 % 256)
 	ldi		REG_TEMP_R19, (100 / 256)
-	rcall		restart_timer
+	ldi		REG_TEMP_R20, low(exec_timer_push_button_led)
+	ldi		REG_TEMP_R21, high(exec_timer_push_button_led)
+	rcall		start_timer
 	; Fin: Presentation flash de 100mS sur Led YELLOW
 
 test_detect_line_idle_rtn:

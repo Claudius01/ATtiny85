@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.17 2025/12/02 13:27:20 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.24 2025/12/08 18:52:00 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -79,10 +79,12 @@ setup:	; Remarque: Equivalent de la methode 'setup()' dans l'ecosysteme Arduino 
 	rcall		init_hard				; Initialisation du materiel
 	rcall		test_leds			 	; Test Leds
 
-	; Initialisation timer #7 pour le chenillard Led GREEN
+	; Initialisation timer 'TIMER_LED_GREEN' pour le chenillard Led GREEN
 	ldi		REG_TEMP_R17, TIMER_LED_GREEN
 	ldi		REG_TEMP_R18, (125 % 256)
 	ldi		REG_TEMP_R19, (125 / 256)
+	ldi		REG_TEMP_R20, low(exec_timer_led_green)
+	ldi		REG_TEMP_R21, high(exec_timer_led_green)
 	rcall		start_timer
 
 	sei						; Set all interrupts for send prompts
@@ -98,9 +100,19 @@ setup:	; Remarque: Equivalent de la methode 'setup()' dans l'ecosysteme Arduino 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 	; Fin: Preparation emission des prompts d'accueil ('whoami' et 'eeprom')
 
-#ifdef USE_DS18B20
-	rcall		ds18b20_begin
-#endif
+	rcall		addon_search_methods
+
+	lds		REG_TEMP_R16, G_BEHAVIOR
+	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
+	rjmp		setup_end
+
+	; Appel eventuel au vecteur #0 (Initialisation materielle et logicielle)
+	ldi		REG_Z_LSB, low(end_of_prg_uos)
+	ldi		REG_Z_MSB, high(end_of_prg_uos)
+	icall
+	; Fin: Appel eventuel au vecteur #0 (Initialisation materielle et logicielle)
+
+setup_end:
 
 loop:		; Remarque: Equivalent de la methode 'loop()' dans l'ecosysteme Arduino ;-)
 	; Gestion de l'attente expiration des 1ms
@@ -113,6 +125,7 @@ loop:		; Remarque: Equivalent de la methode 'loop()' dans l'ecosysteme Arduino ;
 	; => reinitialisation 'G_TICK_1MS' (copie atomique ;-)
 	; => Effacement 'FLG_0_PERIODE_1MS' -> Relance de la comptabilisation des 1mS
 
+loop_1_ms:
 	lds		REG_TEMP_R17, G_TICK_1MS_INIT
 	sts		G_TICK_1MS, REG_TEMP_R17
 
@@ -150,8 +163,42 @@ loop_background:
 loop_end:
 	rjmp		loop
 
+
+; -----------
+; Determination si les 5 vecteurs de "prolongation" definis dans le cas d'un ADDON
+; -----------
+addon_search_methods:
+	ldi		REG_Z_LSB, low(end_of_prg_uos << 1)
+	ldi		REG_Z_MSB, high(end_of_prg_uos << 1)
+
+	ldi		REG_TEMP_R17, (2 * 5)
+
+addon_search_loop:
+	lpm		REG_TEMP_R16, Z+
+	cpi		REG_TEMP_R16, 0xFF
+	brne		addon_found
+
+	; Parcours de tous les bytes des 5 vecteurs
+	; => ADDON non trouve si tous les octets sont a 0xFF car 0xFFFF n'est
+	;    pas un opcode valide et correspond a la valeur apres un "erase"
+	adiw		REG_Z_LSB, 1
+	dec		REG_TEMP_R17
+	brne		addon_search_loop
+
+addon_not_found:
+	rjmp		addon_end
+
+addon_found:
+	lds		REG_TEMP_R16, G_BEHAVIOR
+	sbr		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_MSK
+	sts		G_BEHAVIOR, REG_TEMP_R16
+
+addon_end:
+	ret
+; -----------
+
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.17 $", CHAR_LF, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.24 $", CHAR_LF, CHAR_NULL
 
 .include		"ATtiny85_uOS_Macros.def"
 
@@ -167,9 +214,9 @@ text_whoami:
 
 .include		"ATtiny85_uOS_Print.asm"
 
-#ifndef USE_DS18B20
-end_of_program:
+end_of_prg_uos:
 
+#ifndef USE_ADDONS
 .dseg
 G_SRAM_END_OF_USE:					.byte		1
 #endif

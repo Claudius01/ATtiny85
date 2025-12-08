@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.5 2025/12/05 17:18:56 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.6 2025/12/07 13:04:30 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Eeprom.h"
 
@@ -99,6 +99,14 @@ set_infos_from_eeprom:
 
 	rcall		convert_and_put_fifo_tx
 	rcall		print_line_feed
+
+	ldi		REG_Z_MSB, ((text_osccal << 1) / 256)
+	ldi		REG_Z_LSB, ((text_osccal << 1) % 256)
+	rcall		push_text_in_fifo_tx
+
+	in			REG_TEMP_R16, OSCCAL
+	rcall		convert_and_put_fifo_tx
+	rcall		print_line_feed
 	; Fin: Preparation emission des prompts d'accueil
 
 	ret
@@ -115,6 +123,10 @@ text_prompt_id:
 
 text_eeprom_error:
 .db	"Err: EEPROM at ", CHAR_NULL
+
+text_osccal:
+.db	"OSCCAL [", CHAR_NULL, CHAR_NULL
+
 
 ; End of file
 

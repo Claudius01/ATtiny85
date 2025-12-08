@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Print.asm,v 1.11 2025/12/02 13:27:20 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Print.asm,v 1.13 2025/12/08 13:24:43 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Print.h"
 
@@ -42,7 +42,9 @@ presentation_error_reinit:
 	ldi		REG_TEMP_R17, TIMER_ERROR
 	ldi		REG_TEMP_R18, (200 % 256)
 	ldi		REG_TEMP_R19, (200 / 256)
-	rcall		restart_timer
+	ldi		REG_TEMP_R20, low(exec_timer_error)
+	ldi		REG_TEMP_R21, high(exec_timer_error)
+	rcall		start_timer
 
 #ifndef USE_MINIMALIST
 	; Effacement de certaines erreurs non fugitives
@@ -115,11 +117,13 @@ presentation_connexion_fifo_rx_not_empty:
 	sts		G_CHENILLARD_LSB, REG_TEMP_R16
 
 presentation_connexion_reinit_timer:
-	; Reinitialisation timer 'TIMER_ERROR' tant que FIFO/Rx non vide
+	; Reinitialisation timer 'TIMER_CONNECT' tant que FIFO/Rx non vide
 	ldi		REG_TEMP_R17, TIMER_CONNECT
 	ldi		REG_TEMP_R18, (3000 % 256)
 	ldi		REG_TEMP_R19, (3000 / 256)
-	rcall		restart_timer
+	ldi		REG_TEMP_R20, low(exec_timer_connect)
+	ldi		REG_TEMP_R21, high(exec_timer_connect)
+	rcall		start_timer
 
 	; Passage en mode 'Connecte' pour une presentation Led GREEN --\__/-----
 	sbr		REG_FLAGS_1, FLG_1_CONNECTED_MSK
@@ -240,6 +244,7 @@ print_mark_loop_b:
 	brne		print_mark_loop
 
 	rcall		print_line_feed
+	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK	; Flush...
 
 	pop		REG_TEMP_R16
 

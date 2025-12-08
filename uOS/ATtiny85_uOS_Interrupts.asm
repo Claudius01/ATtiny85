@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.3 2025/11/28 14:03:22 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.4 2025/12/08 13:24:43 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Interrupts.h"
 
@@ -404,13 +404,17 @@ pcint0_isr_falling_more:
 	ldi		REG_TEMP_R17, TIMER_RXD_ANTI_REBONDS
 	ldi		REG_TEMP_R18, (50 % 256)
 	ldi		REG_TEMP_R19, (50 / 256)
-	rcall		restart_timer
+	ldi		REG_TEMP_R20, low(exec_timer_anti_rebound)
+	ldi		REG_TEMP_R21, high(exec_timer_anti_rebound)
+	rcall		start_timer
 
 	; Rearmement timer 'TIMER_APPUI_BOUTON_DETECT'
 	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_DETECT
 	ldi		REG_TEMP_R18, (100 % 256)
 	ldi		REG_TEMP_R19, (100 / 256)
-	rcall		restart_timer
+	ldi		REG_TEMP_R20, low(exec_timer_push_button_detect)
+	ldi		REG_TEMP_R21, high(exec_timer_push_button_detect)
+	rcall		start_timer
 
 	; Preparation reception bit RXD
 	lds		REG_TEMP_R16, G_DURATION_WAIT_READ_BIT_START		; Attente de 26uS * x avant de lire le Bit Start

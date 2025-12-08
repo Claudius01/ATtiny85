@@ -1,30 +1,8 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.12 2025/12/04 10:34:39 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.18 2025/12/08 18:52:00 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Timers.h"
 
 .cseg
-
-; ---------
-; Table des 16 vecteurs d'execution des taches timer
-; => Cf. 'NBR_TIMER' -> Nombre de taches d'execution definies
-; ---------
-vector_timers:
-	rjmp		exec_timer_connect					; Timer #0
-	rjmp		exec_timer_error						; Timer #1
-	rjmp		exec_timer_push_button_led			; Timer #2
-	rjmp		exec_timer_push_button_detect		; Timer #3
-	rjmp		exec_timer_anti_rebound				; Timer #4
-	rjmp		exec_timer_led_green					; Timer #5
-	rjmp		exec_timer_6							; Timer #6
-	rjmp		exec_timer_7							; Timer #7
-	rjmp		exec_timer_8							; Timer #8
-	rjmp		exec_timer_9							; Timer #9
-	rjmp		exec_timer_10							; Timer #10
-	rjmp		exec_timer_11							; Timer #11
-	rjmp		exec_timer_12							; Timer #12
-	rjmp		exec_timer_13							; Timer #13
-	rjmp		exec_timer_14							; Timer #14
-	rjmp		exec_timer_15							; Timer #15
 
 ; ---------
 ; Gestion des timers 16 bits; Durees [0, 1 mS, ..., ~65 Sec]
@@ -39,8 +17,6 @@ gestion_timer:
 	; Comptabilisation dans tous les timers armes
 	clr		REG_TEMP_R16
 
-	ldi		REG_Z_LSB, (vector_timers % 256)	; Table des vecteurs d'execution des taches timer
-	ldi		REG_Z_MSB, (vector_timers / 256)
 	ldi		REG_Y_LSB, (G_TIMER_0 % 256)			; Table des valeurs sur 16 bits des timers
 	ldi		REG_Y_MSB, (G_TIMER_0 / 256)	
 
@@ -68,9 +44,23 @@ gestion_timer_decrement:
 	push		REG_X_LSB
 	push		REG_X_MSB
 
-	; Timer #N expire => Execution de la tache associee
+	; Timer #N expire => Execution la methode initialisee dans le contexte si != 0x0000
+	rcall		get_address_timer	
+
+	tst		REG_TEMP_R20
+	brne		gestion_timer_execute
+	tst		REG_TEMP_R21
+	brne		gestion_timer_execute
+
+	; L'adresse est a 0x0000 -> Ignore
+	rjmp		gestion_timer_restore
+
+gestion_timer_execute:
+	; L'adresse n'est pas a 0x0000 -> Execution effective @ Z ...
+	movw		REG_Z_LSB, REG_TEMP_R20			; Adresse d'execution
 	icall
 
+gestion_timer_restore:
 	; Restauration du contexte
 	pop		REG_X_MSB
 	pop		REG_X_LSB
@@ -85,7 +75,7 @@ gestion_timer_next:
 	adiw		REG_Z_LSB, 1					; Adresse du traitement associe au prochain timer
 	adiw		REG_Y_LSB, 2					; Acces au prochain timer de 16 bits
 	inc		REG_TEMP_R16					; +1 dans le compteur de timer
-	cpi		REG_TEMP_R16, NBR_TIMER		; Tous les timer sont maj [#0, #1, #(NBR_TIMER - 1)] ?
+	cpi		REG_TEMP_R16, NBR_TIMER		; Tous les timers sont maj [#0, #1, #(NBR_TIMER - 1)] ?
 	brne		gestion_timer_loop			; TBC: brmi
 
 gestion_timer_rtn:
@@ -103,6 +93,8 @@ gestion_timer_rtn:
 ;      ldi        REG_TEMP_R17, <timer_num>         ; Num in range [0, 1, ..., (NBR_TIMER-1)]
 ;      ldi			REG_TEMP_R18, <timer_value_lsb>   ; LSB value
 ;      ldi			REG_TEMP_R19, <timer_value_msb>   ; MSB value
+;      ldi			REG_TEMP_R20, <address_lsb>   	 ; LSB value
+;      ldi			REG_TEMP_R21, <address_msb>   	 ; MSB value
 ;      rcall      start_timer
 ;
 ; Registres utilises (non sauvegardes/restaures):
@@ -111,71 +103,38 @@ gestion_timer_rtn:
 ;    REG_TEMP_R17        -> Num timer #N (1st argument inchange apres execution)
 ;    REG_TEMP_R18        -> Duration LSB (2nd argument)
 ;    REG_TEMP_R19        -> Duration MSB (3rd argument)
-;    REG_TEMP_R20        -> Duration LSB restante avant ajout (duree totale apres ajout)
-;    REG_TEMP_R21        -> Duration MSB restante avant ajout (duree totale apres ajout)
+;    REG_TEMP_R20        -> Adresse LSB de la methode callback
+;    REG_TEMP_R21        -> Adresse MSB de la methode callback
 ; ---------
 start_timer:
+	push		REG_TEMP_R17
+
 	cpi		REG_TEMP_R17, NBR_TIMER		; N dans la plage [0, 1, ..., (NBR_TIMER-1)] ?
 	brsh		start_timer_rtn				; Ignore si REG_TEMP_R17 >= NBR_TIMER
 
-	ldi		REG_Y_LSB, (G_TIMER_0 % 256)	; Non: Adresse de base des timers
-	ldi		REG_Y_MSB, (G_TIMER_0 / 256)
-
+	; Calcul de l'offset...
 	lsl		REG_TEMP_R17						; REG_TEMP_R17 *= 2 (Adresse sur des mots de 16 bits)
 	clr		REG_TEMP_R16						; Indexation du timer #N
-	clc
+
+	ldi		REG_Y_LSB, (G_TIMER_0 % 256)	; Adresse de base des timers
+	ldi		REG_Y_MSB, (G_TIMER_0 / 256)
+
+	add		REG_Y_LSB, REG_TEMP_R17			; YL += 2*N
+	adc		REG_Y_MSB, REG_TEMP_R16			; Report C -> YH => Y contient l'adresse du timer #N
+	std		Y+0, REG_TEMP_R18					; Set duration LSB
+	std		Y+1, REG_TEMP_R19					; Set duration MSB
+
+	ldi		REG_Y_LSB, (G_TIMER_ADDRESS_0 % 256)	; Adresse de base des adresses callback
+	ldi		REG_Y_MSB, (G_TIMER_ADDRESS_0 / 256)
+
 	add		REG_Y_LSB, REG_TEMP_R17			; YL += 2*N
 	adc		REG_Y_MSB, REG_TEMP_R16			; Report C -> YH => Y contient l'adresse du timer #N
 
-	ldd		REG_TEMP_R20, Y+0				; Maj dans R20:R21 de la duree restante du timer indexe par Y
-	ldd		REG_TEMP_R21, Y+1
-
-	clc
-	add		REG_TEMP_R20, REG_TEMP_R18	; Ajout de la duree passee en argument a celle restante
-	adc		REG_TEMP_R21, REG_TEMP_R19
-
-	std		Y+0, REG_TEMP_R20				; Set add duration LSB
-	std		Y+1, REG_TEMP_R21				; Set add duration MSB
+	std		Y+0, REG_TEMP_R20					; Set address LSB
+	std		Y+1, REG_TEMP_R21					; Set address MSB
 
 start_timer_rtn:
-	ret
-; ---------
-
-; ---------
-; Rearmement d'un timer #N avec une duree sur 16 bits
-; => La nouvelle duree remplace la duree restante correspondant a un fonctionnement
-;    'stop_timer' + 'start_timer'
-;
-; Usage:
-;      ldi     REG_TEMP_R17, <timer_num>         ; Num in range [0, 1, ..., (NBR_TIMER-1)]
-;      ldi		REG_TEMP_R18, <timer_value_lsb>   ; LSB value
-;      ldi		REG_TEMP_R19, <timer_value_msb>   ; MSB value
-;      rcall   restart_timer
-;
-; Registres utilises (non sauvegardes/restaures):
-;    REG_Y_LSB:REG_Y_MSB -> Indexation du timer #N
-;    REG_TEMP_R16          -> Registre de travail
-;    REG_TEMP_R17          -> Num timer #N (1st argument)
-;    REG_TEMP_R18          -> Duration LSB (2nd argument)
-;    REG_TEMP_R19          -> Duration MSB (3rd argument)
-; ---------
-restart_timer:
-	cpi		REG_TEMP_R17, NBR_TIMER		; N dans la plage [0, 1, ..., (NBR_TIMER-1)] ?
-	brsh		restart_timer_rtn				; Ignore si REG_TEMP_R17 >= NBR_TIMER
-
-	ldi		REG_Y_LSB, (G_TIMER_0 % 256)	; Non: Adresse de base des timers
-	ldi		REG_Y_MSB, (G_TIMER_0 / 256)
-
-	lsl		REG_TEMP_R17						; REG_TEMP_R17 *= 2 (Adresse sur des mots de 16 bits)
-	clr		REG_TEMP_R16						; Indexation du timer #N
-	clc
-	add		REG_Y_LSB, REG_TEMP_R17			; YL += 2*N
-	adc		REG_Y_MSB, REG_TEMP_R16			; Report C -> YH => Y contient l'adresse du timer #N
-
-	std		Y+0, REG_TEMP_R18				; Set add duration LSB
-	std		Y+1, REG_TEMP_R19				; Set add duration MSB
-
-restart_timer_rtn:
+	pop		REG_TEMP_R17
 	ret
 ; ---------
 
@@ -192,6 +151,8 @@ restart_timer_rtn:
 ;    REG_TEMP_R17          -> Num timer #N (1st argument)
 ; ---------
 stop_timer:
+	push		REG_TEMP_R17
+
 	cpi		REG_TEMP_R17, NBR_TIMER		; N dans la plage [0, 1, ..., (NBR_TIMER-1)] ?
 	brsh		stop_timer_rtn					; Ignore si REG_TEMP_R17 >= NBR_TIMER
 
@@ -208,6 +169,7 @@ stop_timer:
 	std		Y+1, REG_TEMP_R16				; Raz duration MSB
 
 stop_timer_rtn:
+	pop		REG_TEMP_R17
 	ret
 ; ---------
 
@@ -231,6 +193,8 @@ stop_timer_rtn:
 ;    Bit T de SREG   -> 0/1: Non arme ou expire / Arme en cours de decrementation
 ; ---------
 test_timer:
+	push		REG_TEMP_R17
+
 	cpi		REG_TEMP_R17, NBR_TIMER		; N dans la plage [0, 1, ..., (NBR_TIMER-1)] ?
 	brsh		test_timer_rtn					; Ignore si REG_TEMP_R17 >= NBR_TIMER
 
@@ -255,6 +219,49 @@ test_timer:
 	clt											; ... et non => Timer non arme ou expire
 
 test_timer_rtn:
+	pop		REG_TEMP_R17
+	ret
+; ---------
+
+; ---------
+; Get address de callback d'un timer #N
+;
+; Usage:
+;      ldi        REG_TEMP_R16, <timer_num>         ; Num in range [0, 1, ..., (NBR_TIMER-1)]
+;      rcall      get_address_timer
+;
+; Registres utilises (non sauvegardes/restaures):
+;    REG_Y_LSB:REG_Y_MSB -> Indexation du timer #N
+;    REG_TEMP_R16        -> Registre de travail
+;    REG_TEMP_R17        -> Num timer #N
+;
+; Retour:
+;    REG_TEMP_R20        -> Adresse LSB de la methode callback
+;    REG_TEMP_R21        -> Adresse MSB de la methode callback
+; ---------
+get_address_timer:
+	cpi		REG_TEMP_R16, NBR_TIMER			; N dans la plage [0, 1, ..., (NBR_TIMER-1)] ?
+	brcc		get_address_timer_err			; Saut si REG_TEMP_R17 >= NBR_TIMER
+
+	push		REG_TEMP_R16						; Sauvegarde Num Timer
+
+	ldi		REG_Y_LSB, (G_TIMER_ADDRESS_0 % 256)	; Non: Adresse de base des adresses callback
+	ldi		REG_Y_MSB, (G_TIMER_ADDRESS_0 / 256)
+
+	lsl		REG_TEMP_R16						; REG_TEMP_R17 *= 2 (Adresse sur des mots de 16 bits)
+
+	clr		REG_TEMP_R17						; Indexation du timer #N
+	add		REG_Y_LSB, REG_TEMP_R16			; YL += 2*N
+	adc		REG_Y_MSB, REG_TEMP_R17			; Report C -> YH => Y contient l'adresse du timer #N
+
+	ldd		REG_TEMP_R20, Y+0					; Maj dans R18:R19 du contexte
+	ldd		REG_TEMP_R21, Y+1
+
+get_address_timer_end:
+	pop		REG_TEMP_R16						; Restauration Num Timer
+	ret
+
+get_address_timer_err:
 	ret
 ; ---------
 
@@ -310,16 +317,31 @@ exec_timer_push_button_detect:
 	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_LED
 	ldi		REG_TEMP_R18, (300 % 256)
 	ldi		REG_TEMP_R19, (300 / 256)
-	rcall		restart_timer
+	ldi		REG_TEMP_R20, low(exec_timer_push_button_led)
+	ldi		REG_TEMP_R21, high(exec_timer_push_button_led)
+	rcall		start_timer
 	; Fin: Presentation flash de 300mS sur Led YELLOW
 
-	; Emission en hexa du compteur 'G_NBR_VALUE_TRACE'
+	; Emission du prompt de l'appui button
 	ldi		REG_Z_MSB, ((text_appui_bouton << 1) / 256)
 	ldi		REG_Z_LSB, ((text_appui_bouton << 1) % 256)
 	rcall		push_text_in_fifo_tx
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 
+	; Prolongement si module ADDON detecte
+	lds		REG_TEMP_R16, G_BEHAVIOR
+	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
+	rjmp		exec_timer_push_button_detect_rtn
+
+	; Appel eventuel au vecteur #4 (Traitements associes a l'appui bouton avant ceux effectues par uOS)
+	ldi		REG_Z_LSB, low(end_of_prg_uos)
+	ldi		REG_Z_MSB, high(end_of_prg_uos)
+	adiw		REG_Z_LSB, 4
+	icall
+	; Fin: Appel eventuel au vecteur #4 (Traitements associes a l'appui bouton avant ceux effectues par uOS)
+
+exec_timer_push_button_detect_rtn:
 	ret
 ; ---------
 
@@ -360,90 +382,19 @@ exec_timer_led_green_more:									; Ici, G_CHENILLARD_MSB<7> reflete la Carry
 	sts		G_CHENILLARD_LSB, REG_TEMP_R17
 	; Fin: Chenillard de presentation de la Led GREEN
 
-	; Armement du Timer #7
+	; Rearmement du Timer 'TIMER_LED_GREEN'
 	ldi		REG_TEMP_R17, TIMER_LED_GREEN
 	ldi		REG_TEMP_R18, (125 % 256)
 	ldi		REG_TEMP_R19, (125 / 256)
+	ldi		REG_TEMP_R20, low(exec_timer_led_green)
+	ldi		REG_TEMP_R21, high(exec_timer_led_green)
 	rcall		start_timer
 
 	ret
 ; ---------
 
-; ---------
-; Timer #6 for DS18B20
-; ---------
-exec_timer_6:
-#ifdef USE_DS18B20
-	rcall		exec_timer_ds18b20
-#endif
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_7:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_8:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_9:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_10:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_11:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_12:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_13:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_14:
-	ret
-; ---------
-
-; ---------
-; TIMER_SPARE
-; ---------
-exec_timer_15:
-	ret
-; ---------
-
 text_appui_bouton:
-.db	"### Button action", CHAR_LF, CHAR_NULL, CHAR_NULL
+.db	"### uOS: Button action", CHAR_LF, CHAR_NULL
 
 ; End of file
 

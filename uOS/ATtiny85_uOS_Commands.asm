@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Commands.asm,v 1.9 2025/12/02 14:31:06 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Commands.asm,v 1.13 2025/12/08 19:05:19 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Commands.h"
 
@@ -224,16 +224,67 @@ exec_command_test_x:
 	; Fin: Liste des commandes supportees par uOS
 
 exec_command_ko:
-	; La commande n'est pas supportee par uOS
-	; => Prolongement si module 'DS18B20' defini
+	; La commande dans 'REG_TEMP_R16' n'est pas supportee par uOS
+	; => Prolongement si module ADDON detecte
 	;
-#ifdef USE_DS18B20
-#ifndef USE_MINIMALIST
-	rcall		exec_command_ds18b20
-#endif
-#else
+	lds      REG_TEMP_R17, G_BEHAVIOR
+	sbrs     REG_TEMP_R17, FLG_BEHAVIOR_ADDON_FOUND_IDX
+	rjmp		exec_command_ko_end
+
+	; Appel eventuel au vecteur #3 (Traitements des nouvelles commandes non supportees par uOS)
+	ldi      REG_Z_LSB, low(end_of_prg_uos)
+	ldi      REG_Z_MSB, high(end_of_prg_uos)
+	adiw		REG_Z_LSB, 3
+	icall
+	rjmp		exec_command_rtn
+	; Fin: Appel eventuel au vecteur #3 (Traitements des nouvelles commandes non supportees par uOS)
+
+exec_command_ko_end:
 	rcall		print_command_ko			; Commande non reconnue
-#endif
+
+exec_command_rtn:
+	ret
+; ---------
+
+; ---------
+; Arret si 0xFFFFFFFF trouve a l'adresse @ Z (2 premiers non programme)
+; => Warning: Si une 2 dernieres donnees '.dseg' est definie a 0xFFFFFFFF
+;    => Arret premature ;-)
+; ---------
+exec_command_A_test_end:
+	push		REG_Z_MSB
+	push		REG_Z_LSB
+	push		REG_TEMP_R16
+	push		REG_TEMP_R17
+
+	ldi		REG_TEMP_R17, 4
+
+exec_command_A_test_end_more:
+	cpi		REG_TEMP_R16, 0xFF
+	brne		exec_command_A_test_end_not_found	
+
+	; 0xFF trouve -> Limitaion a 4 bytes trouves a 0xFF
+	; => Fin du calcul
+	dec		REG_TEMP_R17
+	breq		exec_command_A_test_end_found
+
+exec_command_A_test_end_continue:
+	inc		REG_Z_LSB
+	lpm		REG_TEMP_R16, Z
+	rjmp		exec_command_A_test_end_more
+
+exec_command_A_test_end_not_found:
+	sez												; Z <- 1 (return false)
+	rjmp		exec_command_A_test_end_rtn
+
+exec_command_A_test_end_found:
+	clz												; Z <- 0 (return true)
+
+exec_command_A_test_end_rtn:
+	pop		REG_TEMP_R17
+	pop		REG_TEMP_R16
+	pop		REG_Z_LSB
+	pop		REG_Z_MSB
 
 	ret
 ; ---------
@@ -281,26 +332,15 @@ exec_command_A_loop_1:
 	and		REG_TEMP_R16, REG_X_LSB
 	breq		exec_command_A_loop_1_cont_d			; Lecture par mot
 
-	push		REG_X_MSB
-	push		REG_X_LSB
-	lsr		REG_X_MSB
-	ror		REG_X_LSB
-
-	ldi		REG_TEMP_R16, low(end_of_program - 1)
-	cp			REG_TEMP_R16, REG_X_LSB
-
-	ldi		REG_TEMP_R16, high(end_of_program - 1)
-	cpc		REG_TEMP_R16, REG_X_MSB
-
-	pop		REG_X_LSB
-	pop		REG_X_MSB
-	brmi		exec_command_A_end
-	; Fin: Calcul jusqu'a l'adresse 'end_of_program' incluse
-
 exec_command_A_loop_1_cont_d:
 	ldi		REG_TEMP_R16, 0x01
 	eor		REG_Z_LSB, REG_TEMP_R16		; Lecture MSB puis LSB
 	lpm		REG_TEMP_R16, Z
+
+	; Test de la fin du programme (4 bytes a 0xFFFFFFFF)
+	rcall		exec_command_A_test_end		; if (exec_command_A_test_end() == true) ?
+	brne		exec_command_A_end			; -> Yes: La fin du programme flashe est trouvee -> Arret
+
 	push		REG_TEMP_R16
 	rcall		convert_and_put_fifo_tx
 
@@ -358,14 +398,6 @@ exec_command_A_end:
 	pop		REG_X_LSB
 
 exec_command_A_rtn:
-#if 0
-	ldi		REG_TEMP_R17, 'c'
-	rcall		print_mark
-	lds		REG_X_LSB, G_CALC_CRC8
-	rcall		print_1_byte_hexa
-	rcall		print_line_feed
-#endif
-
 	ret
 ; ---------
 
