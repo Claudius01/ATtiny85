@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.12 2025/12/03 16:45:55 administrateur Exp $
+; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.15 2025/12/08 18:51:48 administrateur Exp $
 
 .include		"ATtiny85_DS18B20_1_Wire_Commands.h"
 
@@ -63,7 +63,7 @@ ds18b20_convert_t:
 	rcall		ds18b20_read_response_72_bits
 
 	ldi		REG_TEMP_R16, 'C'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R18, 5
 	rcall		ds18b20_print_response
 
@@ -85,7 +85,7 @@ ds18b20_read_scratchpad:
 	rcall		ds18b20_read_response_72_bits
 
 	ldi		REG_TEMP_R16, 'T'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R18, 5
 	rcall		ds18b20_print_response
 
@@ -114,18 +114,18 @@ ds18b20_read_scratchpad_ok:
 	rcall		build_frame_infos
 
 	ldi		REG_TEMP_R16, 'O'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R16, 'k'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	call		uos_push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
 
 	rjmp		ds18b20_read_scratchpad_end
 
 ds18b20_read_scratchpad_ko:
 	ldi		REG_TEMP_R16, 'K'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R16, 'o'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	call		uos_push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
 
 	;rjmp		ds18b20_read_scratchpad_end
@@ -172,7 +172,7 @@ ds18b20_match_rom:
 	rcall		ds18b20_print_rom_send
 
 	; Attente du vidage de la FIFO/Tx
-	rcall		uos_fifo_tx_to_send_sync
+	call		uos_fifo_tx_to_send_sync
 
 	cli
 

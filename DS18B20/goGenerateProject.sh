@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.4 2025/12/04 10:35:32 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.5 2025/12/07 13:05:25 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
@@ -62,11 +62,10 @@ echo "################## Production of '${PROJECTS_FILE}' ##################"
 #
 # Directives d'assemblage:
 # -D USE_MINIMALIST -> Production de la version minimaliste a destination de la production de uOS
-# -D USE_DS18B20    -> Production avec la gestion des capteurs de temperature DS18B20
 
-#${AVRA_BIN} -D USE_DS18B20 -D USE_MINIMALIST -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
-${AVRA_BIN} -D USE_DS18B20 -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+${AVRA_BIN} -D USE_ADDONS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
 if [ ! -f ${PROJECTS_FILE}.${EXT_LST} ]; then
 	echo "Error: No build ;-("	

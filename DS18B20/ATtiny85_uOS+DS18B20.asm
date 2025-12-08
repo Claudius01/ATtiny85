@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.18 2025/12/03 17:46:55 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.22 2025/12/08 18:51:48 administrateur Exp $"
 
 ; Programme de gestion des capteurs DS18B20
 ;
@@ -13,6 +13,42 @@
 .include		"ATtiny85_uOS+DS18B20.h"
 
 .cseg
+
+; Definitions de la table de vecteurs de "prolongation" des 4 traitements:
+; geres par uOS qui passe la main aux methodes specifiques a l'ADDON
+; - #0: Initialisation materielle et logicielle (prolongation du 'setup' de uOS)
+; - #1: Traitements en fond de tache
+; - #2: Traitements toutes les 1 mS
+; - #3: Traitements des nouvelles commandes non supportees par uOS
+; - #4: Traitements associes a l'appui bouton avant ceux effectues par uOS
+;
+; => Toujours definir les 4 adresses avec un 'rjmp' ou un 'ret'
+;    si pas de "prolongation" des traitements
+;
+; => Le nommage est libre et non utilise par uOS
+;    => Seul le rang du traitement est impose dans l'ordre defini plus haut
+
+ds18b20_setup:
+	; Initialisation et armocage des prises des mesures et de l'emission de la trame
+	rjmp		ds18b20_begin
+
+ds18b20_background:
+	; Aucun traitement en fond de tache
+	ret
+
+ds18b20_1_ms:
+	; Aucun traitement toutes les 1 mS
+	ret
+
+ds18b20_commands:
+	; Execution des commandes "<C" et "<T"
+	rjmp		exec_command_ds18b20	
+
+ds18b20_button:
+	; Traitements associes a l'appui bouton avant ceux effectues par uOS
+	rjmp		exec_button_ds18b20	
+
+; Fin: Definitions de la table de vecteurs de "prolongation" des traitements
 
 ; ---------
 ; Initialisation contextes
@@ -91,6 +127,8 @@ ds18b20_init:
 	ldi      REG_TEMP_R17, DS18B20_TIMER_1_SEC
 	ldi      REG_TEMP_R18, (1000 % 256)
 	ldi      REG_TEMP_R19, (1000 / 256)
+	ldi      REG_TEMP_R20, low(exec_timer_ds18b20)
+	ldi      REG_TEMP_R21, high(exec_timer_ds18b20)
 	rcall    start_timer
 
 	; Lecture depuis l'EEPROM du nombre de DS18B20 a detecter et a gerer
@@ -942,11 +980,13 @@ ds18b20_get_rom_detected_ok:							; Oui (0 <= N < 'G_DS18B20_NBR_ROM_FOUND')
 	adc		REG_X_MSB, REG_TEMP_R17
 
 	ldi		REG_TEMP_R16, 'O'
+
 #if USE_DS18B20_TRACE
 	call		push_1_char_in_fifo_tx_skip
 #else
 	rcall		push_1_char_in_fifo_tx_skip
 #endif
+
 	rcall		uos_print_2_bytes_hexa_skip
 	rcall		uos_print_line_feed_skip
 
@@ -1363,7 +1403,7 @@ convert_2_bytes_hexa_to_dec:
 #endif
 
 text_prompt_ds18b20:
-.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.18 $", CHAR_LF, CHAR_NULL
+.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.22 $", CHAR_LF, CHAR_NULL
 
 text_msk_table:
 .db	MSK_BIT0, MSK_BIT1, MSK_BIT2, MSK_BIT3
@@ -1378,9 +1418,9 @@ text_msk_table:
 #endif
 
 .include		"ATtiny85_uOS+DS18B20_1_Wire.asm"
-.include		"ATtiny85_DS18B20_1_Wire_Commands.asm"
+.include		"ATtiny85_uOS+DS18B20_Button.asm"
 
-end_of_program:
+.include		"ATtiny85_DS18B20_1_Wire_Commands.asm"
  
 .dseg
 G_SRAM_END_OF_USE:		.byte	1

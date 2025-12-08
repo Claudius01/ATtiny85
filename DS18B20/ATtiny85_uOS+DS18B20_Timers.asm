@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20_Timers.asm,v 1.5 2025/12/02 14:30:54 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_Timers.asm,v 1.6 2025/12/08 14:21:28 administrateur Exp $"
 
 .cseg
 
@@ -36,9 +36,12 @@ exec_timer_ds18b20_more:
 	; Fin: Cadencement de l'emission des trames DS18B20
 
 exec_timer_ds18b20_cont_d:
+	; Reinitialisation du timer 'DS18B20_TIMER_1_SEC'
 	ldi		REG_TEMP_R17, DS18B20_TIMER_1_SEC
 	ldi		REG_TEMP_R18, (1000 % 256)
 	ldi		REG_TEMP_R19, (1000 / 256)
+	ldi		REG_TEMP_R20, low(exec_timer_ds18b20)
+	ldi		REG_TEMP_R21, high(exec_timer_ds18b20)
 	call		start_timer
 
 	ret
