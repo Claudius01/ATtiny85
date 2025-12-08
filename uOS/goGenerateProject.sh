@@ -61,7 +61,6 @@ echo
 echo "################## Production of '${PROJECTS_FILE}' ##################"
 # Directives d'assemblage:
 # - USE_MINIMALIST -> Production de la version minimaliste
-# - USE_DS18B20    -> Production avec la gestion des capteurs de temperature DS18B20
 
 #${AVRA_BIN} -D USE_MINIMALIST -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
