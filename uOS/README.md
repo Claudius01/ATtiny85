@@ -4,7 +4,7 @@ Micro-OS est écrit entièrement en assembleur avec les fonctionnalités suivant
 * Gestion de 3 Leds et de l'appui simple sur le bouton:
     * Led verte allumée fugitivement pour l'activité en fond de tâche
     * Led jaune allumée fugitivement pour la détection de l'appui bouton
-    * Led rouge allumée fugitivement ou en permanence
+    * Led rouge allumée fugitivement ou en permanence suivant la source de l'erreur
     * Bouton pour l'effacement des erreurs persistantes
 * Gestion de 16 *timers* logiciel sur 16 bits du type *callback* avec une résolution de 1 mS
     * 📔 Á noter que uOS utilise 6 *timers* pour:
@@ -67,7 +67,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 | CKSEL0 | 0 | Clock source setting |  1 | non programmé |
 
 * Le fusible *Low Byte* est programmé à 0xF1: La source de l'horloge est interne et pilotée par la PLL interne de 64 MHz
-* 📔 Á noter que le fusible `CKOUT` peut être programmé, auquel cas la sortie `CLK` est dispoblible sur PB4 permettant de qualifier au moyen d'un scope la vitesse de l'ATtiny85
+* 📔 Á noter que le fusible `CKOUT` peut être programmé, auquel cas la sortie `CLK` est disponible sur PB4 permettant de qualifier au moyen d'un scope la fréquence de fonctionnement de l'ATtiny85
 
 | Fuse Lock Byte | Bit No | Description | Valeur | Action |
 | :--- | :---: | :--- | :---: | :--- |
