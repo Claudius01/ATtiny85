@@ -140,15 +140,6 @@ uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**
 * *Á compléter*
 
 ## ⏳ Évolutions envisagées
-- Utilisation d'adresses en SRAM pour le *mapping* en prolongement des appels hors de uOS comme:
-  * L'initialisation logicielle et matérielle
-  * Le traitement en fond de tâche ou toutes les millisecondes
-  * La gestion des *timers*
-  * Le support de nouvelles commandes
-  * etc.
-
-et cela afin de ne pas conditionner le code ajouté à uOS par une directive d'assemblage
-
 - Mise en veille du µC pour limiter la consommation dans le cas d'une alimentation au moyen de piles
 - Utilisation de l'USI pour la gestion de l'UART en remplacement de la solution logicielle
 - *Á compléter*
