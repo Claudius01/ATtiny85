@@ -73,4 +73,5 @@ Le fusible *High Byte* est programmé à 0xD7:
   * L'UART/Tx et UART/Rx
   * La gestion des *timers*
   * Les commandes de uOS
+  * L'appui bouton
   * etc.
