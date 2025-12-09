@@ -7,7 +7,7 @@ Ci-après des informations avancées sur la mise en oeuvre de uOS dans un ATtiny
 5. Accueil d'un programme *addon* en extension de uOS
 
 ## 1. Valeurs des fusibles
-Les 4 fusibles *Low Byte*, *Lock Byte*, *Extended Byte* et *High Byte* peuvent être programmés comme suit:
+Les 4 fusibles *Low Byte*, *Lock Byte*, *Extended Byte* et *High Byte* sont à programmer comme suit:
 
 | Fuse Low Byte | Bit No | Description | Valeur | Action |
 | :--- | :---: | :--- | :---: | :--- |
