@@ -1,6 +1,7 @@
 Ci-après des informations avancées sur la mise en oeuvre de uOS dans un ATtiny85 cadencé à 16 MHz
 
 - Valeurs des fusibles
+- Caracréristiques de l'UART
 - Utilisation de l'EEPROM
 - Accueil d'un programme *addon* en extension de uOS
 
@@ -66,7 +67,15 @@ Le fusible *High Byte* est programmé à `0xD7` ou `0xDF`:
 * EEPROM préservée (0) ou non (1) à l'effacement de l'ATtiny85
 * Niveau de déclenchement du détecteur de sous-tension non activé
 
-🏁 **Extension avec un programme *addon***
+## Caracréristiques de l'UART
+Le format et les vitesses des données transmises et reçues par l'UART sont:
+
+   - 8 bits sans parité
+   - Vitesses de 300 bauds, 600 bauds, 1200 bauds, 2400 bauds, 4800 bauds, 9600 bauds (par défaut) et 19200 bauds configurées dans l'EEPROM
+
+## Utilisation de l'EEPROM
+
+## Accueil d'un programme *addon* en extension de uOS
 - uOS permet le prolongement des appels hors de uOS pour accueillir un programme *addon* comme [DS18B20](../../DS18B20) sans avoir à le modifier et ajouter pour ce programme:
   * L'initialisation logicielle et matérielle
   * Le traitement en fond de tâche ou toutes les millisecondes
