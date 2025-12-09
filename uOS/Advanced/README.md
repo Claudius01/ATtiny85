@@ -1,7 +1,12 @@
+Ci-après des informations avancées sur la mise en oeuvre de uOS dans un ATtiny85 cadencé à 16 MHz
 
-## 🚩 Principes avancés
+- Valeurs des fusibles
+- Utilisation de l'EEPROM
+- Accueil d'un programme *addon* en extension de uOS
 
-🏁 **Valeurs des fusibles**
+## Valeurs des fusibles
+Les 4 fusibles *Low Byte*, *Lock Byte*, *Extended Byte* et *High Byte* peuvent être programmés comme suit:
+
 | Fuse Low Byte | Bit No | Description | Valeur | Action |
 | :--- | :---: | :--- | :---: | :--- |
 | CKDIV8 | 7 | Clock divided by 8 |  1 | non programmé |
@@ -13,7 +18,7 @@
 | CKSEL1 | 1 | Clock source setting | 0 | programmé |
 | CKSEL0 | 0 | Clock source setting |  1 | non programmé |
 
-* Le fusible *Low Byte* est programmé à 0xF1: La source de l'horloge est interne et pilotée par la PLL interne de 64 MHz
+* Le fusible *Low Byte* est programmé à `0xF1`: La source de l'horloge est interne et pilotée par la PLL interne de 64 MHz
 * 📔 Á noter que le fusible `CKOUT` peut être programmé, auquel cas la sortie `CLK` est disponible sur PB4 permettant de qualifier au moyen d'un scope la fréquence de fonctionnement de l'ATtiny85
 
 | Fuse Lock Byte | Bit No | Description | Valeur | Action |
@@ -27,7 +32,7 @@
 | LB2 | 1 | Lock bit | 1 | non programmé |
 | LB1 | 0 | Lock bit |  1 | non programmé |
 
-Le fusible *Lock Byte* est laissé non programmé à 0xFF: Aucune fonction de verrouillage de la mémoire n'est activée
+Le fusible *Lock Byte* est laissé non programmé à `0xFF`: Aucune fonction de verrouillage de la mémoire n'est activée
 
 | Fuse Extended Byte | Bit No | Description | Valeur | Action |
 | :--- | :---: | :--- | :---: | :--- |
@@ -40,7 +45,7 @@ Le fusible *Lock Byte* est laissé non programmé à 0xFF: Aucune fonction de ve
 | - | 1 | - | 1 | non programmé |
 | SELFPRGEN | 0 | Self-programming enabled |  1 | non programmé |
 
-Le fusible *Extended Byte* est laissé non programmé à 0xFF: Les instructions SPM sont inhibées
+Le fusible *Extended Byte* est laissé non programmé à `0xFF`: Les instructions SPM sont inhibées
 
 | Fuse High Byte | Bit No | Description | Valeur | Action |
 | :--- | :---: | :--- | :---: | :--- |
@@ -53,12 +58,12 @@ Le fusible *Extended Byte* est laissé non programmé à 0xFF: Les instructions 
 | BODLEVEL1 | 1 | Brown-out Detector trigger level | 1 | non programmé |
 | BODLEVEL0 | 0 | Brown-out Detector trigger level |  1 | non programmé |
 
-Le fusible *High Byte* est programmé à 0xD7:
+Le fusible *High Byte* est programmé à `0xD7` ou `0xDF`:
 * RESET externe autorisé
 * *DebugWIRE* non autorisé
 * Programmation type *Serial* et téléchargement de données autorisés
 * *Timer Watchdog* toujours à *off*
-* EEPROM préservée à l'effacement de l'ATtiny85
+* EEPROM préservée (0) ou non (1) à l'effacement de l'ATtiny85
 * Niveau de déclenchement du détecteur de sous-tension non activé
 
 🏁 **Extension avec un programme *addon***
