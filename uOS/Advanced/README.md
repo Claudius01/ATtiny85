@@ -3,7 +3,7 @@ Ci-après des informations avancées sur la mise en oeuvre de uOS dans un ATtiny
 1. Valeurs des fusibles
 2. Caracréristiques de l'UART
 3. Utilisation de l'EEPROM
-4. 1st mise en oeuvre de uOS
+4. Première mise en oeuvre de uOS
 5. Accueil d'un programme *addon* en extension de uOS
 
 ## 1. Valeurs des fusibles
@@ -84,7 +84,7 @@ uOS utilise l'octet à l'adresse `0x00A` pour déterminer la vitesse de l'UART p
 6. `0x05` pour 600 bauds
 7. `0x06` pour 300 bauds
 
-## 4. 1st mise en oeuvre de uOS
+## 4. Première mise en oeuvre de uOS
 
 ## 5. Accueil d'un programme *addon* en extension de uOS
 - uOS permet le prolongement des appels hors de uOS pour accueillir un programme *addon* comme [DS18B20](../../DS18B20) sans avoir à le modifier et ajouter pour ce programme:
