@@ -4,7 +4,7 @@ Ci-après des informations avancées sur la mise en oeuvre de uOS dans un ATtiny
 2. Caracréristiques de l'UART
 3. Utilisation de l'EEPROM
 4. Mise en oeuvre de uOS
-5. Accueil du programme de test **ATtiny85_uOS_Test_Addons.asm** en extension de uOS
+5. Accueil du programme de test **ATtiny85_uOS_Test_Addons.asm**
 
 ## 1. Valeurs des fusibles
 Les 4 fusibles *Low Byte*, *Lock Byte*, *Extended Byte* et *High Byte* sont à programmer dans un 1sr temps comme suit:
@@ -88,13 +88,13 @@ Toute autre valeur sera interprétée comme 9600 bauds (`0xFF` étant la valeur 
 
 ## 4. Première mise en oeuvre de uOS
 
-## 5. Accueil du programme de test **ATtiny85_uOS_Test_Addons.asm** en extension de uOS
-- **ATtiny85_uOS_Test_Addons.asm** est un exemple de prolongement des appels hors de uOS pour accueillir un programme *addon* comme [DS18B20](../../DS18B20) sans avoir à le modifier et ajouter pour ce programme:
-  * L'initialisation logicielle et matérielle
-  * Le traitement en fond de tâche ou toutes les millisecondes
-  * Le support de nouvelles commandes
-  * L'action sur le bouton
-  * etc.
+## 5. Accueil du programme de test **ATtiny85_uOS_Test_Addons.asm**
+- **ATtiny85_uOS_Test_Addons.asm** est un exemple de prolongement des appels hors de uOS pour accueillir un programme *addon* comme [DS18B20](../../DS18B20) sans avoir à le modifier et ajouter pour ce programme les 5 traitements "prolongés":
+  1. L'initialisation logicielle et matérielle
+  2. Le traitement en fond de tâche
+  3. Le traitement toutes les millisecondes
+  4. Le support de nouvelles commandes
+  5. L'action sur le bouton
 
 - Le but étant que ce programme *addon* bénéficie des ressources de uOS sans avoir à les réécrire comme:
   * L'UART/Tx et UART/Rx
