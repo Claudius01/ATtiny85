@@ -71,18 +71,20 @@ Le fusible *High Byte* est programmé à `0xD7` ou `0xDF`:
 ## 2. Caracréristiques de l'UART
 Le format et les vitesses des données transmises et reçues par l'UART sont:
    - 8 bits sans parité, 1 bit start et 1 bit stop 
-   - 7 vitesses de 300 bauds à 19200 bauds configurées dans l'EEPROM (9600 bauds par défaut)
+   - 7 vitesses de 300 bauds à 19200 bauds configurées dans l'EEPROM
 
 ## 3. Utilisation de l'EEPROM
 uOS utilise l'octet à l'adresse `0x00A` pour déterminer la vitesse de l'UART parmi les 7 valeurs suivantes:
 
 1. `0x00` pour 19200 bauds
-2. `0x01` ou `0xFF` pour 9600 bauds (`0xFF` étant la valeur après un effacement de l'EEPROM)
+2. `0x01` pour 9600 bauds 
 3. `0x02` pour 4800 bauds
 4. `0x03` pour 2400 bauds
 5. `0x04` pour 1200 bauds
 6. `0x05` pour 600 bauds
 7. `0x06` pour 300 bauds
+
+Toute autre valeur sera interprétée comme 9600 bauds (`0xFF` étant la valeur après un effacement de l'EEPROM)
 
 ## 4. Première mise en oeuvre de uOS
 
