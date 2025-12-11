@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.24 2025/12/08 18:52:00 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.26 2025/12/11 09:16:51 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -89,6 +89,7 @@ setup:	; Remarque: Equivalent de la methode 'setup()' dans l'ecosysteme Arduino 
 
 	sei						; Set all interrupts for send prompts
 
+setup_cold:
 	; Preparation emission des prompts d'accueil
 	; => Prompt d'accueil
 	ldi		REG_Z_MSB, ((text_whoami << 1) / 256)
@@ -146,6 +147,18 @@ loop_1_ms:
 	rcall		interpret_command
 #endif
 
+	lds		REG_TEMP_R16, G_BEHAVIOR
+	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
+	rjmp		loop_1_ms_end
+
+	; Appel eventuel au vecteur #2 (Traitements toutes les 1 mS
+	ldi		REG_Z_LSB, low(end_of_prg_uos)
+	ldi		REG_Z_MSB, high(end_of_prg_uos)
+	adiw		REG_Z_LSB, 2
+	icall
+	; Fin: Appel eventuel au vecteur #2 (Traitements toutes les 1 mS)
+loop_1_ms_end:
+
 	; ---
 	; Fin: Traitements toutes les 1mS
 
@@ -159,6 +172,17 @@ loop_background:
 
 	; Presentation erreurs sur Led RED Externe
 	rcall		presentation_error
+
+	lds		REG_TEMP_R16, G_BEHAVIOR
+	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
+	rjmp		loop_end
+
+	; Appel eventuel au vecteur #1 (Traitements en fond de tache)
+	ldi		REG_Z_LSB, low(end_of_prg_uos)
+	ldi		REG_Z_MSB, high(end_of_prg_uos)
+	adiw		REG_Z_LSB, 1
+	icall
+	; Fin: Appel eventuel au vecteur #1 (Traitements en fond de tache)
 
 loop_end:
 	rjmp		loop
@@ -198,7 +222,7 @@ addon_end:
 ; -----------
 
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.24 $", CHAR_LF, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.26 $", CHAR_LF, CHAR_NULL
 
 .include		"ATtiny85_uOS_Macros.def"
 
@@ -214,7 +238,14 @@ text_whoami:
 
 .include		"ATtiny85_uOS_Print.asm"
 
-end_of_prg_uos:
+end_of_prg_uos:		; Adresse de fin de uOS
+
+#if 1
+; Test ADDON into uOS
+.include		"ATtiny85_uOS_Test_Addons.asm"
+
+; End: Test ADDON into uOS
+#endif
 
 #ifndef USE_ADDONS
 .dseg
