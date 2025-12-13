@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.22 2025/12/08 18:51:48 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.23 2025/12/13 14:58:52 administrateur Exp $"
 
 ; Programme de gestion des capteurs DS18B20
 ;
@@ -14,7 +14,7 @@
 
 .cseg
 
-; Definitions de la table de vecteurs de "prolongation" des 4 traitements:
+; Definitions de la table de vecteurs de "prolongation" des 5 traitements:
 ; geres par uOS qui passe la main aux methodes specifiques a l'ADDON
 ; - #0: Initialisation materielle et logicielle (prolongation du 'setup' de uOS)
 ; - #1: Traitements en fond de tache
@@ -22,7 +22,7 @@
 ; - #3: Traitements des nouvelles commandes non supportees par uOS
 ; - #4: Traitements associes a l'appui bouton avant ceux effectues par uOS
 ;
-; => Toujours definir les 4 adresses avec un 'rjmp' ou un 'ret'
+; => Toujours definir les 5 adresses avec un 'rjmp' ou un 'ret'
 ;    si pas de "prolongation" des traitements
 ;
 ; => Le nommage est libre et non utilise par uOS
@@ -1403,7 +1403,7 @@ convert_2_bytes_hexa_to_dec:
 #endif
 
 text_prompt_ds18b20:
-.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.22 $", CHAR_LF, CHAR_NULL
+.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.23 $", CHAR_LF, CHAR_NULL
 
 text_msk_table:
 .db	MSK_BIT0, MSK_BIT1, MSK_BIT2, MSK_BIT3
