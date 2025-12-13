@@ -161,7 +161,7 @@ Les traces d'exécution commentées suivantes présentent les passages dans les 
 `15:24:01.715721 #   74: [[### uOS: Button action]]`   <= **uos_test_button**<br>
 `15:24:01.725541 #   75: [[uOS: Test button]]`   <= Passage dans uos_test_button<br>
 `15:24:02.186620 #   76: [[[0x0025][0x0002][0x828b]] uOS: Test 1 mS (1000 passages)]]`<br>
-`15:24:03.189635 #   77: [[uOS: Test timer (10 Sec.)]]`<br>
+`15:24:03.189635 #   77: [[uOS: Test timer (10 Sec.)]]`  <= **Expiration timer** de 10 secondes<br>
 `15:24:03.255166 #   78: [[[0x0026][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:04.299933 #   79: [[[0x0027][0x0002][0x843f]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:05.337224 #   80: [[[0x0028][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
@@ -172,7 +172,13 @@ Les traces d'exécution commentées suivantes présentent les passages dans les 
 `15:24:10.527064 #   85: [[[0x002d][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:11.566279 #   86: [[[0x002e][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:12.603659 #   87: [[[0x002f][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
-`15:24:13.605926 #   88: [[uOS: Test timer (10 Sec.)]]`<br>
+`15:24:13.605926 #   88: [[uOS: Test timer (10 Sec.)]]`  <= **Expiration timer** de 10 secondes<br>
 `15:24:13.672223 #   89: [[[0x0030][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:14.716860 #   90: [[[0x0031][0x0002][0x843f]] uOS: Test 1 mS (1000 passages)]]`<br>
 `...`<br>
+
+* Les passages dans **uos_test_1_ms** s'effectuent bien toutes les 1 mS
+* Le passage dans **uos_test_background** incrémente un compteur de 32 bits remis à zéro toutes les secondes
+     * ie. `0x000283e4` = 164836 correspond à un passage toutes les 6.07 µS qui soit environ 100 cycles d'instructions à 16 Mhz
+* Expiration et réarmement d'un *timer* toutes les 10 secondes comme à `15:24:03.189635` et `15:24:13.605926`
+
