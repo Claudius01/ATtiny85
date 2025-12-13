@@ -180,5 +180,5 @@ Les traces d'exécution commentées suivantes présentent les passages dans les 
 * Les passages dans **uos_test_1_ms** s'effectuent bien toutes les 1 mS
 * Le passage dans **uos_test_background** incrémente un compteur de 32 bits remis à zéro toutes les secondes
      * ie. `0x000283e4` = 164836 correspond à un passage toutes les 6.07 µS soit environ 100 cycles d'instructions  à 16 Mhz pour tous les traitements en fond de tâche, de la gestion des *timers*, l'interprétation de la commande `<t` et la prise en compte de l'appui bouton
-* Expiration et réarmement d'un *timer* toutes les 10 secondes comme à `15:24:03.189635` et `15:24:13.605926`
+* Expiration et réarmement d'un *timer* toutes les 10 secondes comme à `15:24:03.189635` et à `15:24:13.605926`
 
