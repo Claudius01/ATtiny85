@@ -102,3 +102,38 @@ Toute autre valeur sera interprétée comme 9600 bauds (`0xFF` étant la valeur 
   * Les commandes de uOS
   * L'appui bouton
   * etc.
+
+Le programme *addon* doit commencer par le code comme suit:
+
+`.cseg`<br>
+
+`; Definitions de la table de vecteurs de "prolongation" des 5 traitements:`<br>
+`; geres par uOS qui passe la main aux methodes specifiques a l'ADDON`<br>
+`; - #0: Initialisation materielle et logicielle (prolongation du 'setup' de uOS)`<br>
+`; - #1: Traitements en fond de tache`<br>
+`; - #2: Traitements toutes les 1 mS`<br>
+`; - #3: Traitements des nouvelles commandes non supportees par uOS`<br>
+`; - #4: Traitements associes a l'appui bouton avant ceux effectues par uOS`<br>
+`;`<br>
+`; => Toujours definir les 5 adresses avec un 'rjmp' ou un 'ret'`<br>
+`;    si pas de "prolongation" des traitements`<br>
+`;`<br>
+`; => Le nommage est libre et non utilise par uOS`<br>
+`;    => Seul l'adresse du traitement est impose dans l'ordre defini plus haut`<br>
+`; --------`<br>
+`uos_test_setup:`<br>
+`	rjmp		uos_test_setup_contd`<br>
+
+`uos_test_background:`<br>
+`	rjmp		uos_test_background_contd`<br>
+
+`uos_test_1_ms:`<br>
+`	rjmp		uos_test_1_ms_contd`<br>
+
+`uos_test_commands:`<br>
+`	rjmp		uos_test_commands_contd`<br>
+
+`uos_test_button:`<br>
+`	rjmp		uos_test_button_contd`<br>
+
+`; Fin: Definitions de la table de vecteurs de "prolongation" des 5 traitements`<br>
