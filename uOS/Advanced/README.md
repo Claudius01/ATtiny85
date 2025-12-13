@@ -137,3 +137,5 @@ Le programme *addon* doit commencer par le code comme suit:
 `	rjmp		uos_test_button_contd`<br>
 
 `; Fin: Definitions de la table de vecteurs de "prolongation" des 5 traitements`<br>
+
+Editer le fichier [ATtiny85_uOS_Test_Addons.asm](../ATtiny85_uOS_Test_Addons.asm) pour connaître les traitements `uos_test_setup`, `uos_test_background`, `uos_test_1_ms`, `uos_test_commands` et `uos_test_button`
