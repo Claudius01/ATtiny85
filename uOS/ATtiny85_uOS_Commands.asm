@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Commands.asm,v 1.13 2025/12/08 19:05:19 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Commands.asm,v 1.14 2025/12/12 15:41:46 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Commands.h"
 
@@ -227,17 +227,9 @@ exec_command_ko:
 	; La commande dans 'REG_TEMP_R16' n'est pas supportee par uOS
 	; => Prolongement si module ADDON detecte
 	;
-	lds      REG_TEMP_R17, G_BEHAVIOR
-	sbrs     REG_TEMP_R17, FLG_BEHAVIOR_ADDON_FOUND_IDX
-	rjmp		exec_command_ko_end
-
-	; Appel eventuel au vecteur #3 (Traitements des nouvelles commandes non supportees par uOS)
-	ldi      REG_Z_LSB, low(end_of_prg_uos)
-	ldi      REG_Z_MSB, high(end_of_prg_uos)
-	adiw		REG_Z_LSB, 3
-	icall
+	ldi		REG_TEMP_R17, EXTENSION_COMMANDS
+	rcall		exec_extension_addon
 	rjmp		exec_command_rtn
-	; Fin: Appel eventuel au vecteur #3 (Traitements des nouvelles commandes non supportees par uOS)
 
 exec_command_ko_end:
 	rcall		print_command_ko			; Commande non reconnue

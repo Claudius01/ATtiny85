@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.26 2025/12/11 09:16:51 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.28 2025/12/13 10:14:37 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -103,17 +103,8 @@ setup_cold:
 
 	rcall		addon_search_methods
 
-	lds		REG_TEMP_R16, G_BEHAVIOR
-	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
-	rjmp		setup_end
-
-	; Appel eventuel au vecteur #0 (Initialisation materielle et logicielle)
-	ldi		REG_Z_LSB, low(end_of_prg_uos)
-	ldi		REG_Z_MSB, high(end_of_prg_uos)
-	icall
-	; Fin: Appel eventuel au vecteur #0 (Initialisation materielle et logicielle)
-
-setup_end:
+	ldi		REG_TEMP_R17, EXTENSION_SETUP
+	rcall		exec_extension_addon
 
 loop:		; Remarque: Equivalent de la methode 'loop()' dans l'ecosysteme Arduino ;-)
 	; Gestion de l'attente expiration des 1ms
@@ -147,17 +138,8 @@ loop_1_ms:
 	rcall		interpret_command
 #endif
 
-	lds		REG_TEMP_R16, G_BEHAVIOR
-	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
-	rjmp		loop_1_ms_end
-
-	; Appel eventuel au vecteur #2 (Traitements toutes les 1 mS
-	ldi		REG_Z_LSB, low(end_of_prg_uos)
-	ldi		REG_Z_MSB, high(end_of_prg_uos)
-	adiw		REG_Z_LSB, 2
-	icall
-	; Fin: Appel eventuel au vecteur #2 (Traitements toutes les 1 mS)
-loop_1_ms_end:
+	ldi		REG_TEMP_R17, EXTENSION_1_MS
+	rcall		exec_extension_addon
 
 	; ---
 	; Fin: Traitements toutes les 1mS
@@ -173,16 +155,8 @@ loop_background:
 	; Presentation erreurs sur Led RED Externe
 	rcall		presentation_error
 
-	lds		REG_TEMP_R16, G_BEHAVIOR
-	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
-	rjmp		loop_end
-
-	; Appel eventuel au vecteur #1 (Traitements en fond de tache)
-	ldi		REG_Z_LSB, low(end_of_prg_uos)
-	ldi		REG_Z_MSB, high(end_of_prg_uos)
-	adiw		REG_Z_LSB, 1
-	icall
-	; Fin: Appel eventuel au vecteur #1 (Traitements en fond de tache)
+	ldi		REG_TEMP_R17, EXTENSION_BACKGROUND
+	rcall		exec_extension_addon
 
 loop_end:
 	rjmp		loop
@@ -221,8 +195,35 @@ addon_end:
 	ret
 ; -----------
 
+; -----------
+; Appel eventuel a l'extension contenue dans 'REG_TEMP_R17'
+; 1 - EXTENSION_SETUP
+; 2 - EXTENSION_BACKGROUND
+; 3 - EXTENSION_1_MS
+; 4 - EXTENSION_COMMANDS
+; 5 - EXTENSION_BUTTON
+; -----------
+exec_extension_addon:
+	lds		REG_TEMP_R18, G_BEHAVIOR
+	sbrs		REG_TEMP_R18, FLG_BEHAVIOR_ADDON_FOUND_IDX
+	rjmp		exec_extension_addon_rtn
+
+	; Appel au vecteur @ 'REG_TEMP_R17'
+	ldi		REG_Z_LSB, low(end_of_prg_uos)
+	ldi		REG_Z_MSB, high(end_of_prg_uos)
+	add		REG_Z_LSB, REG_TEMP_R17
+	clr		REG_TEMP_R17	
+	adc		REG_Z_MSB, REG_TEMP_R17
+
+	icall
+	; Fin: Appel au vecteur @ 'REG_TEMP_R17'
+
+exec_extension_addon_rtn:
+	ret
+; -----------
+
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.26 $", CHAR_LF, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.28 $", CHAR_LF, CHAR_NULL
 
 .include		"ATtiny85_uOS_Macros.def"
 
@@ -240,17 +241,15 @@ text_whoami:
 
 end_of_prg_uos:		; Adresse de fin de uOS
 
-#if 1
+; Pas d'inclusion de 'ATtiny85_uOS_Test_Addons.asm' si un ADDON est defini
+#ifndef USE_ADDONS
 ; Test ADDON into uOS
 .include		"ATtiny85_uOS_Test_Addons.asm"
 
-; End: Test ADDON into uOS
-#endif
-
-#ifndef USE_ADDONS
 .dseg
 G_SRAM_END_OF_USE:					.byte		1
 #endif
+; Fin: Pas d'inclusion de 'ATtiny85_uOS_Test_Addons.asm' si un ADDON est defini
 
 ; End of file
 

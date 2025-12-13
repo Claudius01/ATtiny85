@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.h,v 1.9 2025/12/08 18:07:37 administrateur Exp $"
+; "$Id: ATtiny85_uOS.h,v 1.10 2025/12/12 15:41:46 administrateur Exp $"
 
 ; Registres de travail (dedies)
 ;
@@ -169,6 +169,12 @@
 #define	FLG_1_UART_FIFO_TX_FULL_IDX			IDX_BIT5
 #define	FLG_1_UART_FIFO_TX_TO_SEND_IDX		IDX_BIT6
 #define	FLG_1_LED_RED_ON_IDX						IDX_BIT7
+
+#define EXTENSION_SETUP					0
+#define EXTENSION_BACKGROUND			1
+#define EXTENSION_1_MS					2
+#define EXTENSION_COMMANDS				3
+#define EXTENSION_BUTTON				4
 
 ; 1st adresse de la SRAM [0x60...0xFF]
 .dseg

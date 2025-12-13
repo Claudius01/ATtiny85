@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.18 2025/12/08 18:52:00 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.19 2025/12/12 15:41:46 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Timers.h"
 
@@ -330,16 +330,8 @@ exec_timer_push_button_detect:
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 
 	; Prolongement si module ADDON detecte
-	lds		REG_TEMP_R16, G_BEHAVIOR
-	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_ADDON_FOUND_IDX
-	rjmp		exec_timer_push_button_detect_rtn
-
-	; Appel eventuel au vecteur #4 (Traitements associes a l'appui bouton avant ceux effectues par uOS)
-	ldi		REG_Z_LSB, low(end_of_prg_uos)
-	ldi		REG_Z_MSB, high(end_of_prg_uos)
-	adiw		REG_Z_LSB, 4
-	icall
-	; Fin: Appel eventuel au vecteur #4 (Traitements associes a l'appui bouton avant ceux effectues par uOS)
+	ldi		REG_TEMP_R17, EXTENSION_BUTTON
+	rcall		exec_extension_addon
 
 exec_timer_push_button_detect_rtn:
 	ret

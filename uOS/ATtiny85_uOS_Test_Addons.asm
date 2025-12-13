@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Test_Addons.asm,v 1.2 2025/12/11 09:16:51 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Test_Addons.asm,v 1.5 2025/12/13 10:19:17 administrateur Exp $"
 
 ; Test d'addons dans uOS
 
@@ -71,38 +71,21 @@ uos_test_setup_contd:
 
 ; --------
 uos_test_background_contd:
-	clr		REG_TEMP_R16
-	clr		REG_TEMP_R17
+	; Sommation sur 32 bits
+	lds		REG_X_MSB, G_TEST_ADDON_CPT_BACKGROUND_1
+	lds		REG_X_LSB, G_TEST_ADDON_CPT_BACKGROUND_0
+	adiw		REG_X_LSB, 1
+	sts		G_TEST_ADDON_CPT_BACKGROUND_1, REG_X_MSB
+	sts		G_TEST_ADDON_CPT_BACKGROUND_0, REG_X_LSB
+	brne		uos_test_background_more
 
-	; Sommation sur 32 bits avec utilisation de la retenue
-	; => Methode permettant de comptabiliser sur 32 bits
-	; => Methode equivalente a celle pour une comptabilisation sur 16 bits a:
-	;    mais non applicable si > a 16 bits
-	;    lds    REG_X_MSB, G_TEST_ADDON_CPT_BACKGROUND_MSB
-	;    lds    REG_X_LSB, G_TEST_ADDON_CPT_BACKGROUND_LSB
-	;    inc    REG_X_LSB		; Warning: Pas de maj de la Carry
-	;    sts    G_TEST_ADDON_CPT_BACKGROUND_MSB, REG_X_MSB
-	;    sts    G_TEST_ADDON_CPT_BACKGROUND_LSB, REG_X_LSB
-	;
-	lds		REG_TEMP_R16, G_TEST_ADDON_CPT_BACKGROUND_0
-	subi		REG_TEMP_R16, -1
-	sts		G_TEST_ADDON_CPT_BACKGROUND_0, REG_TEMP_R16
+	lds		REG_X_MSB, G_TEST_ADDON_CPT_BACKGROUND_3
+	lds		REG_X_LSB, G_TEST_ADDON_CPT_BACKGROUND_2
+	adiw		REG_X_LSB, 1
+	sts		G_TEST_ADDON_CPT_BACKGROUND_3, REG_X_MSB
+	sts		G_TEST_ADDON_CPT_BACKGROUND_2, REG_X_LSB
 
-	; Report de la Carry dans 'G_TEST_ADDON_CPT_BACKGROUND_1'
-	lds		REG_TEMP_R16, G_TEST_ADDON_CPT_BACKGROUND_1
-	adc		REG_TEMP_R16, REG_TEMP_R17
-	sts		G_TEST_ADDON_CPT_BACKGROUND_1, REG_TEMP_R16
-
-	; Report de la Carry dans 'G_TEST_ADDON_CPT_BACKGROUND_2'
-	lds		REG_TEMP_R16, G_TEST_ADDON_CPT_BACKGROUND_2
-	adc		REG_TEMP_R16, REG_TEMP_R17
-	sts		G_TEST_ADDON_CPT_BACKGROUND_2, REG_TEMP_R16
-
-	; Report de la Carry dans 'G_TEST_ADDON_CPT_BACKGROUND_3'
-	lds		REG_TEMP_R16, G_TEST_ADDON_CPT_BACKGROUND_3
-	adc		REG_TEMP_R16, REG_TEMP_R17
-	sts		G_TEST_ADDON_CPT_BACKGROUND_3, REG_TEMP_R16
-
+uos_test_background_more:
 	ret
 ; --------
 
@@ -129,8 +112,6 @@ uos_test_1_ms_contd:
 	sts		G_TEST_ADDON_CPT_1_SEC_LSB, REG_X_LSB
 
 	; Trace du compteur de secondes
-	lds		REG_X_MSB, G_TEST_ADDON_CPT_1_SEC_MSB
-	lds		REG_X_LSB, G_TEST_ADDON_CPT_1_SEC_LSB
 	rcall		print_x_reg
 
 	; Print du compteur sur 32 bits 'G_TEST_ADDON_CPT_BACKGROUND' sous la forme [xxxx][yyyy]
