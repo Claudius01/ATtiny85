@@ -139,3 +139,40 @@ Le programme *addon* doit commencer par le code comme suit:
 `; Fin: Definitions de la table de vecteurs de "prolongation" des 5 traitements`<br>
 
 Editer le fichier [ATtiny85_uOS_Test_Addons.asm](../ATtiny85_uOS_Test_Addons.asm) pour connaître les traitements `uos_test_setup`, `uos_test_background`, `uos_test_1_ms`, `uos_test_commands` et `uos_test_button`
+
+Les traces d'exécution commentées suivantes présentent les passages dans les prolongements des 5 traitements
+
+`15:23:52.676131 #   53: [[### ATtiny85_uOS $Revision: 1.28 $]]`  <= **Reset**<br> 
+`15:23:52.688217 #   54: [[### EEPROM: 1.2.7]]`<br>
+`15:23:52.697238 #   55: [[### Type: c1]]`<br>
+`15:23:52.709133 #   56: [[### Id: 01]]`<br>
+`15:23:52.721593 #   57: [[OSCCAL [91]]`<br>
+`15:23:52.739126 #   58: [[uOS: Test setup]]`   <= **uos_test_setup**<br>
+`15:23:53.804623 #   59: [[[0x001d][0x0002][0x8454]] uOS: Test 1 mS (1000 passages)]]`   <= **uos_test_1_ms**<br>
+`15:23:54.843816 #   60: [[[0x001e][0x0002][0x8389]] uOS: Test 1 mS (1000 passages)]]`   <= **uos_test_background**<br>
+`15:23:55.883029 #   61: [[[0x001f][0x0002][0x8389]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:23:56.920386 #   62: [[[0x0020][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:23:58.010291 #   63: <t>>> Type the command...`<br>
+`15:23:58.019383 #   66: [[[0x0021][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:23:58.023337 #   67: [[[03] uOS: Test command]]`   <= **uos_test_commands**<br>
+`15:23:59.033455 #   71: [[[0x0022][0x0002][0x82d6]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:00.072796 #   72: [[[0x0023][0x0002][0x8389]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:01.110436 #   73: [[[0x0024][0x0002][0x8389]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:01.715721 #   74: [[### uOS: Button action]]`   <= **uos_test_button**<br>
+`15:24:01.725541 #   75: [[uOS: Test button]]`   <= Passage dans uos_test_button<br>
+`15:24:02.186620 #   76: [[[0x0025][0x0002][0x828b]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:03.189635 #   77: [[uOS: Test timer (10 Sec.)]]`<br>
+`15:24:03.255166 #   78: [[[0x0026][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:04.299933 #   79: [[[0x0027][0x0002][0x843f]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:05.337224 #   80: [[[0x0028][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:06.374661 #   81: [[[0x0029][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:07.413517 #   82: [[[0x002a][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:08.450643 #   83: [[[0x002b][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:09.489760 #   84: [[[0x002c][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:10.527064 #   85: [[[0x002d][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:11.566279 #   86: [[[0x002e][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:12.603659 #   87: [[[0x002f][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:13.605926 #   88: [[uOS: Test timer (10 Sec.)]]`<br>
+`15:24:13.672223 #   89: [[[0x0030][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
+`15:24:14.716860 #   90: [[[0x0031][0x0002][0x843f]] uOS: Test 1 mS (1000 passages)]]`<br>
+`...`<br>
