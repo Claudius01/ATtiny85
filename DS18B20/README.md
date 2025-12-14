@@ -76,10 +76,11 @@ Le contenu peut-être programmé depuis un fichier au format Hex (Intel) au moye
 
 ## ⚓ Occupation mémoires
 DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de l'**ATtiny85**
-* 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** utilisant la version minimaliste de uOS avec:
+* 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** utilisant la version "minimaliste" de uOS avec:
      * La gestion de 2 capteurs au lieu de 4
-     * La suppression des commandes/réponses (seuils de température et résolution lus de l'EEPROM)
-     * L'abandon des détections d'apparition des alarmes
+     * La suppression des commandes avec notamment:
+       * les seuils de température et la résolution lus de l'EEPROM
+       * l'absence de la gestion UART/Rx (seul l'UART/Tx est conservé)
      * *Á compléter*
 
 ## 🛠️ Environnement de développement
