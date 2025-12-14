@@ -79,7 +79,7 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
 * 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** utilisant la version "minimaliste" de uOS avec:
      * La gestion de 2 capteurs au lieu de 4
      * La suppression des commandes avec notamment:
-       * les seuils de température haute Th et basse Tl configurable depuis l'EEPROM
+       * les seuils de température haute Th et basse Tl configurables depuis l'EEPROM
        * la résolution configurable depuis l'EEPROM
        * l'absence de la gestion UART/Rx (seul l'UART/Tx est conservé)
      * *Á compléter*
