@@ -172,12 +172,12 @@ Les traces d'exécution commentées suivantes présentent les passages dans les 
 `15:24:10.527064 #   85: [[[0x002d][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:11.566279 #   86: [[[0x002e][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:12.603659 #   87: [[[0x002f][0x0002][0x83e4]] uOS: Test 1 mS (1000 passages)]]`<br>
-`15:24:13.605926 #   88: [[uOS: Test timer (10 Sec.)]]`  <= **Expiration timer** de 10 secondes<br>
+`15:24:13.605926 #   88: [[uOS: Test timer (10 Sec.)]]`  <= **Expiration timer** 10 secondes<br>
 `15:24:13.672223 #   89: [[[0x0030][0x0002][0x83e5]] uOS: Test 1 mS (1000 passages)]]`<br>
 `15:24:14.716860 #   90: [[[0x0031][0x0002][0x843f]] uOS: Test 1 mS (1000 passages)]]`<br>
 `...`<br>
 
-* Les passages dans **uos_test_1_ms** s'effectuent bien toutes les 1 mS
+* Les passages dans **uos_test_1_ms** s'effectuent bien toutes les 1 mS (1000 passages toutes les secondes)
 * Le passage dans **uos_test_background** incrémente un compteur de 32 bits remis à zéro toutes les secondes
      * ie. `0x000283e4` = 164836 correspond à un passage toutes les 6.07 µS soit environ 100 cycles d'instructions  à 16 Mhz pour tous les traitements en fond de tâche, de la gestion des *timers*, l'interprétation de la commande `<t` et la prise en compte de l'appui bouton
 * Expiration et réarmement d'un *timer* toutes les 10 secondes comme à `15:24:03.189635` et à `15:24:13.605926`
