@@ -56,11 +56,11 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 
 ## ⚓ Occupation mémoires
 uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**ATtiny85**
-* 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** avec:
+* 📔 Une version "minimaliste" permet d'être implémentée sur un **ATtiny45** avec 96% de la mémoire *flash* et 80% de la mémoire SRAM:
+     * La gestion de 2 capteurs de température DS18B20 avec la détection des alarmes de dépassement des seuils
      * La gestion de 8 *timers* au lieu de 16
      * La suppression des commandes
      * La suppression de la gestion de l'UART/Rx
-     * *Á compléter* en fonction de l'avancement des développements
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
