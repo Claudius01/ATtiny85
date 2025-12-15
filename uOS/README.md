@@ -56,8 +56,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 
 ## ⚓ Occupation mémoires
 uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**ATtiny85**
-* 📔 Une version "minimaliste" permet d'être implémentée sur un **ATtiny45** avec 96% de la mémoire *flash* et 80% de la mémoire SRAM:
-     * La gestion de 2 capteurs de température DS18B20 avec la détection des alarmes de dépassement des seuils
+* 📔 Une version "minimaliste" permet d'être implémentée sur un **ATtiny45** avec 41% de la mémoire *flash* et xx% de la mémoire SRAM:
      * La gestion de 8 *timers* au lieu de 16
      * La suppression des commandes
      * La suppression de la gestion de l'UART/Rx
