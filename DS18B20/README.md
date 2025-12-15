@@ -76,13 +76,13 @@ Le contenu peut-être programmé depuis un fichier au format Hex (Intel) au moye
 
 ## ⚓ Occupation mémoires
 DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de l'**ATtiny85**
-* 📔 Une version "minimaliste" est à l'étude pour être implémentée sur un **ATtiny45** utilisant la version "minimaliste" de uOS avec:
+* 📔 Une version "minimaliste" est implémentée sur un **ATtiny45** utilisant la version "minimaliste" de uOS occupant 96% de la mémoire *flash* et xx% de la mémoire SRAM:
      * La gestion de 2 capteurs au lieu de 4
-     * La suppression des commandes avec notamment:
-       * les seuils de température haute Th et basse Tl configurables depuis l'EEPROM
-       * la résolution configurable depuis l'EEPROM
+     * La suppression des commandes qui ne permet plus de configurer dynamiquement la vitesse de l'UART/Tx ni les seuils de température haute et basse:
+       * La vitesse de l'UART/Tx est lue depuis l'EEPROM
+       * les seuils de température haute Th et basse Tl sont lus depuis l'EEPROM
+       * la résolution est lue depuis l'EEPROM
        * l'absence de la gestion UART/Rx (seul l'UART/Tx est conservé)
-     * *Á compléter*
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
