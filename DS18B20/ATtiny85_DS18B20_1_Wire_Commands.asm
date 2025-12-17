@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.22 2025/12/17 09:20:55 administrateur Exp $
+; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.23 2025/12/17 22:40:58 administrateur Exp $
 
 .include		"ATtiny85_DS18B20_1_Wire_Commands.h"
 
