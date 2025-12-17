@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Test_Addons.asm,v 1.5 2025/12/13 10:19:17 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Test_Addons.asm,v 1.6 2025/12/17 22:16:43 administrateur Exp $"
 
 ; Test d'addons dans uOS
 
@@ -168,13 +168,13 @@ uos_test_commands_contd:
 	ldi      REG_Z_LSB, low(text_test_commands << 1)
 	rcall    push_text_in_fifo_tx
 
-	rcall		uos_print_command_ok				; Commande reconnue
+	;rcall		uos_print_command_ok				; Commande reconnue
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 	rjmp		uos_test_commands_contd_end
 
 uos_test_commands_contd_ko:
-	rcall		uos_print_command_ko				; Commande non reconnue
+	;rcall		uos_print_command_ko				; Commande non reconnue
 
 uos_test_commands_contd_end:
 	ret

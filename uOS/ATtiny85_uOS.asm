@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.28 2025/12/13 10:14:37 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.35 2025/12/17 22:16:43 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -74,6 +74,15 @@ usi_ovf_isr:
 main:
 
 setup:	; Remarque: Equivalent de la methode 'setup()' dans l'ecosysteme Arduino ;-)
+	; Forcage initialisation de SPH:SPL
+	ldi		REG_TEMP_R16, high(ATTINY_RAMEND)
+	out		SPH, REG_TEMP_R16
+	nop
+	ldi		REG_TEMP_R17, low(ATTINY_RAMEND)
+	out		SPL, REG_TEMP_R17
+	nop
+	; Fin: Forcage initialisation de SPH:SPL
+
 	rcall		init_sram_fill			; Initialisation de la SRAM
 	rcall		init_sram_values		; Initialisation de valeurs particulieres
 	rcall		init_hard				; Initialisation du materiel
@@ -87,6 +96,16 @@ setup:	; Remarque: Equivalent de la methode 'setup()' dans l'ecosysteme Arduino 
 	ldi		REG_TEMP_R21, high(exec_timer_led_green)
 	rcall		start_timer
 
+#if USE_DUMP_SRAM
+	; Initialisation timer 'TIMER_DUMP_SRAM'
+	ldi		REG_TEMP_R17, TIMER_DUMP_SRAM
+	ldi		REG_TEMP_R18, (10000 % 256)
+	ldi		REG_TEMP_R19, (10000 / 256)
+	ldi		REG_TEMP_R20, low(exec_timer_dump_sram)
+	ldi		REG_TEMP_R21, high(exec_timer_dump_sram)
+	rcall		start_timer
+#endif
+
 	sei						; Set all interrupts for send prompts
 
 setup_cold:
@@ -96,12 +115,20 @@ setup_cold:
 	ldi		REG_Z_LSB, ((text_whoami << 1) % 256)
 	rcall		push_text_in_fifo_tx
 
+;#ifndef USE_MINIMALIST_UOS
 	rcall		set_infos_from_eeprom
+;#endif
+
+#if USE_DUMP_SRAM
+	rcall		dump_sram_read
+#endif
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 	; Fin: Preparation emission des prompts d'accueil ('whoami' et 'eeprom')
 
+#if 1
 	rcall		addon_search_methods
+#endif
 
 	ldi		REG_TEMP_R17, EXTENSION_SETUP
 	rcall		exec_extension_addon
@@ -127,13 +154,17 @@ loop_1_ms:
 
 	; Traitements toutes les 1mS
 	; ---
+#ifndef USE_MINIMALIST_UOS
 	; Presentation etat 'Detect Line Idle'
 	rcall		test_detect_line_idle
+#endif
 
+#ifndef USE_MINIMALIST_UOS
 	; Presentation sur Led GREEN mode "Connecte/Non Connecte"
 	rcall		presentation_connexion
+#endif
 
-#ifndef USE_MINIMALIST
+#ifndef USE_MINIMALIST_UOS
 	; Interpretation de la commande recue
 	rcall		interpret_command
 #endif
@@ -223,7 +254,11 @@ exec_extension_addon_rtn:
 ; -----------
 
 text_whoami:
-.db	"### ATtiny85_uOS $Revision: 1.28 $", CHAR_LF, CHAR_NULL
+#ifndef USE_MINIMALIST_UOS
+.db	"### ATtiny85_uOS $Revision: 1.35 $", CHAR_LF, CHAR_NULL
+#else
+.db	"### ATtiny85_uOS (Minimalist) $Revision: 1.35 $", CHAR_LF, CHAR_NULL, CHAR_NULL
+#endif
 
 .include		"ATtiny85_uOS_Macros.def"
 
@@ -233,7 +268,7 @@ text_whoami:
 .include		"ATtiny85_uOS_Uart.asm"
 .include		"ATtiny85_uOS_Eeprom.asm"
 
-#ifndef USE_MINIMALIST
+#ifndef USE_MINIMALIST_UOS
 .include		"ATtiny85_uOS_Commands.asm"
 #endif
 
@@ -241,10 +276,15 @@ text_whoami:
 
 end_of_prg_uos:		; Adresse de fin de uOS
 
-; Pas d'inclusion de 'ATtiny85_uOS_Test_Addons.asm' si un ADDON est defini
+; Inclusion de 'ATtiny85_uOS_Test_Addons.asm':
+; - Si la directive USE_ADDON n'est pas definie
+;   => Car un programme addon est attendu
+; - Et si la directive USE_MINIMALIST_UOS est definie
+;   => Car le commandes de monitoring ne sont pas implementees
 #ifndef USE_ADDONS
-; Test ADDON into uOS
-.include		"ATtiny85_uOS_Test_Addons.asm"
+#ifdef USE_MINIMALIST_UOS
+.include		"ATtiny85_uOS_Test_Addons.asm"	; Test ADDON into uOS
+#endif
 
 .dseg
 G_SRAM_END_OF_USE:					.byte		1

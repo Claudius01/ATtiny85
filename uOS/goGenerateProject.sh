@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.10 2025/12/04 21:31:34 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.15 2025/12/17 22:16:43 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
@@ -60,9 +60,9 @@ rm -f ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_MAP} ${PROJECTS_FILE}.$
 echo
 echo "################## Production of '${PROJECTS_FILE}' ##################"
 # Directives d'assemblage:
-# - USE_MINIMALIST -> Production de la version minimaliste
+# - USE_MINIMALIST_UOS -> Production de la version minimaliste
 
-#${AVRA_BIN} -D USE_MINIMALIST -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+#${AVRA_BIN} -D USE_MINIMALIST_UOS -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
 ${AVRA_BIN} -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 

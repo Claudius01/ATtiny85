@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Print.asm,v 1.13 2025/12/08 13:24:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Print.asm,v 1.16 2025/12/17 22:16:43 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Print.h"
 
@@ -25,7 +25,7 @@ presentation_error:
 	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_IDX
 	rjmp		presentation_error_reinit
 
-#ifndef USE_MINIMALIST
+#ifndef USE_MINIMALIST_UOS
 	lds		REG_TEMP_R16, G_TEST_FLAGS			; Prise des flags 'G_TEST_FLAGS'
 
 	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_IDX
@@ -46,7 +46,7 @@ presentation_error_reinit:
 	ldi		REG_TEMP_R21, high(exec_timer_error)
 	rcall		start_timer
 
-#ifndef USE_MINIMALIST
+#ifndef USE_MINIMALIST_UOS
 	; Effacement de certaines erreurs non fugitives
 	lds		REG_TEMP_R16, G_TEST_FLAGS 
 	cbr		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_MSK
@@ -100,6 +100,10 @@ convert_and_put_fifo_tx:
 	ret
 ; ---------
 
+#ifndef USE_MINIMALIST_UOS
+; ---------
+; Presentation de l'etat de connexion
+; ---------
 presentation_connexion:
 	sbrs		REG_FLAGS_1, FLG_1_UART_FIFO_RX_NOT_EMPTY_IDX
 	rjmp		presentation_connexion_fifo_rx_empty
@@ -135,12 +139,15 @@ presentation_connexion_fifo_rx_empty:
 presentation_connexion_rtn:
 	ret
 ; ---------
+#endif
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 uos_print_line_feed_skip:
 print_line_feed_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
+#endif
 
 uos_print_line_feed:
 print_line_feed:
@@ -251,6 +258,7 @@ print_mark_loop_b:
 	ret
 ; ---------
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 ; Print du registre X
 ; ---------
@@ -258,7 +266,12 @@ uos_print_x_reg_skip:
 print_x_reg_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
+#endif
 
+; ---------
+; En mode 'Minimaliste', l'addon 'ATtiny85_uOS_Test_Addons.asm' peut etre inclus
+; => Appel a 'print_x_reg' dans les methodes de test ;-)
+; ---------
 uos_print_x_reg:
 print_x_reg:
 	push		REG_Z_MSB
@@ -271,6 +284,7 @@ print_x_reg:
 	ret
 ; ---------
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 ; Print du registre Y
 ; ---------
@@ -312,6 +326,7 @@ print_z_reg:
 	pop		REG_X_MSB
 	ret
 ; ---------
+#endif
 
 text_hexa_value:
 .db	"[0x", CHAR_NULL

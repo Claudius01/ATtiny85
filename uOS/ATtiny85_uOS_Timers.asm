@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.19 2025/12/12 15:41:46 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.23 2025/12/15 22:42:20 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Timers.h"
 
@@ -265,6 +265,7 @@ get_address_timer_err:
 	ret
 ; ---------
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 ; TIMER_CONNECT
 ; ---------
@@ -281,6 +282,7 @@ exec_timer_connect:
 
 	ret
 ; ---------
+#endif
 
 ; ---------
 ; TIMER_ERROR
@@ -294,6 +296,7 @@ exec_timer_error:
 	ret
 ; ---------
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 ; TIMER_APPUI_BOUTON_LED
 ; ---------
@@ -344,6 +347,7 @@ exec_timer_anti_rebound:
 	cbr		REG_FLAGS_0, FLG_0_UART_DETECT_BIT_START_MSK
 	ret
 ; ---------
+#endif
 
 ; ---------
 ; TIMER_LED_GREEN
@@ -385,8 +389,36 @@ exec_timer_led_green_more:									; Ici, G_CHENILLARD_MSB<7> reflete la Carry
 	ret
 ; ---------
 
+#if USE_DUMP_SRAM
+; ---------
+exec_timer_dump_sram:
+	ldi		REG_Z_MSB, high(text_dump_sram << 1)
+	ldi		REG_Z_LSB, low(text_dump_sram << 1)
+	rcall		push_text_in_fifo_tx
+
+	rcall		dump_sram_read
+
+	;Reinitialisation timer 'TIMER_DUMP_SRAM'
+	ldi		REG_TEMP_R17, TIMER_DUMP_SRAM
+	ldi		REG_TEMP_R18, (10000 % 256)
+	ldi		REG_TEMP_R19, (10000 / 256)
+	ldi		REG_TEMP_R20, low(exec_timer_dump_sram)
+	ldi		REG_TEMP_R21, high(exec_timer_dump_sram)
+	rcall		start_timer
+
+	ret
+; ---------
+#endif
+
+#ifndef USE_MINIMALIST_UOS
 text_appui_bouton:
 .db	"### uOS: Button action", CHAR_LF, CHAR_NULL
+#endif
+
+#if 1
+text_dump_sram:
+.db	"### Dump SRAM...", CHAR_LF, CHAR_NULL
+#endif
 
 ; End of file
 

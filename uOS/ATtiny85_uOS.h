@@ -1,4 +1,31 @@
-; "$Id: ATtiny85_uOS.h,v 1.10 2025/12/12 15:41:46 administrateur Exp $"
+; "$Id: ATtiny85_uOS.h,v 1.13 2025/12/17 22:16:43 administrateur Exp $"
+
+; Definition de la 'RAMEND'
+#define ATTINY85_RAMEND		0x25F
+#define ATTINY45_RAMEND		0x15F
+
+; Implementation sur 'ATtiny45' si uOS et ADDONS compiles en mode 'Minimaliste'
+; => Sinon: Implementation sur 'ATtiny85'
+#ifdef USE_MINIMALIST_UOS
+#ifdef USE_MINIMALIST_ADDONS
+#define ATTINY_RAMEND		ATTINY45_RAMEND
+#endif
+#endif
+
+#ifndef USE_MINIMALIST_UOS
+#define ATTINY_RAMEND		ATTINY85_RAMEND
+#else
+#ifndef USE_MINIMALIST_ADDONS
+#define ATTINY_RAMEND		ATTINY85_RAMEND
+#endif
+#endif
+; Fin: Definition de la 'RAMEND'
+
+#ifdef USE_MINIMALIST_UOS
+#define USE_DUMP_SRAM			1
+#else
+#define USE_DUMP_SRAM			0
+#endif
 
 ; Registres de travail (dedies)
 ;

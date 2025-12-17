@@ -1,8 +1,10 @@
-; "$Id: ATtiny85_uOS_Uart.asm,v 1.5 2025/12/08 13:24:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Uart.asm,v 1.7 2025/12/14 17:28:44 administrateur Exp $"
 
 .include    "ATtiny85_uOS_Uart.h"
 
 .cseg
+
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 test_detect_line_idle:
 	sbrc		REG_FLAGS_0, FLG_0_UART_DETECT_LINE_IDLE_IDX
@@ -118,6 +120,7 @@ uart_fifo_rx_read_end:
 uart_fifo_rx_read_rtn:
 	ret
 ; ---------
+#endif
 
 ; ---------
 uart_fifo_tx_write:
@@ -287,10 +290,12 @@ uart_tx_send:
 ;    REG_Z_LSB:REG_Z_LSB -> Pointeur sur le texte en memoire programme (preserve)
 ;    REG_TEMP_R16        -> Working register (preserve)
 ; ---------
+#ifndef USE_MINIMALIST_UOS
 uos_push_text_in_fifo_tx_skip:
 push_text_in_fifo_tx_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
+#endif
 
 uos_push_text_in_fifo_tx:
 push_text_in_fifo_tx:
@@ -325,10 +330,12 @@ push_text_in_fifo_tx_end:
 ; Registres utilises
 ;    REG_TEMP_R16 -> Working register
 ; ---------
+#ifndef USE_MINIMALIST_UOS
 uos_push_1_char_in_fifo_tx_skip:
 push_1_char_in_fifo_tx_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
+#endif
 
 uos_push_1_char_in_fifo_tx:
 push_1_char_in_fifo_tx:
@@ -350,13 +357,13 @@ push_1_char_in_fifo_tx:
 ;      rcall   push_text_in_fifo_tx_from_eeprom
 ;
 ; ---------
+#ifndef USE_MINIMALIST_UOS
 push_text_in_fifo_tx_from_eeprom_skip:
 	sbrc		REG_FLAGS_0, FLG_0_PRINT_SKIP_IDX		; Pas de trace si 'FLG_0_PRINT_SKIP' affirme
 	ret
+#endif
 
 push_text_in_fifo_tx_from_eeprom:
-	nop
-
 push_text_in_fifo_tx_from_eeprom_loop:
 	rcall		eeprom_read_byte
 

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.4 2025/12/08 13:24:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.6 2025/12/14 17:28:44 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Interrupts.h"
 
@@ -58,6 +58,7 @@ tim1_compa_isr:
 tim1_compa_isr_more:
 	out		PORTB, REG_PORTB_OUT						; Raffraichissement du PORTB
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 	; Lecture RXD pour detecter la ligne IDLE si pas deja detectee
 	sbrc		REG_FLAGS_0, FLG_0_UART_DETECT_LINE_IDLE_IDX		; Line IDLE detectee ?
@@ -90,12 +91,18 @@ tim1_compa_isr_acq_rxd_end:
 	sts		G_UART_CPT_LINE_IDLE_MSB, REG_X_MSB		; Maj compteur d'acquisition
 	sts		G_UART_CPT_LINE_IDLE_LSB, REG_X_LSB
 	; Fin: Acquisition de RXD pour detection ligne IDLE
+#endif
 
 ; ---------
 	; Emission d'un bit sur TXD
 tim1_compa_isr_tx_send_bit:
 	sbrs		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_IDX			; Byte a emettre TXD ?
+
+#ifndef USE_MINIMALIST_UOS
 	rjmp		tim1_compa_isr_rx_rec_bit							; Non
+#else
+	rjmp		tim1_compa_isr_cpt_1ms								; Non
+#endif
 
 	lds		REG_TEMP_R18, G_UART_CPT_NBR_BITS_TX			; Oui: Compteur de bits [11, 10, 9, ..., 0]
 	lds		REG_TEMP_R17, G_UART_CPT_DURATION_1BIT_TX		;      Compteur d'attente 104 uS [3, 2, 1, 0]  
@@ -147,6 +154,7 @@ tim1_compa_isr_tx_send_bit_update:
 tim1_compa_isr_tx_send_bit_end:
 	; Fin: Emission d'un bit sur TXD
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 	; Reception d'un bit sur RXD
 	; => Acquisition si 'FLG_0_UART_DETECT_LINE_IDLE' et 'FLG_0_UART_DETECT_BIT_START' a 1 
@@ -269,6 +277,7 @@ tim1_compa_isr_rx_rec_bit_dec_duration:
 tim1_compa_isr_rx_rec_bit_end:
 	; Fin: Reception d'un bit sur RXD
 ; ---------
+#endif
 
 	; Comptabilisation de 1 mS
 tim1_compa_isr_cpt_1ms:
@@ -345,8 +354,12 @@ tim1_compa_isr_cpt_1ms_rtn:
 ;
 ; Registres utilises (sauvegardes/restaures):
 ;    REG_TEMP_R16 -> Travail
+;
+; => Retour immediat si la directive 'USE_MINIMALIST_UOS' est definie
 ; ---------
 pcint0_isr:
+
+#ifndef USE_MINIMALIST_UOS
 	push		REG_SAVE_SREG
 	in			REG_SAVE_SREG, SREG
 
@@ -452,5 +465,8 @@ pcint0_isr_rtn:
 
 	out		SREG, REG_SAVE_SREG
 	pop		REG_SAVE_SREG
+
+#endif
+
 	reti
 ; ---------

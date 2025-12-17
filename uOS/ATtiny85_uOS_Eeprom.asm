@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.6 2025/12/07 13:04:30 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.9 2025/12/15 17:19:43 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Eeprom.h"
 
@@ -24,6 +24,7 @@ eeprom_read_byte_wait:
 	ret
 ; ---------
 
+#ifndef USE_MINIMALIST_UOS
 ; ---------
 ; Ecriture d'un byte contenu dans 'REG_TEMP_R16' a l'adresse 'REG_X_MSB:REG_X_LSB' de l'EEPROM
 ; ---------
@@ -53,7 +54,9 @@ eeprom_write_byte_wait:
 
 	ret
 ; ---------
+#endif
 
+;#ifndef USE_MINIMALIST_UOS
 ;--------------------
 ; Lecture et impression des informations de l'EEPROM
 ;--------------------
@@ -100,6 +103,7 @@ set_infos_from_eeprom:
 	rcall		convert_and_put_fifo_tx
 	rcall		print_line_feed
 
+#ifndef USE_MINIMALIST_UOS
 	ldi		REG_Z_MSB, ((text_osccal << 1) / 256)
 	ldi		REG_Z_LSB, ((text_osccal << 1) % 256)
 	rcall		push_text_in_fifo_tx
@@ -108,9 +112,11 @@ set_infos_from_eeprom:
 	rcall		convert_and_put_fifo_tx
 	rcall		print_line_feed
 	; Fin: Preparation emission des prompts d'accueil
+#endif
 
 	ret
 ; ---------
+;#endif
 
 text_prompt_eeprom_version:
 .db	"### EEPROM: ", CHAR_NULL, CHAR_NULL
@@ -121,12 +127,13 @@ text_prompt_type:
 text_prompt_id:
 .db	"### Id: ", CHAR_NULL, CHAR_NULL
 
+#ifndef USE_MINIMALIST_UOS
 text_eeprom_error:
 .db	"Err: EEPROM at ", CHAR_NULL
 
 text_osccal:
 .db	"OSCCAL [", CHAR_NULL, CHAR_NULL
-
+#endif
 
 ; End of file
 

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.9 2025/12/08 18:07:37 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.13 2025/12/17 12:45:46 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Misc.h"
 
@@ -12,8 +12,8 @@
 ; ---------
 init_sram_fill:
 	ldi		REG_TEMP_R16, 0xff
-	ldi		REG_X_MSB, high(RAMEND - 2)
-	ldi		REG_X_LSB, low(RAMEND - 2)
+	ldi		REG_X_MSB, high(ATTINY_RAMEND - 2)
+	ldi		REG_X_LSB, low(ATTINY_RAMEND - 2)
 
 init_sram_fill_loop_a:
 	; Initialisation a 0xff de la STACK
@@ -37,7 +37,7 @@ init_sram_fill_loop_b:
 	cpi		REG_X_LSB, low(SRAM_START - 1)	
 	brne		init_sram_fill_loop_b
 
-	; Fin initialisation [SRAM_START, ..., (RAMEND - 2)]
+	; Fin initialisation [SRAM_START, ..., (ATTINY_RAMEND - 2)]
 	ret
 ; ---------
 
@@ -63,6 +63,7 @@ init_sram_values:
 	sts		G_CHENILLARD_MSB, REG_TEMP_R16
 	sts		G_CHENILLARD_LSB, REG_TEMP_R16
 
+#ifndef USE_MINIMALIST_UOS
 	; Preparation reception bit RXD
 	lds		REG_TEMP_R16, G_DURATION_DETECT_LINE_IDLE_MSB
 	lds		REG_TEMP_R17, G_DURATION_DETECT_LINE_IDLE_LSB
@@ -70,6 +71,7 @@ init_sram_values:
 	sts		G_UART_CPT_LINE_IDLE_MSB, REG_TEMP_R16
 	sts		G_UART_CPT_LINE_IDLE_LSB, REG_TEMP_R17
 	; Fin: Preparation reception bit RXD
+#endif
 
 	; Initialisation des definitions pour la vitesse UART/Rx et UART/Tx
 	; Reprise des definitions de 'const_for_bauds_rate'
@@ -103,12 +105,15 @@ init_sram_values_set_bauds_index:
 	; Lecture des 4 definitions...
 	lpm		REG_TEMP_R17, Z+
 	sts		G_BAUDS_VALUE, REG_TEMP_R17
+
+#ifndef USE_MINIMALIST_UOS
 	lpm		REG_TEMP_R17, Z+
 	sts		G_DURATION_DETECT_LINE_IDLE_MSB, REG_TEMP_R17
 	lpm		REG_TEMP_R17, Z+
 	sts		G_DURATION_DETECT_LINE_IDLE_LSB, REG_TEMP_R17
 	lpm		REG_TEMP_R17, Z+
 	sts		G_DURATION_WAIT_READ_BIT_START, REG_TEMP_R17
+#endif
 	; Fin: Initialisation des definitions pour la vitesse UART/Rx et UART/Tx
 
 	ldi		REG_TEMP_R16, CPT_CALIBRATION
@@ -423,6 +428,68 @@ calc_crc8_maxim_b:
 
 	ret
 ; ---------
+
+#if USE_DUMP_SRAM
+; ---------
+; => Dump de la SRAM a l'image de la commande "<sAAAA"
+;    => Inspire de la methode 'exec_command_type_s_read'
+; ---------
+dump_sram_read:
+	ldi		REG_X_MSB, (SRAM_START / 256)
+	ldi		REG_X_LSB, (SRAM_START % 256)
+
+	; Dump de toute la SRAM
+	; TODO: Calcul @ 'SRAM_START' et 'ATTINY_RAMEND'
+	ldi		REG_TEMP_R17, 32
+	rjmp		dump_sram_read_loop_0
+
+	; Dump sur 8 x 16 bytes
+	; TODO: Get 'G_TEST_VALUE_MSB_MORE:G_TEST_VALUE_LSB_MORE'
+	ldi		REG_TEMP_R17, 8
+
+dump_sram_read_loop_0:
+	; Impression de 'X' ("[0xHHHH] ")
+	rcall		print_2_bytes_hexa
+
+	; Impression du dump ("[0x....]")
+	ldi		REG_Z_MSB, ((text_hexa_value << 1) / 256)
+	ldi		REG_Z_LSB, ((text_hexa_value << 1) % 256)
+	rcall		push_text_in_fifo_tx
+
+	ldi		REG_TEMP_R18, 16
+
+dump_sram_read_loop_1:
+	; Valeur de la SRAM indexee par 'REG_X_MSB:REG_X_LSB'
+	ld			REG_TEMP_R16, X+
+	rcall		convert_and_put_fifo_tx
+
+	; Test limite 'ATTINY_RAMEND'
+	; => On suppose qu'au depart 'X <= ATTINY_RAMEND'
+	cpi		REG_X_MSB, ((ATTINY_RAMEND + 1) / 256)
+	brne		dump_sram_read_more2
+	cpi		REG_X_LSB, ((ATTINY_RAMEND + 1) % 256)
+	brne		dump_sram_read_more2
+
+	; Astuce pour gagner du code de presentation ;-)
+	ldi		REG_TEMP_R18, 1
+	ldi		REG_TEMP_R17, 1
+
+dump_sram_read_more2:
+	dec		REG_TEMP_R18
+	brne		dump_sram_read_loop_1
+
+	ldi		REG_Z_MSB, ((text_hexa_value_lf_end << 1) / 256)
+	ldi		REG_Z_LSB, ((text_hexa_value_lf_end << 1) % 256)
+	rcall		push_text_in_fifo_tx
+
+	dec		REG_TEMP_R17
+	brne		dump_sram_read_loop_0
+
+	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
+
+	ret
+; ---------
+#endif
 
 ; End of file
 
