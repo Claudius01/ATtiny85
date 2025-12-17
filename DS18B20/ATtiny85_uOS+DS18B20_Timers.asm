@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20_Timers.asm,v 1.6 2025/12/08 14:21:28 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_Timers.asm,v 1.7 2025/12/14 10:57:52 administrateur Exp $"
 
 .cseg
 
@@ -42,7 +42,7 @@ exec_timer_ds18b20_cont_d:
 	ldi		REG_TEMP_R19, (1000 / 256)
 	ldi		REG_TEMP_R20, low(exec_timer_ds18b20)
 	ldi		REG_TEMP_R21, high(exec_timer_ds18b20)
-	call		start_timer
+	_CALL		start_timer
 
 	ret
 ; ---------

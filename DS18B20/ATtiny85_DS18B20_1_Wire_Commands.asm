@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.15 2025/12/08 18:51:48 administrateur Exp $
+; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.22 2025/12/17 09:20:55 administrateur Exp $
 
 .include		"ATtiny85_DS18B20_1_Wire_Commands.h"
 
@@ -28,8 +28,10 @@ ds18b20_read_rom:
 	rcall		ds18b20_write_8_bits_command
 	rcall		ds18b20_read_response_64_bits
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R18, 4
 	rcall		ds18b20_print_response
+#endif
 
 	; Test du CRC8
 	ldi		REG_TEMP_R16, NBR_BITS_TO_SHIFT			; 8 bytes pour le calcul sur les ROM
@@ -62,10 +64,12 @@ ds18b20_convert_t:
 	rcall		ds18b20_write_8_bits_command
 	rcall		ds18b20_read_response_72_bits
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'C'
 	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R18, 5
 	rcall		ds18b20_print_response
+#endif
 
 	sei
 	ret
@@ -84,10 +88,12 @@ ds18b20_read_scratchpad:
 	rcall		ds18b20_write_8_bits_command
 	rcall		ds18b20_read_response_72_bits
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'T'
 	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R18, 5
 	rcall		ds18b20_print_response
+#endif
 
 	; Test du CRC8
 	ldi		REG_TEMP_R16, 9								; 9 bytes pour le calcul sur les valeurs lues
@@ -104,7 +110,6 @@ ds18b20_read_scratchpad:
 	clt															; ... et non CRC8 recu different de celui attendu
 
 	brtc		ds18b20_read_scratchpad_ko
-	;rjmp		ds18b20_read_scratchpad_ok
 	; Fin: Test du CRC8
 
 ds18b20_read_scratchpad_ok:
@@ -113,22 +118,25 @@ ds18b20_read_scratchpad_ok:
 	sbrc		REG_TEMP_R17, FLG_DS18B20_FRAMES_IDX
 	rcall		build_frame_infos
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'O'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R16, 'k'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	rjmp		ds18b20_read_scratchpad_end
+	nop
 
 ds18b20_read_scratchpad_ko:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'K'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R16, 'o'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
-
-	;rjmp		ds18b20_read_scratchpad_end
+#endif
 
 ds18b20_read_scratchpad_end:
 	sei
@@ -158,21 +166,30 @@ ds18b20_match_rom:
 
 	push		REG_TEMP_R16
 	push		REG_TEMP_R16
+
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'M'
 	call		uos_push_1_char_in_fifo_tx_skip
+#endif
+
 	pop		REG_X_LSB
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	pop		REG_TEMP_R16
 	pop		REG_X_LSB
 	pop		REG_X_MSB
 	; Fin: Emission du ROM #N
 
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_rom_send
+#endif
 
 	; Attente du vidage de la FIFO/Tx
-	call		uos_fifo_tx_to_send_sync
+	_CALL		uos_fifo_tx_to_send_sync
 
 	cli
 
@@ -243,7 +260,8 @@ ds18b20_search_rom:
 	; Effacement des ROM a rechercher
 	rcall		ds18b20_clear_rom	
 
-	lds		REG_TEMP_R16, DS18B20_NBR_ROM_GESTION
+	;lds		REG_TEMP_R16, DS18B20_NBR_ROM_GESTION
+	ldi		REG_TEMP_R16, DS18B20_NBR_ROM_GESTION
 	tst		REG_TEMP_R16
 	brne		ds18b20_search_rom_cont_d
 
@@ -251,13 +269,15 @@ ds18b20_search_rom_cont_d:
 	clr		REG_TEMP_R16
 	sts		G_DS18B20_NBR_BITS_0_1, REG_TEMP_R16
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'P'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	lds		REG_X_LSB, G_DS18B20_PATTERN
 	rcall		uos_print_1_byte_hexa_skip
 
 	rcall		uos_print_line_feed_skip
-	call		uos_fifo_tx_to_send_sync
+	_CALL		uos_fifo_tx_to_send_sync
+#endif
 
 	; Reset
 	rcall		ds18b20_reset
@@ -351,20 +371,27 @@ ds18b20_search_rom_loop_01:
 	rjmp		ds18b20_search_rom_end
 
 ds18b20_search_rom_no_device:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
-	call		uos_push_1_char_in_fifo_tx_skip
-	;rjmp		ds18b20_search_rom_abort
+	_CALL		uos_push_1_char_in_fifo_tx_skip
+#endif
 
 ds18b20_search_rom_abort:
 	sei
 
 	ldi		REG_X_LSB, 64
 	sub		REG_X_LSB, REG_TEMP_R18
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
+#endif
 
 	mov		REG_X_LSB, REG_TEMP_R17
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	rjmp		ds18b20_search_rom_rtn
 
@@ -372,10 +399,16 @@ ds18b20_search_rom_end:
 	sei
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_response
+#endif
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_rom
+#endif
 
 	; Copy of ROM found in 'G_DS18B20_BYTES_ROM' to 'G_DS18B20_ROM_0' @ 'G_DS18B20_ROM_IDX'
 	; => 'REG_TEMP_R16' contient le rang du CRC du ROM trouve ou 0xff si pas trouve
@@ -395,19 +428,25 @@ ds18b20_search_rom_end:
 	brpl		ds18b20_search_rom_rtn
 
 ds18b20_search_rom_found:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
+#endif
+
 	lds		REG_X_LSB, G_DS18B20_NBR_BITS_RETRY
 	rcall		uos_print_1_byte_hexa_skip
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, '?'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
+
 	lds		REG_X_LSB, G_DS18B20_NBR_BITS_0_1
 	rcall		uos_print_1_byte_hexa_skip
 
 	rcall		uos_print_line_feed_skip
+#endif
 
-	call		uos_fifo_tx_to_send_sync
+	_CALL		uos_fifo_tx_to_send_sync
 
 	lds		REG_TEMP_R19, G_DS18B20_NBR_BITS_RETRY
 	dec		REG_TEMP_R19
@@ -497,13 +536,16 @@ ds18b20_search_alr_cont_d:
 	clr		REG_TEMP_R16
 	sts		G_DS18B20_ALR_NBR_BITS_0_1, REG_TEMP_R16
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'P'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	lds		REG_X_LSB, G_DS18B20_ALR_PATTERN
 	rcall		uos_print_1_byte_hexa_skip
 
 	rcall		uos_print_line_feed_skip
-	call		uos_fifo_tx_to_send_sync
+#endif
+
+	_CALL		uos_fifo_tx_to_send_sync
 
 	; Reset
 	rcall		ds18b20_reset
@@ -597,20 +639,27 @@ ds18b20_search_alr_loop_01:
 	rjmp		ds18b20_search_alr_end
 
 ds18b20_search_alr_no_device:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
-	call		uos_push_1_char_in_fifo_tx_skip
-	;rjmp		ds18b20_search_alr_abort
+	_CALL		uos_push_1_char_in_fifo_tx_skip
+#endif
 
 ds18b20_search_alr_abort:
 	sei
 
 	ldi		REG_X_LSB, 64
 	sub		REG_X_LSB, REG_TEMP_R18
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
+#endif
 
 	mov		REG_X_LSB, REG_TEMP_R17
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	rjmp		ds18b20_search_alr_rtn
 
@@ -618,10 +667,16 @@ ds18b20_search_alr_end:
 	sei
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_response
+#endif
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
+
+#ifndef USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_rom
+#endif
 
 	; Copy of ROM found in 'G_DS18B20_BYTES_ROM' to 'G_DS18B20_ALR_ROM_0' @ 'G_DS18B20_ALR_ROM_IDX'
 	; => 'REG_TEMP_R16' contient le rang du CRC du ROM trouve ou 0xff si pas trouve
@@ -641,11 +696,16 @@ ds18b20_search_alr_end:
 
 	push		REG_TEMP_R16
 	push		REG_TEMP_R16
+
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, '#'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
+#else
+	pop		REG_X_LSB
+#endif
 
 	pop		REG_TEMP_R16
 	pop		REG_X_LSB
@@ -680,19 +740,21 @@ ds18b20_search_alr_end:
 	brpl		ds18b20_search_alr_rtn
 
 ds18b20_search_alr_found:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	lds		REG_X_LSB, G_DS18B20_ALR_NBR_BITS_RETRY
 	rcall		uos_print_1_byte_hexa_skip
 
 	ldi		REG_TEMP_R16, '?'
-	call		uos_push_1_char_in_fifo_tx_skip
+	_CALL		uos_push_1_char_in_fifo_tx_skip
 	lds		REG_X_LSB, G_DS18B20_ALR_NBR_BITS_0_1
 	rcall		uos_print_1_byte_hexa_skip
 
 	rcall		uos_print_line_feed_skip
+#endif
 
-	call		uos_fifo_tx_to_send_sync
+	_CALL		uos_fifo_tx_to_send_sync
 
 	lds		REG_TEMP_R19, G_DS18B20_ALR_NBR_BITS_RETRY
 	dec		REG_TEMP_R19
@@ -758,9 +820,11 @@ ds18b20_match_rom_x_loop:
 	rjmp		ds18b20_match_rom
 
 ds18b20_match_rom_x_not_detect:
+#ifndef USE_MINIMALIST_ADDONS
 	; ROM non detecte
    ldi      REG_TEMP_R17, '?'
 	rcall		uos_print_mark_skip
+#endif
 
 	lds		REG_TEMP_R16, G_DS18B20_FLAGS
 	sbr		REG_TEMP_R16, FLG_TEST_CONFIG_ERROR_MSK

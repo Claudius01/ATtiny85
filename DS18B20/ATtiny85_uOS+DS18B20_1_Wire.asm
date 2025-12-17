@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20_1_Wire.asm,v 1.9 2025/12/03 07:29:24 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20_1_Wire.asm,v 1.10 2025/12/14 10:57:52 administrateur Exp $"
 
 ; ---------
 ; ds18b20_write_8_bits_command
@@ -71,7 +71,7 @@ ds18b20_write_bit_0:							; Pulse --\____/--
 ds18b20_write_bit_1:							; Pulse --\_/-----
 	cbi		PORTB, IDX_BIT_1_WIRE
 
-	call		uos_delay_10uS
+	_CALL		uos_delay_10uS
 
 	sbi		PORTB, IDX_BIT_1_WIRE
 
@@ -118,7 +118,7 @@ ds18b20_read_bit:
 
 	cbi		DDRB, IDX_BIT_1_WIRE			; <PORTB<2> en entree
 
-	call		uos_delay_10uS					; Attente de 10uS avant de lire le port
+	_CALL		uos_delay_10uS					; Attente de 10uS avant de lire le port
 
 	; Lecture au temps (t0 + 15uS)
 	clc											; <PORTB<2> a priori a 0 ...
@@ -219,18 +219,18 @@ delay_60uS:
 	rcall		delay_5uS
 
 delay_55uS:
-	call		uos_delay_10uS
-	call		uos_delay_10uS
-	call		uos_delay_10uS
-	call		uos_delay_10uS
-	call		uos_delay_10uS
+	_CALL		uos_delay_10uS
+	_CALL		uos_delay_10uS
+	_CALL		uos_delay_10uS
+	_CALL		uos_delay_10uS
+	_CALL		uos_delay_10uS
 
 delay_5uS:
-	call		uos_delay_1uS
-	call		uos_delay_1uS
-	call		uos_delay_1uS
-	call		uos_delay_1uS
-	call		uos_delay_1uS
+	_CALL		uos_delay_1uS
+	_CALL		uos_delay_1uS
+	_CALL		uos_delay_1uS
+	_CALL		uos_delay_1uS
+	_CALL		uos_delay_1uS
 
 	ret
 ; ---------

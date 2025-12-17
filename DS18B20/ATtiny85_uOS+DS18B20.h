@@ -1,19 +1,26 @@
-; "$Id: ATtiny85_uOS+DS18B20.h,v 1.12 2025/12/03 17:46:55 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.h,v 1.19 2025/12/17 09:20:55 administrateur Exp $"
 
 #define	USE_DS18B20_TRACE				0
 
 ; Support de 4 capteurs ('DS18B20_NBR_ROM_TO_DETECT' inferieur ou egal a 'DS18B20_NBR_ROM_GESTION')
+#ifndef USE_MINIMALIST_ADDONS
 #define	DS18B20_NBR_ROM_TO_DETECT	4
+#else
+#define	DS18B20_NBR_ROM_TO_DETECT	2
+#endif
 
 #define	DS18B20_NBR_ROM_GESTION		8		; Gestion interne des ROM a concurence de 8 max (NE PAS MODIFIER)
 
 #define	IDX_BIT_1_WIRE					IDX_BIT2
 #define	NBR_BITS_TO_SHIFT				8
 
-#define	DS18B20_TIMER_1_SEC			6		; Timer pour les mesures des temperatures et les emissions de trames
+; Remarque: 8 timers minimum definis dans uOS (cf. 'ATtiny85_uOS_Timers.h')
+#define	DS18B20_TIMER_1_SEC			(NBR_TIMER - 1)	; Timer pour les mesures des temperatures et les emissions de trames
 
+#ifndef USE_MINIMALIST_ADDONS
 #define	CHAR_TYPE_COMMAND_C_MAJ		'C'
 #define	CHAR_TYPE_COMMAND_T_MAJ		'T'
+#endif
 
 ; Definitions et Variables pour la gestion des DS18B20
 #define	FLG_DS18B20_CONV_T_MSK		MSK_BIT0
@@ -110,8 +117,8 @@ G_DS18B20_ALR_ROM_IDX_WRK:			.byte		1		; Index dans la table des ROM a recherche
 ; => Sinon reservation pour 4 capteurs en alarme
 G_DS18B20_ALR_ROM_0:					.byte		(DS18B20_NBR_ROM_TO_DETECT * 8)	; Reservation pour 'DS18B20_NBR_ROM_TO_DETECT' ALR
 
-; Reservation pour le header
-G_DS18B20_FRAME_HEADER:				.byte		6
+; Zone de travail
+G_DS18B20_WORK:						.byte		(DS18B20_NBR_ROM_TO_DETECT * 8)	; Non utilise directement
 
 ; Reservation de 1 byte pour accueillir le CRC8-MAXIM de l'ensemble de la trame
 ; Warning: 7 bytes seront concatenes a la trame:

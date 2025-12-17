@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.6 2025/12/13 14:58:52 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.14 2025/12/15 22:42:27 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
@@ -61,10 +61,19 @@ echo
 echo "################## Production of '${PROJECTS_FILE}' ##################"
 #
 # Directives d'assemblage:
-# -D USE_MINIMALIST -> Production de la version minimaliste a destination de la production de uOS
+# -D USE_MINIMALIST_UOS    -> Production de la version minimaliste a destination de la production de uOS
+# -D USE_MINIMALIST_ADDONS -> Production de la version minimaliste a destination de la production des ADDONS
 
-#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+# Version totalement 'Minimaliste' destinee a un ATtiny45 (uOS et ADDONS)
+#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST_UOS -D USE_MINIMALIST_ADDONS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
+# Version partiellement 'Minimaliste' @ADDONS destinee a un ATtiny85 (ADDONS uniquement pour developpement))
+#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST_ADDONS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+
+# Version partiellement 'Minimaliste' @uOS destinee a un ATtiny85 (uOS uniquement pour developpement))
+#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST_UOS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+
+# Version destinee a un ATtiny85
 ${AVRA_BIN} -D USE_ADDONS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
 if [ ! -f ${PROJECTS_FILE}.${EXT_LST} ]; then

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.23 2025/12/13 14:58:52 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.38 2025/12/17 12:45:07 administrateur Exp $"
 
 ; Programme de gestion des capteurs DS18B20
 ;
@@ -10,6 +10,7 @@
 ;           les 2 seuils Th et Tl sont definis au degres pres
 
 .include		"ATtiny85_uOS.asm"
+
 .include		"ATtiny85_uOS+DS18B20.h"
 
 .cseg
@@ -41,12 +42,22 @@ ds18b20_1_ms:
 	ret
 
 ds18b20_commands:
+#ifndef USE_MINIMALIST_ADDONS
 	; Execution des commandes "<C" et "<T"
 	rjmp		exec_command_ds18b20	
+#else
+	; Aucun traitement de nouvelles commandes
+	ret
+#endif
 
 ds18b20_button:
+#ifndef USE_MINIMALIST_ADDONS
 	; Traitements associes a l'appui bouton avant ceux effectues par uOS
 	rjmp		exec_button_ds18b20	
+#else
+	; Aucun traitement du bouton
+	ret
+#endif
 
 ; Fin: Definitions de la table de vecteurs de "prolongation" des traitements
 
@@ -179,8 +190,10 @@ ds18b20_exec:
 	sbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
 
 	; Recherche sur le bus des ROMs
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 's'
 	rcall		uos_print_mark_skip
+#endif
 
 	rcall		ds18b20_search_rom
 	; Fin: Recherche sur le bus des ROMs
@@ -205,8 +218,11 @@ ds18b20_exec_loop:
 	push		REG_TEMP_R16			; Sauvegarde #N
 
 	; Reset capteur #N
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'r'
 	rcall		uos_print_mark_skip
+#endif
+
 	rcall		ds18b20_reset
 
 	; Copy ROM @ 'REG_TEMP_R17' into 'G_DS18B20_BYTES_SEND'
@@ -221,8 +237,11 @@ ds18b20_exec_loop_2:
 	brne		ds18b20_exec_loop_2
 	; End: Copy ROM @ 'REG_TEMP_R17' into 'G_DS18B20_BYTES_SEND'
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'm'
 	rcall		uos_print_mark_skip
+#endif
+
 	rcall		ds18b20_match_rom
 
 	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
@@ -235,16 +254,21 @@ ds18b20_exec_loop_2:
 	rjmp		ds18b20_exec_cont_d
 
 ds18b20_conversion:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'c'
 	rcall		uos_print_mark_skip
+#endif
+
 	rcall		ds18b20_convert_t
 	rjmp		ds18b20_exec_cont_d
 
 ds18b20_temp:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 't'
 	rcall		uos_print_mark_skip
+#endif
+
 	rcall		ds18b20_read_scratchpad
-	;rjmp		ds18b20_exec_cont_d
 
 ds18b20_exec_cont_d:
 	rcall		fifo_tx_to_send_sync
@@ -266,10 +290,12 @@ ds18b20_exec_conversion_end:
 	; Recherche des capteurs en alarme si fin de la conversion
 	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
 	sbrc		REG_TEMP_R17, FLG_DS18B20_CONV_T_IDX
+
 	rjmp		ds18b20_exec_search_alarm
 
 	cbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
 	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
+
 	rjmp		ds18b20_exec_build_frame
 
 ds18b20_exec_search_alarm:
@@ -277,18 +303,24 @@ ds18b20_exec_search_alarm:
 	sbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
 	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'a'
 	rcall		uos_print_mark_skip
-	rcall		ds18b20_search_alarm
+#endif
 
-	; Effacement des emplacements 'G_DS18B20_ALR_ROM_N' pour acceuillir les trames
+	rcall		ds18b20_search_alarm
+;#endif
+
+	; Effacement des emplacements 'G_DS18B20_ALR_ROM_N' pour accueillir les trames
 	rcall		ds18b20_clear_alr
 
 	rjmp		ds18b20_exec_pass
 
 ds18b20_exec_build_frame:
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'f'
 	rcall		uos_print_mark_skip
+#endif
 
 	; Complements d'informations de la trame complete a emettre
 	rcall		buid_frame_complement
@@ -397,18 +429,21 @@ ds18b20_reset_loop_3:
 
 	sbi		DDRB, IDX_BIT_1_WIRE					; <PORTB<2> en sortie
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'P'
 	rcall		push_1_char_in_fifo_tx_skip
 	
 	mov		REG_TEMP_R16, REG_TEMP_R17
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
+#endif
 	; End: Presence detect ?
 
 	sei
 	ret
 ; ---------
 
+#ifndef USE_MINIMALIST_ADDONS
 ; ---------
 ds18b20_print_response:
 	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_RESP)
@@ -468,6 +503,7 @@ ds18b20_print_rom_loop:
 
 	ret
 ; ---------
+#endif
 
 ; ---------
 ; Clear of ROM table in 'G_DS18B20_BYTES_ROM' to 'G_DS18B20_ROM_0', ...
@@ -476,10 +512,12 @@ ds18b20_clear_rom:
 	ldi		REG_Z_MSB, high(G_DS18B20_ROM_0)
 	ldi		REG_Z_LSB, low(G_DS18B20_ROM_0)
 
+	; Remarque: Pour un marquage d'utilisation 'ldi REG_TEMP_R16, 0xA5'
+	;           => Ne doit pas apparaitre en SRAM ;-)
 	clr		REG_TEMP_R16
 
-	; Balayage des 8 x 8 bytes des ROM a rechercher
-	ldi		REG_TEMP_R18, (8 * 8)
+	; Balayage des 'DS18B20_NBR_ROM_TO_DETECT' x 8 bytes des ROM a rechercher
+	ldi		REG_TEMP_R18, (DS18B20_NBR_ROM_TO_DETECT * 8)
 
 ds18b20_clear_rom_loop:
 	st			Z+, REG_TEMP_R16
@@ -567,9 +605,12 @@ ds18b20_compare_rom_found:
 	mov		REG_X_LSB, REG_Y_LSB
 	rcall		uos_print_2_bytes_hexa_skip
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'F'
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
+#endif
+
 	pop		REG_TEMP_R16
 
 	rjmp		ds18b20_compare_rom_ret
@@ -599,9 +640,11 @@ ds18b20_compare_rom_not_found:
 	brts		ds18b20_compare_rom_crc8_ok		; CRC8 calcule et egal a celui recu ?
 
 ds18b20_compare_rom_crc8_ko:						; Non
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'K'
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	ldi		REG_TEMP_R16, 0						; Force a ROM trouve (retour avec 'REG_TEMP_R16' != 0 ;-)
 	rjmp		ds18b20_compare_rom_ret
@@ -610,6 +653,8 @@ ds18b20_compare_rom_crc8_ok:						; Oui
 	; Fin: Test du CRC8 pour un nouveau ROM non trouve
 
 ds18b20_compare_rom_not_found_save:
+
+#ifndef USE_MINIMALIST_ADDONS
 	push		REG_TEMP_R16
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
@@ -619,6 +664,7 @@ ds18b20_compare_rom_not_found_save:
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
+#endif
 
 	; Test de depassement de l'index 'REG_TEMP_R16'
 	lds		REG_TEMP_R17, G_DS18B20_ROM_IDX_WRK
@@ -650,10 +696,12 @@ ds18b20_clear_alr:
 	ldi		REG_Z_MSB, high(G_DS18B20_ALR_ROM_0)
 	ldi		REG_Z_LSB, low(G_DS18B20_ALR_ROM_0)
 
+	; Remarque: Pour un marquage d'utilisation 'ldi REG_TEMP_R16, 0xA6'
+	;           => Ne doit pas apparaitre en SRAM ;-)
 	clr		REG_TEMP_R16
 
-	; Balayage des 8 x 8 bytes des ROM a rechercher
-	ldi		REG_TEMP_R18, (8 * 8)
+	; Balayage des 'DS18B20_NBR_ROM_TO_DETECT' x 8 bytes des ROM a rechercher
+	ldi		REG_TEMP_R18, (DS18B20_NBR_ROM_TO_DETECT * 8)
 
 ds18b20_clear_alr_loop:
 	st			Z+, REG_TEMP_R16
@@ -733,6 +781,8 @@ ds18b20_compare_alr_rom_loop:
 	rjmp		ds18b20_compare_alr_rom_not_found		; Non
 
 ds18b20_compare_alr_rom_found:
+
+#ifndef USE_MINIMALIST_ADDONS
 	push		REG_TEMP_R16
 	mov		REG_X_LSB, REG_TEMP_R16
 	rcall		uos_print_1_byte_hexa_skip
@@ -745,6 +795,7 @@ ds18b20_compare_alr_rom_found:
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
+#endif
 
 	rjmp		ds18b20_compare_alr_rom_ret
 
@@ -773,9 +824,11 @@ ds18b20_compare_alr_rom_not_found:
 	brts		ds18b20_compare_alr_rom_crc8_ok		; CRC8 calcule et egal a celui recu ?
 
 ds18b20_compare_alr_rom_crc8_ko:						; Non
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'K'
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	ldi		REG_TEMP_R16, 0						; Force a ROM trouve (retour avec 'REG_TEMP_R16' != 0 ;-)
 	rjmp		ds18b20_compare_alr_rom_ret
@@ -784,6 +837,8 @@ ds18b20_compare_alr_rom_crc8_ok:						; Oui
 	; Fin: Test du CRC8 pour un nouveau ROM non trouve
 
 ds18b20_compare_alr_rom_not_found_save:
+
+#ifndef USE_MINIMALIST_ADDONS
 	push		REG_TEMP_R16
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
@@ -793,6 +848,7 @@ ds18b20_compare_alr_rom_not_found_save:
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
 	pop		REG_TEMP_R16
+#endif
 
 	; Test de depassement de l'index 'REG_TEMP_R16'
 	lds		REG_TEMP_R17, G_DS18B20_ALR_ROM_IDX_WRK
@@ -885,8 +941,10 @@ ds18b20_crc8_loop_bytes:
 	lds		REG_TEMP_R19, G_CALC_CRC8				; Reprise du dernier CRC8 calcule
 	ld			REG_TEMP_R17, -Y
 
+#ifndef USE_MINIMALIST_ADDONS
 	mov		REG_X_LSB, REG_TEMP_R17
 	rcall		uos_print_1_byte_hexa_skip
+#endif
 	
 	push		REG_TEMP_R18
 
@@ -920,11 +978,13 @@ ds18b20_crc8_b:
 	dec		REG_TEMP_R18
 	brne		ds18b20_crc8_loop_bytes		; Non prise en compte du 1st byte qui est le CRC8 recu ;-)
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'C'
 	rcall		push_1_char_in_fifo_tx_skip
 	mov		REG_X_LSB, REG_TEMP_R19
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	pop		REG_Z_LSB
 	pop		REG_Z_MSB
@@ -953,11 +1013,6 @@ ds18b20_crc8_b:
 ;   - Bit Toggle 'T' a 1 pour detecte
 ;     => 'X' contient l'adresse du ROM #N ('G_DS18B20_ROM_0', 'G_DS18B20_ROM_1', etc.)
 ;
-#if 0
-ds18b20_get_rom_detected:
-	lds		REG_TEMP_R16, G_TEST_VALUE_LSB_MORE	; Recuperation parametre #N (<xaaaa-nn)
-#endif
-
 ds18b20_get_rom_detected_bypass:
 	push		REG_TEMP_R16
 	tst		REG_TEMP_R16								; N >= 0 ?
@@ -979,6 +1034,7 @@ ds18b20_get_rom_detected_ok:							; Oui (0 <= N < 'G_DS18B20_NBR_ROM_FOUND')
 	clr		REG_TEMP_R17
 	adc		REG_X_MSB, REG_TEMP_R17
 
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'O'
 
 #if USE_DS18B20_TRACE
@@ -989,11 +1045,15 @@ ds18b20_get_rom_detected_ok:							; Oui (0 <= N < 'G_DS18B20_NBR_ROM_FOUND')
 
 	rcall		uos_print_2_bytes_hexa_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	set														; Detecte
 	rjmp		ds18b20_get_rom_detected_ret
 
 ds18b20_get_rom_detected_ko:
+
+#ifndef USE_MINIMALIST_ADDONS
+	push		REG_X_LSB
 	push		REG_TEMP_R16
 	ldi		REG_TEMP_R16, 'K'
 	rcall		push_1_char_in_fifo_tx_skip
@@ -1001,6 +1061,8 @@ ds18b20_get_rom_detected_ko:
 	mov		REG_X_LSB, REG_TEMP_R16
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
+	pop		REG_X_LSB
+#endif
 
 	clt														; Non detecte
 
@@ -1071,6 +1133,8 @@ ds18b20_get_rom_idx_not_found:
 	push		REG_X_MSB
 	push		REG_X_LSB
 	push		REG_TEMP_R16
+
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, '?'
 	rcall		push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
@@ -1082,6 +1146,12 @@ ds18b20_get_rom_idx_not_found:
 	mov		REG_X_LSB, REG_Y_LSB
 	rcall		uos_print_2_bytes_hexa_skip
 	rcall		uos_print_line_feed_skip
+#else
+	pop		REG_X_LSB
+	pop		REG_X_LSB
+	pop		REG_X_MSB
+#endif
+
 	pop		REG_X_LSB
 	pop		REG_X_MSB
 
@@ -1091,11 +1161,17 @@ ds18b20_get_rom_idx_not_found:
 ds18b20_get_rom_idx_found:
 	push		REG_TEMP_R16
 	push		REG_TEMP_R16
+
+#ifndef USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'B'
 	rcall		push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
+#else
+	pop		REG_X_LSB
+#endif
+
 	pop		REG_TEMP_R16
 
 ds18b20_get_rom_idx_ret:
@@ -1238,11 +1314,13 @@ buid_frame_complement:
 	sts		G_FRAME_ALL_INFOS, REG_TEMP_R16
 	; Fin: Calcul du CRC8 sur tous les bytes sauf le 1st
 
+#ifndef USE_MINIMALIST_ADDONS
 	mov		REG_X_LSB, REG_TEMP_R17
 	rcall		uos_print_1_byte_hexa_skip
 	movw		REG_X_LSB, REG_Y_LSB
 	rcall		uos_print_2_bytes_hexa_skip
 	rcall		uos_print_line_feed_skip
+#endif
 
 	; Calcul du CRC8 sur tous les bytes avec le 1st
 	; => Le CRC8 "total" doit etre etre egal a 0 car inclu ledit CRC8 ;-)
@@ -1254,11 +1332,13 @@ buid_frame_complement:
 	lds		REG_TEMP_R16, G_CALC_CRC8
 	; Fin: Calcul du CRC8 sur tous les bytes avec le 1st
 
+#ifndef USE_MINIMALIST_ADDONS
 	mov		REG_X_LSB, REG_TEMP_R17
 	rcall		uos_print_1_byte_hexa_skip
 	movw		REG_X_LSB, REG_Y_LSB
 	rcall		uos_print_2_bytes_hexa_skip
 	rcall		uos_print_line_feed_skip
+#endif
 	; Fin: Calcul du CRC8 sur tous les bytes avec le 1st
 	; Fin: Calcul du CRC8 de la trame complete
 
@@ -1293,16 +1373,14 @@ ds18b20_send_frame:
 
 	; Emission de la trame
 	ldi		REG_TEMP_R16, '$'
-	rcall		uos_push_1_char_in_fifo_tx_skip
+	rcall		uos_push_1_char_in_fifo_tx
 
 ds18b20_send_frame_loop:
 	ld			REG_TEMP_R16, -Y
 	rcall		convert_and_put_fifo_tx
-
 	dec		REG_TEMP_R18
 	brne		ds18b20_send_frame_loop
-
-	rcall		uos_print_line_feed_skip
+	rcall		uos_print_line_feed
 	rcall		fifo_tx_to_send_sync
 	; Fin: Emission de la trame
 
@@ -1313,7 +1391,7 @@ ds18b20_send_frame_loop:
 ; Configuration des DS18B20
 ; ---------
 
-#ifndef USE_MINIMALIST
+#ifndef USE_MINIMALIST_ADDONS
 ; ---------
 ; Conversion pour le DS18B20
 ;
@@ -1403,7 +1481,11 @@ convert_2_bytes_hexa_to_dec:
 #endif
 
 text_prompt_ds18b20:
-.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.23 $", CHAR_LF, CHAR_NULL
+#ifndef USE_MINIMALIST_ADDONS
+.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.38 $", CHAR_LF, CHAR_NULL
+#else
+.db	"### ATtiny85_uOS+DS18B20 (Minimalist)", CHAR_LF, CHAR_NULL, CHAR_NULL
+#endif
 
 text_msk_table:
 .db	MSK_BIT0, MSK_BIT1, MSK_BIT2, MSK_BIT3
@@ -1413,12 +1495,15 @@ text_msk_table:
 
 .include		"ATtiny85_uOS+DS18B20_Timers.asm"
 
-#ifndef USE_MINIMALIST
+#ifndef USE_MINIMALIST_ADDONS
 .include		"ATtiny85_uOS+DS18B20_Commands.asm"
 #endif
 
 .include		"ATtiny85_uOS+DS18B20_1_Wire.asm"
+
+#ifndef USE_MINIMALIST_ADDONS
 .include		"ATtiny85_uOS+DS18B20_Button.asm"
+#endif
 
 .include		"ATtiny85_DS18B20_1_Wire_Commands.asm"
  
