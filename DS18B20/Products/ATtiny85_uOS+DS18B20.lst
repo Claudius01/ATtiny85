@@ -1,5 +1,5 @@
 
-AVRA   Ver. 1.4.2 ATtiny85_uOS+DS18B20.asm Wed Dec 17 23:15:28 2025
+AVRA   Ver. 1.4.2 ATtiny85_uOS+DS18B20.asm Wed Dec 17 23:41:55 2025
 
 
          ; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.38 2025/12/17 12:45:07 administrateur Exp $"
@@ -14,7 +14,7 @@ AVRA   Ver. 1.4.2 ATtiny85_uOS+DS18B20.asm Wed Dec 17 23:15:28 2025
          ;           les 2 seuils Th et Tl sont definis au degres pres
          
           .include		"ATtiny85_uOS.asm"
-         ; "$Id: ATtiny85_uOS.asm,v 1.34 2025/12/17 12:45:46 administrateur Exp $"
+         ; "$Id: ATtiny85_uOS.asm,v 1.35 2025/12/17 22:16:43 administrateur Exp $"
          
          ; - Projet: ATtiny85_uOS.asm
          ;
@@ -710,7 +710,7 @@ AVRA   Ver. 1.4.2 ATtiny85_uOS+DS18B20.asm Wed Dec 17 23:15:28 2025
           ; ***** END OF FILE ******************************************************
          
           .include		"ATtiny85_uOS.h"
-         ; "$Id: ATtiny85_uOS.h,v 1.12 2025/12/17 12:45:46 administrateur Exp $"
+         ; "$Id: ATtiny85_uOS.h,v 1.13 2025/12/17 22:16:43 administrateur Exp $"
          
          ; Definition de la 'RAMEND'
           #define ATTINY85_RAMEND		0x25F
@@ -1164,8 +1164,8 @@ C:000056 9508      	ret
          
           text_whoami:
           #ifndef USE_MINIMALIST_UOS
-          .db	"### ATtiny85_uOS $Revision: 1.34 $", CHAR_LF, CHAR_NULL
-C:000057 23232320415474696E7938355F754F5320245265766973696F6E3A20312E333420240A00
+          .db	"### ATtiny85_uOS $Revision: 1.35 $", CHAR_LF, CHAR_NULL
+C:000057 23232320415474696E7938355F754F5320245265766973696F6E3A20312E333520240A00
           #else
           #endif
          
@@ -2227,7 +2227,7 @@ C:00023c 9518      	reti
          ; "$Id: ATtiny85_uOS_Timers.asm,v 1.23 2025/12/15 22:42:20 administrateur Exp $"
          
           .include		"ATtiny85_uOS_Timers.h"
-         ; "$Id$"
+         ; "$Id: ATtiny85_uOS_Timers.h,v 1.12 2025/12/17 22:16:43 administrateur Exp $"
          
          ; Attribution des 'NBR_TIMER' timers #0, #1, ..., #15
          ; => Limitation a 8 timers dans la cas 'USE_MINIMALIST_UOS' (#0, #1, ..., #7)
@@ -4619,7 +4619,7 @@ C:000697 5B435243382D4D4158494D200000
           #endif
          
           .include		"ATtiny85_uOS_Print.asm"
-         ; "$Id: ATtiny85_uOS_Print.asm,v 1.15 2025/12/14 17:28:44 administrateur Exp $"
+         ; "$Id: ATtiny85_uOS_Print.asm,v 1.16 2025/12/17 22:16:43 administrateur Exp $"
          
           .include		"ATtiny85_uOS_Print.h"
          ; "$Id: ATtiny85_uOS_Print.h,v 1.2 2025/12/01 17:36:27 administrateur Exp $
@@ -7208,7 +7208,7 @@ C:000B83 23232320445331384232303A20427574746F6E20616374696F6E0A00
           #endif
          
           .include		"ATtiny85_DS18B20_1_Wire_Commands.asm"
-         ; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.22 2025/12/17 09:20:55 administrateur Exp $
+         ; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.23 2025/12/17 22:40:58 administrateur Exp $
          
           .include		"ATtiny85_DS18B20_1_Wire_Commands.h"
          ; "$Id: ATtiny85_DS18B20_1_Wire_Commands.h,v 1.3 2025/12/14 18:05:27 administrateur Exp $"
