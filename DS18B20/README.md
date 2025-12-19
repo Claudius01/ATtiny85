@@ -80,8 +80,8 @@ DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de 
      * La gestion de 2 capteurs au lieu de 4
      * La suppression des commandes qui ne permet plus de configurer dynamiquement la vitesse de l'UART/Tx ni les seuils de température haute et basse:
        * La vitesse de l'UART/Tx est lue depuis l'EEPROM
-       * les seuils de température haute Th et basse Tl sont lus depuis l'EEPROM
-       * la résolution est lue depuis l'EEPROM
+       * TODO: les seuils de température haute Th et basse Tl sont lus depuis l'EEPROM
+       * TODO: la résolution est lue depuis l'EEPROM
        * l'absence de la gestion UART/Rx (seul l'UART/Tx est conservé)
 
 ## 🛠️ Environnement de développement
