@@ -17,8 +17,8 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les fonctionnali
          * Le numéro de type de la platine lu de l'EEPROM
          * L'*Id* de la platine lu de l'EEPROM
          * Le numéro de la trame
-         * Le *timestamp* de la trame
-         * Le nombre de capteurs détectés
+         * Le *timestamp* de la trame en secondes depuis le lancement du programme
+         * Le nombre de capteurs détectés et inférieur à celui lu depuis l'EEPROM
      * Les informations propres à chaque capteur:
          * Son *Id* dans la liste
          * Son numéro de famille dans le monde 1-Wire (ici 0x28)
