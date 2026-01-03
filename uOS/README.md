@@ -81,6 +81,6 @@ uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**
 ## ⏳ Évolutions envisagées
 - Implémentation pour un **ATtiny45**
 - Mise en veille du µC pour limiter la consommation dans le cas d'une alimentation au moyen de piles
-- Utilisation de l'USI *2 Wire* pour la gestion de l'UART *half duplex* de 300 bauds à 19200 bauds en remplacement de la solution logicielle plus coûteuse en code
+- Utilisation de l'USI *2 Wire* (Universal Serial Interface) pour la gestion de l'UART *half duplex* de 300 bauds à 19200 bauds en remplacement de la solution logicielle
     - De plus, cela permettra d'accueillir dans le futur la gestion d'un bus I2C
 - *Á compléter*
