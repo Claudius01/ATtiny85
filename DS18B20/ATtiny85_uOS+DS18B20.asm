@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.38 2025/12/17 12:45:07 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.asm,v 1.43 2026/01/05 15:48:38 administrateur Exp $"
 
 ; Programme de gestion des capteurs DS18B20
 ;
@@ -30,7 +30,7 @@
 ;    => Seul le rang du traitement est impose dans l'ordre defini plus haut
 
 ds18b20_setup:
-	; Initialisation et armocage des prises des mesures et de l'emission de la trame
+	; Initialisation et armorcage des prises des mesures et de l'emission de la trame
 	rjmp		ds18b20_begin
 
 ds18b20_background:
@@ -42,7 +42,7 @@ ds18b20_1_ms:
 	ret
 
 ds18b20_commands:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	; Execution des commandes "<C" et "<T"
 	rjmp		exec_command_ds18b20	
 #else
@@ -51,7 +51,7 @@ ds18b20_commands:
 #endif
 
 ds18b20_button:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	; Traitements associes a l'appui bouton avant ceux effectues par uOS
 	rjmp		exec_button_ds18b20	
 #else
@@ -190,7 +190,7 @@ ds18b20_exec:
 	sbr		REG_FLAGS_0, FLG_0_PRINT_SKIP_MSK
 
 	; Recherche sur le bus des ROMs
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 's'
 	rcall		uos_print_mark_skip
 #endif
@@ -218,7 +218,7 @@ ds18b20_exec_loop:
 	push		REG_TEMP_R16			; Sauvegarde #N
 
 	; Reset capteur #N
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'r'
 	rcall		uos_print_mark_skip
 #endif
@@ -237,7 +237,7 @@ ds18b20_exec_loop_2:
 	brne		ds18b20_exec_loop_2
 	; End: Copy ROM @ 'REG_TEMP_R17' into 'G_DS18B20_BYTES_SEND'
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'm'
 	rcall		uos_print_mark_skip
 #endif
@@ -254,7 +254,7 @@ ds18b20_exec_loop_2:
 	rjmp		ds18b20_exec_cont_d
 
 ds18b20_conversion:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'c'
 	rcall		uos_print_mark_skip
 #endif
@@ -263,7 +263,7 @@ ds18b20_conversion:
 	rjmp		ds18b20_exec_cont_d
 
 ds18b20_temp:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 't'
 	rcall		uos_print_mark_skip
 #endif
@@ -287,6 +287,35 @@ ds18b20_exec_conversion_end:
 	cpse		REG_TEMP_R16, REG_TEMP_R17		; Fin si erreur de comparaison
 	rjmp		ds18b20_exec_end
 
+	; Effacement Alarmes a emettre
+	clr		REG_TEMP_R17
+	sts		G_ALARM_FRAME, REG_TEMP_R17
+
+#if USE_MINIMALIST_ADDONS		; [
+	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
+	sbrc		REG_TEMP_R17, FLG_DS18B20_CONV_T_IDX
+
+	rjmp		ds18b20_exec_no_search_alarm
+
+	cbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
+	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
+
+	rjmp		ds18b20_exec_build_frame
+
+ds18b20_exec_no_search_alarm:
+	cbr		REG_TEMP_R17, FLG_DS18B20_CONV_T_MSK
+	sbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
+	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
+
+	lds		REG_TEMP_R17, G_ALARM_FRAME
+	cbr		REG_TEMP_R17, MSK_BIT_ALARM_SEARCH
+	sts		G_ALARM_FRAME, REG_TEMP_R17
+
+	; Effacement des emplacements 'G_DS18B20_ALR_ROM_N' pour accueillir les trames
+	rcall		ds18b20_clear_alr
+
+	rjmp		ds18b20_exec_pass
+#else									; ] [
 	; Recherche des capteurs en alarme si fin de la conversion
 	lds		REG_TEMP_R17, G_BUS_1_WIRE_FLAGS
 	sbrc		REG_TEMP_R17, FLG_DS18B20_CONV_T_IDX
@@ -303,21 +332,23 @@ ds18b20_exec_search_alarm:
 	sbr		REG_TEMP_R17, FLG_DS18B20_TEMP_MSK
 	sts		G_BUS_1_WIRE_FLAGS, REG_TEMP_R17
 
-#ifndef USE_MINIMALIST_ADDONS
+	lds		REG_TEMP_R17, G_ALARM_FRAME
+	sbr		REG_TEMP_R17, MSK_BIT_ALARM_SEARCH
+	sts		G_ALARM_FRAME, REG_TEMP_R17
+
 	ldi		REG_TEMP_R17, 'a'
 	rcall		uos_print_mark_skip
-#endif
 
 	rcall		ds18b20_search_alarm
-;#endif
 
 	; Effacement des emplacements 'G_DS18B20_ALR_ROM_N' pour accueillir les trames
 	rcall		ds18b20_clear_alr
 
 	rjmp		ds18b20_exec_pass
+#endif								; ]
 
 ds18b20_exec_build_frame:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R17, 'f'
 	rcall		uos_print_mark_skip
 #endif
@@ -429,7 +460,7 @@ ds18b20_reset_loop_3:
 
 	sbi		DDRB, IDX_BIT_1_WIRE					; <PORTB<2> en sortie
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'P'
 	rcall		push_1_char_in_fifo_tx_skip
 	
@@ -443,7 +474,7 @@ ds18b20_reset_loop_3:
 	ret
 ; ---------
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 ; ---------
 ds18b20_print_response:
 	ldi		REG_Y_MSB, high(G_DS18B20_BYTES_RESP)
@@ -605,7 +636,7 @@ ds18b20_compare_rom_found:
 	mov		REG_X_LSB, REG_Y_LSB
 	rcall		uos_print_2_bytes_hexa_skip
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'F'
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
@@ -640,7 +671,7 @@ ds18b20_compare_rom_not_found:
 	brts		ds18b20_compare_rom_crc8_ok		; CRC8 calcule et egal a celui recu ?
 
 ds18b20_compare_rom_crc8_ko:						; Non
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'K'
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
@@ -654,7 +685,7 @@ ds18b20_compare_rom_crc8_ok:						; Oui
 
 ds18b20_compare_rom_not_found_save:
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	push		REG_TEMP_R16
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
@@ -782,7 +813,7 @@ ds18b20_compare_alr_rom_loop:
 
 ds18b20_compare_alr_rom_found:
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	push		REG_TEMP_R16
 	mov		REG_X_LSB, REG_TEMP_R16
 	rcall		uos_print_1_byte_hexa_skip
@@ -824,7 +855,7 @@ ds18b20_compare_alr_rom_not_found:
 	brts		ds18b20_compare_alr_rom_crc8_ok		; CRC8 calcule et egal a celui recu ?
 
 ds18b20_compare_alr_rom_crc8_ko:						; Non
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'K'
 	rcall		push_1_char_in_fifo_tx_skip
 	rcall		uos_print_line_feed_skip
@@ -838,7 +869,7 @@ ds18b20_compare_alr_rom_crc8_ok:						; Oui
 
 ds18b20_compare_alr_rom_not_found_save:
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	push		REG_TEMP_R16
 	mov		REG_X_MSB, REG_Y_MSB
 	mov		REG_X_LSB, REG_Y_LSB
@@ -941,7 +972,7 @@ ds18b20_crc8_loop_bytes:
 	lds		REG_TEMP_R19, G_CALC_CRC8				; Reprise du dernier CRC8 calcule
 	ld			REG_TEMP_R17, -Y
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	mov		REG_X_LSB, REG_TEMP_R17
 	rcall		uos_print_1_byte_hexa_skip
 #endif
@@ -978,7 +1009,7 @@ ds18b20_crc8_b:
 	dec		REG_TEMP_R18
 	brne		ds18b20_crc8_loop_bytes		; Non prise en compte du 1st byte qui est le CRC8 recu ;-)
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'C'
 	rcall		push_1_char_in_fifo_tx_skip
 	mov		REG_X_LSB, REG_TEMP_R19
@@ -1034,7 +1065,7 @@ ds18b20_get_rom_detected_ok:							; Oui (0 <= N < 'G_DS18B20_NBR_ROM_FOUND')
 	clr		REG_TEMP_R17
 	adc		REG_X_MSB, REG_TEMP_R17
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'O'
 
 #if USE_DS18B20_TRACE
@@ -1052,7 +1083,7 @@ ds18b20_get_rom_detected_ok:							; Oui (0 <= N < 'G_DS18B20_NBR_ROM_FOUND')
 
 ds18b20_get_rom_detected_ko:
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	push		REG_X_LSB
 	push		REG_TEMP_R16
 	ldi		REG_TEMP_R16, 'K'
@@ -1134,7 +1165,7 @@ ds18b20_get_rom_idx_not_found:
 	push		REG_X_LSB
 	push		REG_TEMP_R16
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, '?'
 	rcall		push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
@@ -1162,7 +1193,7 @@ ds18b20_get_rom_idx_found:
 	push		REG_TEMP_R16
 	push		REG_TEMP_R16
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'B'
 	rcall		push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
@@ -1213,22 +1244,58 @@ build_frame_infos:
 	lds		REG_TEMP_R16, G_DS18B20_ROM_IDX
 	std		Z + FRAME_IDX_IDX, REG_TEMP_R16
 
+	; Temperature courante sur 16 bits (LSB:MSB)
+	; => Recopie dans 'G_TEMP_CURRENT_LSB'
 	ldd		REG_TEMP_R16, Y + RESP_IDX_TC_LSB
 	std		Z + FRAME_IDX_TC_LSB, REG_TEMP_R16
 
+	; Pas de recopie en mode 'USE_USI' ET 'USE_MINIMALIST_ADDONS'
+#if !USE_USI || !USE_MINIMALIST_ADDONS
+	sts		G_TEMP_CURRENT_LSB, REG_TEMP_R16
+#endif
+
+	; => Recopie dans 'G_TEMP_CURRENT_MSB'
 	ldd		REG_TEMP_R16, Y + RESP_IDX_TC_MSB
 	std		Z + FRAME_IDX_TC_MSB, REG_TEMP_R16
 
+	; Pas de recopie en mode 'USE_USI' ET 'USE_MINIMALIST_ADDONS'
+#if !USE_USI || !USE_MINIMALIST_ADDONS
+	sts		G_TEMP_CURRENT_MSB, REG_TEMP_R16
+#endif
+
+	; Seuil Bas sur 8 bits
+	; => Recopie dans 'G_TEMP_THRESHOLD_LOW'
 	ldd		REG_TEMP_R16, Y + RESP_IDX_TL
 	std		Z + FRAME_IDX_TL, REG_TEMP_R16
 
+	; Pas de recopie en mode 'USE_USI' ET 'USE_MINIMALIST_ADDONS'
+#if !USE_USI || !USE_MINIMALIST_ADDONS
+	sts		G_TEMP_THRESHOLD_LOW, REG_TEMP_R16
+#endif
+
+	; Seuil Haut sur 8 bits
+	; => Recopie dans 'G_TEMP_THRESHOLD_HIGH'
 	ldd		REG_TEMP_R16, Y + RESP_IDX_TH
 	std		Z + FRAME_IDX_TH, REG_TEMP_R16
 
-	ldd		REG_TEMP_R16, Y + RESP_IDX_RESOL_CONV
-	swap		REG_TEMP_R16				; Resolution dans REG_TEMP_R16<2,1>
-	lsr		REG_TEMP_R16				; Resolution dans REG_TEMP_R16<1,0>
-	andi		REG_TEMP_R16, 0x03		; Isolement de la resolution
+	; Pas de recopie en mode 'USE_USI' ET 'USE_MINIMALIST_ADDONS'
+#if !USE_USI || !USE_MINIMALIST_ADDONS
+	sts		G_TEMP_THRESHOLD_HIGH, REG_TEMP_R16
+#endif
+
+	ldd		REG_TEMP_R18, Y + RESP_IDX_RESOL_CONV
+	swap		REG_TEMP_R18				; Resolution dans REG_TEMP_R16<2,1>
+	lsr		REG_TEMP_R18				; Resolution dans REG_TEMP_R16<1,0>
+	andi		REG_TEMP_R18, 0x03		; Isolement de la resolution et effacement alarmes
+
+	; Preparation maj 'G_ALARM_FRAME'
+	lds		REG_TEMP_R16, G_ALARM_FRAME
+	or			REG_TEMP_R16, REG_TEMP_R18
+
+	; Pas de comparaison en mode 'USE_USI' ET 'USE_MINIMALIST_ADDONS'
+#if !USE_USI || !USE_MINIMALIST_ADDONS
+	rcall		compare_temperatures
+#endif
 
 	; Add  Etat du capteur en alarme ou non (bit #7 de 'FRAME_IDX_ALR_RES_CONV')
 	push		REG_Z_MSB
@@ -1244,9 +1311,15 @@ build_frame_infos:
 	lds		REG_TEMP_R18, G_DS18B20_IN_ALARM
 	and		REG_TEMP_R17, REG_TEMP_R18
 	breq		build_frame_infos_no_alarm
-	sbr		REG_TEMP_R16, MSK_BIT7	; Etat d'alarme du Capteur dans REG_TEMP_R16<7>
+
+	; Capteur en Alarme
+	sbr		REG_TEMP_R16, MSK_BIT_ALARM_FOUND	; Etat d'alarme du Capteur dans REG_TEMP_R16
 
 build_frame_infos_no_alarm:
+	; Complement avec les alarmes calculees
+	lds		REG_TEMP_R18, G_ALARM_FRAME
+	or			REG_TEMP_R16, REG_TEMP_R18
+
 	pop		REG_Z_LSB
 	pop		REG_Z_MSB
 	std		Z + FRAME_IDX_ALR_RES_CONV, REG_TEMP_R16
@@ -1314,7 +1387,7 @@ buid_frame_complement:
 	sts		G_FRAME_ALL_INFOS, REG_TEMP_R16
 	; Fin: Calcul du CRC8 sur tous les bytes sauf le 1st
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	mov		REG_X_LSB, REG_TEMP_R17
 	rcall		uos_print_1_byte_hexa_skip
 	movw		REG_X_LSB, REG_Y_LSB
@@ -1332,7 +1405,7 @@ buid_frame_complement:
 	lds		REG_TEMP_R16, G_CALC_CRC8
 	; Fin: Calcul du CRC8 sur tous les bytes avec le 1st
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	mov		REG_X_LSB, REG_TEMP_R17
 	rcall		uos_print_1_byte_hexa_skip
 	movw		REG_X_LSB, REG_Y_LSB
@@ -1391,7 +1464,7 @@ ds18b20_send_frame_loop:
 ; Configuration des DS18B20
 ; ---------
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 ; ---------
 ; Conversion pour le DS18B20
 ;
@@ -1480,35 +1553,97 @@ convert_2_bytes_hexa_to_dec:
 ; ---------
 #endif
 
+#if !USE_USI || !USE_MINIMALIST_ADDONS
+; ---------
+; Comparaisons de temperatures
+; ---------
+compare_temperatures:
+	push	REG_TEMP_R16
+	push	REG_TEMP_R17
+	push	REG_TEMP_R18
+
+	; Temperature courante ramenee sur 8 bits signes
+	lds	REG_TEMP_R17, G_TEMP_CURRENT_MSB
+	lds	REG_TEMP_R16, G_TEMP_CURRENT_LSB
+	asr	REG_TEMP_R17
+	ror	REG_TEMP_R16
+	asr	REG_TEMP_R17
+	ror	REG_TEMP_R16
+	asr	REG_TEMP_R17
+	ror	REG_TEMP_R16
+	asr	REG_TEMP_R17
+	ror	REG_TEMP_R16
+	sts	G_TEMP_CURRENT, REG_TEMP_R16	; Tc sur 8 bits signes
+
+	lds	REG_TEMP_R18, G_ALARM_FRAME
+	sbr	REG_TEMP_R18, MSK_BIT_ALARM_CALCULATED
+
+compare_temperatures_test_high:
+	sbr	REG_TEMP_R18, MSK_BIT_ALARM_CALCULATED_HIGH	; A priori Tc >= Th
+	lds	REG_TEMP_R17, G_TEMP_THRESHOLD_HIGH				; REG_TEMP_R17 = Th
+	cp		REG_TEMP_R16, REG_TEMP_R17							; REG_TEMP_R16 = Tc
+	brge	compare_temperatures_test_low						; Tc >= Th ?
+
+	cbr	REG_TEMP_R18, MSK_BIT_ALARM_CALCULATED_HIGH	; Non (Tc < Th)
+
+compare_temperatures_test_low:
+	sbr	REG_TEMP_R18, MSK_BIT_ALARM_CALCULATED_LOW	; A priori Tl >= Tc
+	lds	REG_TEMP_R17, G_TEMP_THRESHOLD_LOW				; REG_TEMP_R17 = Tl
+	cp		REG_TEMP_R17, REG_TEMP_R16							; REG_TEMP_R16 = Tc
+	brge	compare_temperatures_end							; Tl >= Tc ?
+
+	cbr	REG_TEMP_R18, MSK_BIT_ALARM_CALCULATED_LOW	; Non (Tl < Tc) > (Tc >= Tl)
+
+compare_temperatures_end:
+	sts	G_ALARM_FRAME, REG_TEMP_R18
+
+	pop	REG_TEMP_R18
+	pop	REG_TEMP_R17
+	pop	REG_TEMP_R16
+
+	ret
+; ---------
+#endif
+
 text_prompt_ds18b20:
-#ifndef USE_MINIMALIST_ADDONS
-.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.38 $", CHAR_LF, CHAR_NULL
+#if !USE_MINIMALIST_ADDONS
+.db	"### ATtiny85_uOS+DS18B20 $Revision: 1.43 $", CHAR_LF, CHAR_NULL
 #else
-.db	"### ATtiny85_uOS+DS18B20 (Minimalist)", CHAR_LF, CHAR_NULL, CHAR_NULL
+;.db	"### ATtiny85_uOS+DS18B20 (Minimalist)", CHAR_LF, CHAR_NULL, CHAR_NULL
+.db	"### DS18B20", CHAR_LF, CHAR_NULL, CHAR_NULL
 #endif
 
 text_msk_table:
 .db	MSK_BIT0, MSK_BIT1, MSK_BIT2, MSK_BIT3
 .db	MSK_BIT4, MSK_BIT5, MSK_BIT6, MSK_BIT7
 
-;end:
-
 .include		"ATtiny85_uOS+DS18B20_Timers.asm"
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 .include		"ATtiny85_uOS+DS18B20_Commands.asm"
 #endif
 
 .include		"ATtiny85_uOS+DS18B20_1_Wire.asm"
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 .include		"ATtiny85_uOS+DS18B20_Button.asm"
 #endif
 
 .include		"ATtiny85_DS18B20_1_Wire_Commands.asm"
  
 .dseg
-G_SRAM_END_OF_USE:		.byte	1
+; Pas d'utilisation en mode 'USE_USI' ET 'USE_MINIMALIST_ADDONS'
+#if !USE_USI || !USE_MINIMALIST_ADDONS
+G_TEMP_CURRENT_MSB:			.byte		1		; Tc MSB
+G_TEMP_CURRENT_LSB:			.byte		1		; Tc LSB
+G_TEMP_THRESHOLD_HIGH:		.byte		1		; Th sur 8 bits signes
+G_TEMP_CURRENT:				.byte		1		; Tc sur 8 bits signes
+G_TEMP_THRESHOLD_LOW:		.byte		1		; Tl sur 8 bits signes
+#endif
+
+G_ALARM_FRAME:					.byte		1		; Bilan des alarmes recherchees et calculees a emettre
+
+G_SRAM_END_OF_USE:			.byte		1
 
 ; End of file
 

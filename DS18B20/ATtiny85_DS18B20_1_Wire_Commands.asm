@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.23 2025/12/17 22:40:58 administrateur Exp $
+; "$Id: ATtiny85_DS18B20_1_Wire_Commands.asm,v 1.27 2026/01/05 13:52:45 administrateur Exp $
 
 .include		"ATtiny85_DS18B20_1_Wire_Commands.h"
 
@@ -28,7 +28,7 @@ ds18b20_read_rom:
 	rcall		ds18b20_write_8_bits_command
 	rcall		ds18b20_read_response_64_bits
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R18, 4
 	rcall		ds18b20_print_response
 #endif
@@ -64,7 +64,7 @@ ds18b20_convert_t:
 	rcall		ds18b20_write_8_bits_command
 	rcall		ds18b20_read_response_72_bits
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'C'
 	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R18, 5
@@ -88,7 +88,7 @@ ds18b20_read_scratchpad:
 	rcall		ds18b20_write_8_bits_command
 	rcall		ds18b20_read_response_72_bits
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'T'
 	call		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R18, 5
@@ -118,7 +118,7 @@ ds18b20_read_scratchpad_ok:
 	sbrc		REG_TEMP_R17, FLG_DS18B20_FRAMES_IDX
 	rcall		build_frame_infos
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'O'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R16, 'k'
@@ -127,10 +127,9 @@ ds18b20_read_scratchpad_ok:
 #endif
 
 	rjmp		ds18b20_read_scratchpad_end
-	nop
 
 ds18b20_read_scratchpad_ko:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'K'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 	ldi		REG_TEMP_R16, 'o'
@@ -167,14 +166,14 @@ ds18b20_match_rom:
 	push		REG_TEMP_R16
 	push		REG_TEMP_R16
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'M'
 	call		uos_push_1_char_in_fifo_tx_skip
 #endif
 
 	pop		REG_X_LSB
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
 #endif
@@ -184,12 +183,12 @@ ds18b20_match_rom:
 	pop		REG_X_MSB
 	; Fin: Emission du ROM #N
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_rom_send
-#endif
 
 	; Attente du vidage de la FIFO/Tx
 	_CALL		uos_fifo_tx_to_send_sync
+#endif
 
 	cli
 
@@ -269,7 +268,7 @@ ds18b20_search_rom_cont_d:
 	clr		REG_TEMP_R16
 	sts		G_DS18B20_NBR_BITS_0_1, REG_TEMP_R16
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'P'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 	lds		REG_X_LSB, G_DS18B20_PATTERN
@@ -371,7 +370,7 @@ ds18b20_search_rom_loop_01:
 	rjmp		ds18b20_search_rom_end
 
 ds18b20_search_rom_no_device:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 #endif
@@ -382,13 +381,13 @@ ds18b20_search_rom_abort:
 	ldi		REG_X_LSB, 64
 	sub		REG_X_LSB, REG_TEMP_R18
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 #endif
 
 	mov		REG_X_LSB, REG_TEMP_R17
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
 #endif
@@ -400,13 +399,13 @@ ds18b20_search_rom_end:
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_response
 #endif
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_rom
 #endif
 
@@ -428,7 +427,7 @@ ds18b20_search_rom_end:
 	brpl		ds18b20_search_rom_rtn
 
 ds18b20_search_rom_found:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 #endif
@@ -436,7 +435,7 @@ ds18b20_search_rom_found:
 	lds		REG_X_LSB, G_DS18B20_NBR_BITS_RETRY
 	rcall		uos_print_1_byte_hexa_skip
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, '?'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 
@@ -504,6 +503,7 @@ ds18b20_copy_scratchpad:
 	ret
 ; ---------
 
+#if !USE_MINIMALIST_ADDONS				; Pas de recherche en alarme
 ; ---------
 ; CMD_SEARCH_ALARM
 ; ---------
@@ -536,16 +536,16 @@ ds18b20_search_alr_cont_d:
 	clr		REG_TEMP_R16
 	sts		G_DS18B20_ALR_NBR_BITS_0_1, REG_TEMP_R16
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'P'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 	lds		REG_X_LSB, G_DS18B20_ALR_PATTERN
 	rcall		uos_print_1_byte_hexa_skip
 
 	rcall		uos_print_line_feed_skip
-#endif
 
 	_CALL		uos_fifo_tx_to_send_sync
+#endif
 
 	; Reset
 	rcall		ds18b20_reset
@@ -627,7 +627,6 @@ ds18b20_search_alr_loop_1:
 	rcall		ds18b20_shift_right_rom
 
 	sec
-	;rjmp		ds18b20_search_alr_loop_01
 
 ds18b20_search_alr_loop_01:
 
@@ -639,7 +638,7 @@ ds18b20_search_alr_loop_01:
 	rjmp		ds18b20_search_alr_end
 
 ds18b20_search_alr_no_device:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 #endif
@@ -650,13 +649,13 @@ ds18b20_search_alr_abort:
 	ldi		REG_X_LSB, 64
 	sub		REG_X_LSB, REG_TEMP_R18
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 #endif
 
 	mov		REG_X_LSB, REG_TEMP_R17
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		uos_print_1_byte_hexa_skip
 	rcall		uos_print_line_feed_skip
 #endif
@@ -668,13 +667,13 @@ ds18b20_search_alr_end:
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_response
 #endif
 
 	ldi		REG_TEMP_R18, DS18B20_NBR_ROM_GESTION
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	rcall		ds18b20_print_rom
 #endif
 
@@ -697,7 +696,7 @@ ds18b20_search_alr_end:
 	push		REG_TEMP_R16
 	push		REG_TEMP_R16
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, '#'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 	pop		REG_X_LSB
@@ -740,7 +739,7 @@ ds18b20_search_alr_end:
 	brpl		ds18b20_search_alr_rtn
 
 ds18b20_search_alr_found:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	ldi		REG_TEMP_R16, 'N'
 	_CALL		uos_push_1_char_in_fifo_tx_skip
 	lds		REG_X_LSB, G_DS18B20_ALR_NBR_BITS_RETRY
@@ -752,9 +751,8 @@ ds18b20_search_alr_found:
 	rcall		uos_print_1_byte_hexa_skip
 
 	rcall		uos_print_line_feed_skip
-#endif
-
 	_CALL		uos_fifo_tx_to_send_sync
+#endif
 
 	lds		REG_TEMP_R19, G_DS18B20_ALR_NBR_BITS_RETRY
 	dec		REG_TEMP_R19
@@ -769,6 +767,7 @@ ds18b20_search_alr_found:
 ds18b20_search_alr_rtn:
 	ret
 ; ---------
+#endif				; Pas de recherche en alarme
 
 ; ---------
 ; Gestion du "scratchpad"
@@ -820,7 +819,7 @@ ds18b20_match_rom_x_loop:
 	rjmp		ds18b20_match_rom
 
 ds18b20_match_rom_x_not_detect:
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 	; ROM non detecte
    ldi      REG_TEMP_R17, '?'
 	rcall		uos_print_mark_skip

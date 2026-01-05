@@ -1,9 +1,9 @@
-; "$Id: ATtiny85_uOS+DS18B20.h,v 1.19 2025/12/17 09:20:55 administrateur Exp $"
+; "$Id: ATtiny85_uOS+DS18B20.h,v 1.21 2026/01/05 13:52:45 administrateur Exp $"
 
 #define	USE_DS18B20_TRACE				0
 
 ; Support de 4 capteurs ('DS18B20_NBR_ROM_TO_DETECT' inferieur ou egal a 'DS18B20_NBR_ROM_GESTION')
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 #define	DS18B20_NBR_ROM_TO_DETECT	4
 #else
 #define	DS18B20_NBR_ROM_TO_DETECT	2
@@ -17,7 +17,7 @@
 ; Remarque: 8 timers minimum definis dans uOS (cf. 'ATtiny85_uOS_Timers.h')
 #define	DS18B20_TIMER_1_SEC			(NBR_TIMER - 1)	; Timer pour les mesures des temperatures et les emissions de trames
 
-#ifndef USE_MINIMALIST_ADDONS
+#if !USE_MINIMALIST_ADDONS
 #define	CHAR_TYPE_COMMAND_C_MAJ		'C'
 #define	CHAR_TYPE_COMMAND_T_MAJ		'T'
 #endif
@@ -37,6 +37,12 @@
 
 #define	EEPROM_ADDR_NBR_DS18B20_TO_DETECT			15
 #define	EEPROM_ADDR_PRIMES								16
+
+#define	MSK_BIT_ALARM_SEARCH					MSK_BIT7		; 1 si alarme recherchee ET trouvee
+#define	MSK_BIT_ALARM_FOUND					MSK_BIT6		; 1 si Tc >= Th ou Tc <= Tl si 'MSK_BIT_ALARM_SEARCH' affirme
+#define	MSK_BIT_ALARM_CALCULATED			MSK_BIT5		; 1 si alarme calculee
+#define	MSK_BIT_ALARM_CALCULATED_HIGH		MSK_BIT4		; 1 si alarme calculee (Tc >= Th)
+#define	MSK_BIT_ALARM_CALCULATED_LOW		MSK_BIT3		; 1 si alarme calculee (Tc <= Tl)
 
 .dseg
 

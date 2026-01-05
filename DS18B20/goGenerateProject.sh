@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.14 2025/12/15 22:42:27 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.19 2026/01/05 15:48:38 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
@@ -59,22 +59,25 @@ rm -f ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_MAP} ${PROJECTS_FILE}.$
 
 echo
 echo "################## Production of '${PROJECTS_FILE}' ##################"
-#
 # Directives d'assemblage:
-# -D USE_MINIMALIST_UOS    -> Production de la version minimaliste a destination de la production de uOS
-# -D USE_MINIMALIST_ADDONS -> Production de la version minimaliste a destination de la production des ADDONS
+# - USE_USI=0               -> Non utilisation de l'Universal Serial Interface
+# - USE_USI=1               -> Utilisation de l'Universal Serial Interface
+# - USE_MINIMALIST_UOS=0    -> Production de la version non minimaliste (ATtiny85)
+# - USE_MINIMALIST_UOS=1    -> Production de la version minimaliste (ATtiny45)
+# - USE_MINIMALIST_ADDONS=0 -> Production des ADDONS mode non minimaliste (ATtiny85)
+# - USE_MINIMALIST_ADDONS=1 -> Production des ADDONS mode minimaliste (ATtiny45)
+#   => Configuration attendue:
+#      - "USE_MINIMALIST_UOS=0" ET "USE_MINIMALIST_ADDONS=0" => La pile d'appel est 0x25F (ATtiny85)
+#      - "USE_MINIMALIST_UOS=1" ET "USE_MINIMALIST_ADDONS=1" => La pile d'appel est 0x15F (ATtiny45)
+#      => Les autres combinaisons produiront l'erreur "Found no label/variable/constant named ATTINY_RAMEND"
 
-# Version totalement 'Minimaliste' destinee a un ATtiny45 (uOS et ADDONS)
-#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST_UOS -D USE_MINIMALIST_ADDONS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
-
-# Version partiellement 'Minimaliste' @ADDONS destinee a un ATtiny85 (ADDONS uniquement pour developpement))
-#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST_ADDONS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
-
-# Version partiellement 'Minimaliste' @uOS destinee a un ATtiny85 (uOS uniquement pour developpement))
-#${AVRA_BIN} -D USE_ADDONS -D USE_MINIMALIST_UOS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+_USE_USI="USE_USI=0"
+_USE_MINIMALIST_UOS="USE_MINIMALIST_UOS=0"
+_USE_MINIMALIST_ADDONS="USE_MINIMALIST_ADDONS=0"
 
 # Version destinee a un ATtiny85
-${AVRA_BIN} -D USE_ADDONS -I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+${AVRA_BIN} -D USE_ADDONS -D ${_USE_MINIMALIST_UOS} -D ${_USE_USI} -D ${_USE_MINIMALIST_ADDONS} \
+	-I ${PROJECTS} -I ${AVRA_INC} -I ../uOS -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
 if [ ! -f ${PROJECTS_FILE}.${EXT_LST} ]; then
 	echo "Error: No build ;-("	
