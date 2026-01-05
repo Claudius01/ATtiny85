@@ -73,5 +73,37 @@ https://crccalc.com/?crc=02280140130f80&method=CRC-8/MAXIM-DOW&datatype=hex&outt
 @ => Result [0x7A]
 @ -------------
 
+@ La détection des seuils d'alarme par comparaison est également implémentée
+[18:47:29.636348]] # 1890: [[$c101000900002d0200280128130aa2ec01280134110ff02c51]]
+Frame     [c101000900002d0200280128130aa2ec01280134110ff02c51] (50 bytes)
+		- Header [c101000900002d02]
+			- Type Platine [0xc1]
+			- Id Platine   [0x01]
+			- Num frames   [0x0009] (9)
+			- Timestamp    [0x00002d] (Platine: 00:00:45) @ (System: 02:04:13) (Diff: -02:03:28)
+		- Nbr Capteurs [2]
+			#1: [00280128130aa2ec] (16 bytes)
+				- Id Capteur   [0x00]
+				- Famille      [0x28]
+				- Tc           [0x0128] (18.5 degrees)
+				- Th           [0x13]   (19.0 degrees)
+				- Tl           [0x0a]   (10.0 degrees)
+				- Resolution                 [0x02]
+				- Alarm search               [Yes]
+				- Alarm search and found     [No]
+				- Alarm calculated           [Yes]
+				- Alarm calculated and found [No]
+			#2: [01280134110ff02c] (16 bytes)
+				- Id Capteur   [0x01]
+				- Famille      [0x28]
+				- Tc           [0x0134] (19.2 degrees)
+				- Th           [0x11]   (17.0 degrees)
+				- Tl           [0x0f]   (15.0 degrees)
+				- Resolution                 [0x00]
+				- Alarm search               [Yes]
+				- Alarm search and found     [Yes]
+				- Alarm calculated           [Yes]
+				- Alarm calculated and found [High]
+
 # Fin du fichier
  
