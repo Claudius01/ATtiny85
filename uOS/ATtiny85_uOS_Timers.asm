@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Timers.asm,v 1.23 2025/12/15 22:42:20 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Timers.asm,v 1.28 2026/01/03 15:44:35 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Timers.h"
 
@@ -265,7 +265,7 @@ get_address_timer_err:
 	ret
 ; ---------
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 ; ---------
 ; TIMER_CONNECT
 ; ---------
@@ -296,7 +296,6 @@ exec_timer_error:
 	ret
 ; ---------
 
-#ifndef USE_MINIMALIST_UOS
 ; ---------
 ; TIMER_APPUI_BOUTON_LED
 ; ---------
@@ -325,10 +324,20 @@ exec_timer_push_button_detect:
 	rcall		start_timer
 	; Fin: Presentation flash de 300mS sur Led YELLOW
 
+	; En mode 'USE_USI', l'emission du prompt et du dump SRAM
+	; peuvent de pas etre effectues compte-tenu de la condition
+	; 'Rx' a l'etat haut pour emettre (fin des rebonds)
+	; => L'appui bouton est toujours effectif pour effectuer
+	;    l'action associee ;-)
+
 	; Emission du prompt de l'appui button
 	ldi		REG_Z_MSB, ((text_appui_bouton << 1) / 256)
 	ldi		REG_Z_LSB, ((text_appui_bouton << 1) % 256)
 	rcall		push_text_in_fifo_tx
+
+#if USE_DUMP_SRAM
+	rcall		dump_sram_read
+#endif
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 
@@ -340,6 +349,7 @@ exec_timer_push_button_detect_rtn:
 	ret
 ; ---------
 
+#if !USE_MINIMALIST_UOS
 ; ---------
 ; TIMER_RXD_ANTI_REBONDS
 ; ---------
@@ -389,33 +399,10 @@ exec_timer_led_green_more:									; Ici, G_CHENILLARD_MSB<7> reflete la Carry
 	ret
 ; ---------
 
-#if USE_DUMP_SRAM
-; ---------
-exec_timer_dump_sram:
-	ldi		REG_Z_MSB, high(text_dump_sram << 1)
-	ldi		REG_Z_LSB, low(text_dump_sram << 1)
-	rcall		push_text_in_fifo_tx
-
-	rcall		dump_sram_read
-
-	;Reinitialisation timer 'TIMER_DUMP_SRAM'
-	ldi		REG_TEMP_R17, TIMER_DUMP_SRAM
-	ldi		REG_TEMP_R18, (10000 % 256)
-	ldi		REG_TEMP_R19, (10000 / 256)
-	ldi		REG_TEMP_R20, low(exec_timer_dump_sram)
-	ldi		REG_TEMP_R21, high(exec_timer_dump_sram)
-	rcall		start_timer
-
-	ret
-; ---------
-#endif
-
-#ifndef USE_MINIMALIST_UOS
 text_appui_bouton:
 .db	"### uOS: Button action", CHAR_LF, CHAR_NULL
-#endif
 
-#if 1
+#if USE_DUMP_SRAM
 text_dump_sram:
 .db	"### Dump SRAM...", CHAR_LF, CHAR_NULL
 #endif

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS.asm,v 1.35 2025/12/17 22:16:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS.asm,v 1.47 2026/01/03 15:44:35 administrateur Exp $"
 
 ; - Projet: ATtiny85_uOS.asm
 ;
@@ -14,21 +14,21 @@
 .cseg
 .org	0x0000 
 	; Table des 15 vecteurs d'interruption
-	rjmp		main					; Vector:  1 - reset
-	rjmp		int0_isr				; Vector:  2 - int0_isr
-	rjmp		pcint0_isr			; Vector:  3 - pcint0_isr
-	rjmp		tim1_compa_isr		; Vector:  4 - tim1_compa_isr
-	rjmp		tim1_ovf_isr		; Vector:  5 - tim1_ovf_isr
-	rjmp		tim0_ovf_isr		; Vector:  6 - tim0_ovf_isr
-	rjmp		ee_rdy_isr			; Vector:  7 - ee_rdy_isr
-	rjmp		ana_cmp_isr			; Vector:  8 - ana_cmp_isr
-	rjmp		adc_isr				; Vector:  9 - adc_isr
-	rjmp		tim1_compb_isr		; Vector: 10 - tim1_compb_isr
-	rjmp		tim0_compa_isr		; Vector: 11 - tim0_compa_isr
-	rjmp		tim0_compb_isr 	; Vector: 12 - tim0_compb_isr
-	rjmp		wdt_isr				; Vector: 13 - wdt_isr
-	rjmp		usi_start_isr		; Vector: 14 - usi_start_isr
-	rjmp		usi_ovf_isr			; Vector: 15 - usi_ovf_isr
+	rjmp		main					; Vector:  0 - reset
+	rjmp		int0_isr				; Vector:  1 - int0_isr
+	rjmp		pcint0_isr			; Vector:  2 - pcint0_isr
+	rjmp		tim1_compa_isr		; Vector:  3 - tim1_compa_isr
+	rjmp		tim1_ovf_isr		; Vector:  4 - tim1_ovf_isr
+	rjmp		tim0_ovf_isr		; Vector:  5 - tim0_ovf_isr
+	rjmp		ee_rdy_isr			; Vector:  6 - ee_rdy_isr
+	rjmp		ana_cmp_isr			; Vector:  7 - ana_cmp_isr
+	rjmp		adc_isr				; Vector:  8 - adc_isr
+	rjmp		tim1_compb_isr		; Vector:  9 - tim1_compb_isr
+	rjmp		tim0_compa_isr		; Vector: 10 - tim0_compa_isr
+	rjmp		tim0_compb_isr 	; Vector: 11 - tim0_compb_isr
+	rjmp		wdt_isr				; Vector: 12 - wdt_isr
+	rjmp		usi_start_isr		; Vector: 13 - usi_start_isr
+	rjmp		usi_ovf_isr			; Vector: 14 - usi_ovf_isr
 
 	nop		; Evite le message "Warning : Improve: Skip equal to 0"
 
@@ -40,11 +40,14 @@ ee_rdy_isr:
 ana_cmp_isr:
 adc_isr:
 tim1_compb_isr:
-tim0_compa_isr:
 tim0_compb_isr:
 wdt_isr:
 usi_start_isr:
+
+#if !USE_USI		; Invalid Its
+tim0_compa_isr:
 usi_ovf_isr:
+#endif
 
 	rjmp		forever_2
 
@@ -96,16 +99,6 @@ setup:	; Remarque: Equivalent de la methode 'setup()' dans l'ecosysteme Arduino 
 	ldi		REG_TEMP_R21, high(exec_timer_led_green)
 	rcall		start_timer
 
-#if USE_DUMP_SRAM
-	; Initialisation timer 'TIMER_DUMP_SRAM'
-	ldi		REG_TEMP_R17, TIMER_DUMP_SRAM
-	ldi		REG_TEMP_R18, (10000 % 256)
-	ldi		REG_TEMP_R19, (10000 / 256)
-	ldi		REG_TEMP_R20, low(exec_timer_dump_sram)
-	ldi		REG_TEMP_R21, high(exec_timer_dump_sram)
-	rcall		start_timer
-#endif
-
 	sei						; Set all interrupts for send prompts
 
 setup_cold:
@@ -115,20 +108,12 @@ setup_cold:
 	ldi		REG_Z_LSB, ((text_whoami << 1) % 256)
 	rcall		push_text_in_fifo_tx
 
-;#ifndef USE_MINIMALIST_UOS
 	rcall		set_infos_from_eeprom
-;#endif
-
-#if USE_DUMP_SRAM
-	rcall		dump_sram_read
-#endif
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
 	; Fin: Preparation emission des prompts d'accueil ('whoami' et 'eeprom')
 
-#if 1
 	rcall		addon_search_methods
-#endif
 
 	ldi		REG_TEMP_R17, EXTENSION_SETUP
 	rcall		exec_extension_addon
@@ -154,18 +139,22 @@ loop_1_ms:
 
 	; Traitements toutes les 1mS
 	; ---
-#ifndef USE_MINIMALIST_UOS
-	; Presentation etat 'Detect Line Idle'
+#if !USE_MINIMALIST_UOS
+#if !USE_USI
+	; Presentation etat 'Detect Line Idle' sur UART/Rx dans le cas non 'USE_USI'
+	; - Si 'USE_USI' -> Implementation 'Hardware'
+	; - Sinon        -> Implementation 'Sofware'
 	rcall		test_detect_line_idle
 #endif
+#endif
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 	; Presentation sur Led GREEN mode "Connecte/Non Connecte"
 	rcall		presentation_connexion
 #endif
 
-#ifndef USE_MINIMALIST_UOS
-	; Interpretation de la commande recue
+#if !USE_MINIMALIST_UOS
+	; Interpretation de la commande recue (pas de commande en 'Minimalist')
 	rcall		interpret_command
 #endif
 
@@ -183,8 +172,10 @@ loop_background:
 	;    => Traitement en fond de tache pour cadencer l'emission au max des 9600 bauds
 	rcall		fifo_tx_to_send_async
 
+#if !USE_MINIMALIST_UOS
 	; Presentation erreurs sur Led RED Externe
 	rcall		presentation_error
+#endif
 
 	ldi		REG_TEMP_R17, EXTENSION_BACKGROUND
 	rcall		exec_extension_addon
@@ -254,10 +245,18 @@ exec_extension_addon_rtn:
 ; -----------
 
 text_whoami:
-#ifndef USE_MINIMALIST_UOS
-.db	"### ATtiny85_uOS $Revision: 1.35 $", CHAR_LF, CHAR_NULL
+#if !USE_MINIMALIST_UOS
+#if USE_USI
+.db	"### ATtiny85_uOS (USI) $Revision: 1.47 $", CHAR_LF, CHAR_NULL
 #else
-.db	"### ATtiny85_uOS (Minimalist) $Revision: 1.35 $", CHAR_LF, CHAR_NULL, CHAR_NULL
+.db	"### ATtiny85_uOS $Revision: 1.47 $", CHAR_LF, CHAR_NULL
+#endif
+#else
+#if USE_USI
+.db	"### ATtiny85_uOS (USI+Minimalist) $Revision: 1.47 $", CHAR_LF, CHAR_NULL, CHAR_NULL
+#else
+.db	"### ATtiny85_uOS (Minimalist) $Revision: 1.47 $", CHAR_LF, CHAR_NULL, CHAR_NULL
+#endif
 #endif
 
 .include		"ATtiny85_uOS_Macros.def"
@@ -265,10 +264,16 @@ text_whoami:
 .include		"ATtiny85_uOS_Misc.asm"
 .include		"ATtiny85_uOS_Interrupts.asm"
 .include		"ATtiny85_uOS_Timers.asm"
-.include		"ATtiny85_uOS_Uart.asm"
+
+#if USE_USI
+.include		"ATtiny85_uOS_Hardware_Uart.asm"		; Version materielle de la gestion de l'UART (USI)
+#else
+.include		"ATtiny85_uOS_Software_Uart.asm"		; Version logicielle de la gestion de l'UART
+#endif
+
 .include		"ATtiny85_uOS_Eeprom.asm"
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 .include		"ATtiny85_uOS_Commands.asm"
 #endif
 
@@ -277,12 +282,16 @@ text_whoami:
 end_of_prg_uos:		; Adresse de fin de uOS
 
 ; Inclusion de 'ATtiny85_uOS_Test_Addons.asm':
-; - Si la directive USE_ADDON n'est pas definie
+; - Si la directive USE_ADDONS n'est pas definie
 ;   => Car un programme addon est attendu
-; - Et si la directive USE_MINIMALIST_UOS est definie
-;   => Car le commandes de monitoring ne sont pas implementees
+; - Et si la directive USE_MINIMALIST_UOS est definie a 1
+;   => Car les commandes de monitoring ne sont pas implementees
+;      => Ce programme 'ATtiny85_uOS_Test_Addons.asm' permet entre autre
+;         de dumper la memoire SRAM pour connaitre la profondeur de la
+;         pile d'appel ;-)
+
 #ifndef USE_ADDONS
-#ifdef USE_MINIMALIST_UOS
+#if USE_MINIMALIST_UOS
 .include		"ATtiny85_uOS_Test_Addons.asm"	; Test ADDON into uOS
 #endif
 

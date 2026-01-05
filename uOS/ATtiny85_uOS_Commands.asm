@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Commands.asm,v 1.14 2025/12/12 15:41:46 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Commands.asm,v 1.15 2026/01/05 15:48:31 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Commands.h"
 
@@ -396,6 +396,8 @@ exec_command_A_rtn:
 ; ---------
 ; Execution de la commande 'B'
 ;
+; TODO: Application avec 'USE_USI' affirme
+;
 ; Reprogrammation du Baud Rate
 ; - "<B0": 19200 bauds
 ; - "<B1":  9600 bauds
@@ -406,6 +408,9 @@ exec_command_A_rtn:
 ; - "<B6":   300 bauds
 ; ---------
 exec_command_type_B:
+#if USE_USI
+	rjmp		exec_command_type_B_ko			; Not yet implemented in 'USE_USI'
+#else
 	; Recuperation de l'index
 	clr		REG_X_MSB
 	lds		REG_X_LSB, G_TEST_VALUE_LSB
@@ -445,6 +450,7 @@ exec_command_type_B_ok:			; -> Yes (adresse de copie dans la plage ;-)
 
 	rcall		print_command_ok			; Commande executee
 	ret
+#endif
 
 exec_command_type_B_ko:					; -> No (adresse de copie hors de la plage ;-)
 	rcall		print_command_ko			; Commande non executee (index trop grand)

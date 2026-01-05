@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.6 2025/12/14 17:28:44 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Interrupts.asm,v 1.26 2026/01/03 15:44:35 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Interrupts.h"
 
@@ -9,8 +9,7 @@
 ; Methode appele a chaque expiration du timer #1 interne (26 uS)
 ;
 ; => Traitements (Nbr de cycles maximal):
-;    0 - Entree dans l'It + gestion de la pulse         -> 33 cycles max
-;
+;    0 - Entree dans l'It + gestion de la pulse                                     -> 33 cycles max
 ;    1 - tim1_compa_isr_acq_rxd:     Acquisition de RXD pour detection ligne IDLE   -> 18 cycles max
 ;    2 - tim1_compa_isr_tx_send_bit: Emission d'un bit sur TXD + uart_fifo_rx_write -> 39 + 30 cycles max
 ;    3 - tim1_compa_isr_rx_rec_bit:  Reception d'un bit sur RXD                     -> 67 cycles max
@@ -43,7 +42,6 @@ tim1_compa_isr:
 	push		REG_TEMP_R21
 	push		REG_TEMP_R22
 
-; ---------
 	; Determination du comportement
 	lds		REG_TEMP_R16, G_BEHAVIOR
 	sbrs		REG_TEMP_R16, FLG_BEHAVIOR_MARK_IN_TIM1_COMPA_IDX
@@ -56,9 +54,80 @@ tim1_compa_isr:
 	cbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
 
 tim1_compa_isr_more:
-	out		PORTB, REG_PORTB_OUT						; Raffraichissement du PORTB
+	rcall		refresh_portb
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_USI
+	rcall		tim1_compa_isr_soft		; Traitement soft de l'UART/Rx et UART/TX
+#endif
+
+	; Comptabilisation de 1 mS
+tim1_compa_isr_cpt_1ms:
+	; => Si 'FLG_0_PERIODE_1MS' est a 1 (1mS atteinte a la precedente It) => Ne rien faire en attendre
+	;       que 'FLG_0_PERIODE_1MS' passe a 0
+	; => Sinon; si 'G_TICK_1MS' passe a 0 (1mS atteinte) => 'FLG_0_PERIODE_1MS' = 1 => Non maj 'G_TICK_1MS'
+	;    Sinon decrementation et maj 'G_TICK_1MS'
+	;
+	sbrc		REG_FLAGS_0, FLG_0_PERIODE_1MS_IDX
+	rjmp		tim1_compa_isr_cpt_1ms_end
+
+	lds		REG_X_LSB, G_TICK_1MS
+	tst		REG_X_LSB							; X ?= 0
+	brne		tim1_compa_isr_cpt_1ms_dec		; 
+
+	sbr		REG_FLAGS_0, FLG_0_PERIODE_1MS_MSK		; Oui: Set 'FLG_0_PERIODE_1MS'
+	rjmp		tim1_compa_isr_cpt_1ms_end					; Fin sans maj de 'G_TICK_1MS'
+
+tim1_compa_isr_cpt_1ms_dec:
+	subi		REG_X_LSB, 1			
+	sts		G_TICK_1MS, REG_X_LSB
+
+tim1_compa_isr_cpt_1ms_end:
+	; Fin: Comptabilisation de 1 mS
+
+; ---------
+	; Reecriture des flags generaux
+
+	; Fin: Creneau --\_/---
+	; => Pas de maj de 'REG_PORTB_OUT' si Led RED Externe allumee (sortie a 0)
+	;    => Revient a ne pas generer la Pulse --\_/----
+	sbrs		REG_FLAGS_1, FLG_1_LED_RED_ON_IDX
+	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	rcall		refresh_portb
+
+	; Qualification 'delay_1uS'
+	lds		REG_TEMP_R17, G_BEHAVIOR
+	sbrs		REG_TEMP_R17, FLG_BEHAVIOR_CALIBRATION_1_uS
+	rjmp		tim1_compa_isr_cpt_1ms_rtn
+
+	cbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	rcall		refresh_portb
+
+	rcall		uos_delay_10uS
+
+	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	rcall		refresh_portb
+	; Fin: Qualification 'delay_1uS'
+
+tim1_compa_isr_cpt_1ms_rtn:
+	pop		REG_TEMP_R22
+	pop		REG_TEMP_R21
+	pop		REG_TEMP_R20
+	pop		REG_TEMP_R19
+	pop		REG_TEMP_R18
+	pop		REG_TEMP_R17
+	pop		REG_TEMP_R16
+	pop		REG_X_MSB
+	pop		REG_X_LSB
+
+	out		SREG, REG_SAVE_SREG
+	pop		REG_SAVE_SREG
+
+	reti
+; ---------
+
+; ---------
+tim1_compa_isr_soft:
+#if !USE_MINIMALIST_UOS
 ; ---------
 	; Lecture RXD pour detecter la ligne IDLE si pas deja detectee
 	sbrc		REG_FLAGS_0, FLG_0_UART_DETECT_LINE_IDLE_IDX		; Line IDLE detectee ?
@@ -98,10 +167,10 @@ tim1_compa_isr_acq_rxd_end:
 tim1_compa_isr_tx_send_bit:
 	sbrs		REG_FLAGS_0, FLG_0_UART_TX_TO_SEND_IDX			; Byte a emettre TXD ?
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 	rjmp		tim1_compa_isr_rx_rec_bit							; Non
 #else
-	rjmp		tim1_compa_isr_cpt_1ms								; Non
+	rjmp		tim1_compa_isr_soft_end
 #endif
 
 	lds		REG_TEMP_R18, G_UART_CPT_NBR_BITS_TX			; Oui: Compteur de bits [11, 10, 9, ..., 0]
@@ -154,7 +223,7 @@ tim1_compa_isr_tx_send_bit_update:
 tim1_compa_isr_tx_send_bit_end:
 	; Fin: Emission d'un bit sur TXD
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 ; ---------
 	; Reception d'un bit sur RXD
 	; => Acquisition si 'FLG_0_UART_DETECT_LINE_IDLE' et 'FLG_0_UART_DETECT_BIT_START' a 1 
@@ -276,74 +345,72 @@ tim1_compa_isr_rx_rec_bit_dec_duration:
 
 tim1_compa_isr_rx_rec_bit_end:
 	; Fin: Reception d'un bit sur RXD
-; ---------
 #endif
 
-	; Comptabilisation de 1 mS
-tim1_compa_isr_cpt_1ms:
-	; => Si 'FLG_0_PERIODE_1MS' est a 1 (1mS atteinte a la precedente It) => Ne rien faire en attendre
-	;       que 'FLG_0_PERIODE_1MS' passe a 0
-	; => Sinon; si 'G_TICK_1MS' passe a 0 (1mS atteinte) => 'FLG_0_PERIODE_1MS' = 1 => Non maj 'G_TICK_1MS'
-	;    Sinon decrementation et maj 'G_TICK_1MS'
-	;
-	sbrc		REG_FLAGS_0, FLG_0_PERIODE_1MS_IDX
-	rjmp		tim1_compa_isr_cpt_1ms_end
-
-	lds		REG_X_LSB, G_TICK_1MS
-	tst		REG_X_LSB							; X ?= 0
-	brne		tim1_compa_isr_cpt_1ms_dec		; 
-
-	sbr		REG_FLAGS_0, FLG_0_PERIODE_1MS_MSK		; Oui: Set 'FLG_0_PERIODE_1MS'
-	rjmp		tim1_compa_isr_cpt_1ms_end					; Fin sans maj de 'G_TICK_1MS'
-
-tim1_compa_isr_cpt_1ms_dec:
-	subi		REG_X_LSB, 1			
-	sts		G_TICK_1MS, REG_X_LSB
-
-tim1_compa_isr_cpt_1ms_end:
-	; Fin: Comptabilisation de 1 mS
+tim1_compa_isr_soft_end:
+	ret
+; ---------
 
 ; ---------
-	; Reecriture des flags generaux
+; pcint0_isr
+;
+#if USE_USI		; [
+; Traitement de l'etat bas de RX pour l'USI/UART
+; => Prise en compte si Rx a l'etat bas (startbit)
+;    => La gestion de l'appui bouton n'est plus effectuee ici ;-)
+pcint0_isr:
+	push		REG_SAVE_SREG
+	in			REG_SAVE_SREG, SREG
 
-	; Fin: Creneau --\_/---
-	; => Pas de maj de 'REG_PORTB_OUT' si Led RED Externe allumee (sortie a 0)
-	;    => Revient a ne pas generer la Pulse --\_/----
-	sbrs		REG_FLAGS_1, FLG_1_LED_RED_ON_IDX
-	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
-	out		PORTB, REG_PORTB_OUT				; Raffraichissement du PORTB
+	; Only react if Pin is low (startbit)
+	sbic		PINB, IDX_BIT_RXD
+	rjmp		pcint0_isr_end
 
-	; Qualification 'delay_1uS'
-	lds		REG_TEMP_R17, G_BEHAVIOR
-	sbrs		REG_TEMP_R17, FLG_BEHAVIOR_CALIBRATION_1_uS
-	rjmp		tim1_compa_isr_cpt_1ms_rtn
+	push		REG_TEMP_R16
+	push		REG_R1
+	eor		REG_R1, REG_R1
 
-	cbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
-	out		PORTB, REG_PORTB_OUT				; Raffraichissement du PORTB
+	; PCMSK = 0;
+	out		PCMSK, REG_R1
 
-	rcall		uos_delay_10uS
+	; TCNT0 = 0;
+	out		TCNT0, REG_R1
 
-	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
-	out		PORTB, REG_PORTB_OUT				; Raffraichissement du PORTB
-	; Fin: Qualification 'delay_1uS'
+	; OCR0A fournit la vitesse d'emission et reception
+#if 0
+	; OCR0A = (uint8_t)(TIMER_TICK + TIMER_TICK / 2);
+	ldi		REG_TEMP_R16, 0x27
+#else
+	; OCR0A = (uint8_t)TIMER_TICK;
+	ldi		REG_TEMP_R16, 0x1A
+#endif
 
-tim1_compa_isr_cpt_1ms_rtn:
-	pop		REG_TEMP_R22
-	pop		REG_TEMP_R21
-	pop		REG_TEMP_R20
-	pop		REG_TEMP_R19
-	pop		REG_TEMP_R18
-	pop		REG_TEMP_R17
+	out		OCR0A, REG_TEMP_R16
+
+	; Clear flag
+	; TIFR = _BV(OCF0A);
+	ldi		REG_TEMP_R16, (1 << OCF0A)
+	out		TIFR, REG_TEMP_R16
+
+	; USI settings
+	; USISR = _BV(USIOIF) | _BV(USICNT3);
+	ldi		REG_TEMP_R16, ((1 << USIOIF) | (1 << USICNT3))
+ 	out		USISR, REG_TEMP_R16
+
+	; USICR |= _BV(USICS0) | _BV(USIOIE);
+ 	in			REG_TEMP_R16, USICR
+ 	ori		REG_TEMP_R16, ((1 << USICS0) | (1 << USIOIE))
+ 	out		USICR, REG_TEMP_R16
+
+	pop		REG_R1
 	pop		REG_TEMP_R16
-	pop		REG_X_MSB
-	pop		REG_X_LSB
 
+pcint0_isr_end:
 	out		SREG, REG_SAVE_SREG
 	pop		REG_SAVE_SREG
 
 	reti
-; ---------
-
+#else		; ] #if USE_USI [ #endif
 ; ---------
 ; pcint0_isr
 ;
@@ -355,11 +422,65 @@ tim1_compa_isr_cpt_1ms_rtn:
 ; Registres utilises (sauvegardes/restaures):
 ;    REG_TEMP_R16 -> Travail
 ;
-; => Retour immediat si la directive 'USE_MINIMALIST_UOS' est definie
+; => Gestion du bouton en mode 'USE_MINIMALIST_UOS'
 ; ---------
 pcint0_isr:
+#if USE_MINIMALIST_UOS		; [
+	; 'pcint0_isr' en mode "Minimaliste" (gestion Appui bouton)
+	push		REG_SAVE_SREG
+	in			REG_SAVE_SREG, SREG
 
-#ifndef USE_MINIMALIST_UOS
+	push		REG_X_MSB
+	push		REG_X_LSB
+	push		REG_Y_MSB
+	push		REG_Y_LSB
+	push		REG_TEMP_R16
+	push		REG_TEMP_R17
+	push		REG_TEMP_R18
+	push		REG_TEMP_R19
+	push		REG_TEMP_R20
+	push		REG_TEMP_R21
+
+	; Fronts montant et descendant detectes sur PINB<0>
+	sbic		PINB, IDX_BIT0
+	rjmp		pcint0_isr_rising			; PINB<0> a 1
+	rjmp		pcint0_isr_falling		; PINB<0> a 0
+
+pcint0_isr_rising:
+	; Detection du front montant sur PINB<0> __/--
+	; => Ignore car du a des rebonds et/ou au relacher
+	rjmp		pcint0_isr_rtn
+
+pcint0_isr_falling:
+	; Detection du front descendant sur PINB<0> --\__
+	; Rearmement timer 'TIMER_APPUI_BOUTON_DETECT'
+	; => Prise en compte de l'appui bouton a son expiration
+	;    => Les rebonds --\_/--\_..._/-- sont filtres a 100 mS
+	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_DETECT
+	ldi		REG_TEMP_R18, (100 % 256)
+	ldi		REG_TEMP_R19, (100 / 256)
+	ldi		REG_TEMP_R20, low(exec_timer_push_button_detect)
+	ldi		REG_TEMP_R21, high(exec_timer_push_button_detect)
+	rcall		start_timer
+
+pcint0_isr_rtn:
+	pop		REG_TEMP_R21
+	pop		REG_TEMP_R20
+	pop		REG_TEMP_R19
+	pop		REG_TEMP_R18
+	pop		REG_TEMP_R17
+	pop		REG_TEMP_R16
+	pop		REG_Y_LSB
+	pop		REG_Y_MSB
+	pop		REG_X_LSB
+	pop		REG_X_MSB
+
+	out		SREG, REG_SAVE_SREG
+	pop		REG_SAVE_SREG
+
+	reti
+#else		; ] #if USE_MINIMALIST_UOS [ #endif
+	; 'pcint0_isr' en mode non "Minimaliste" (gestion UART/Rx et Appui bouton)
 	push		REG_SAVE_SREG
 	in			REG_SAVE_SREG, SREG
 
@@ -378,7 +499,6 @@ pcint0_isr:
 	rjmp		pcint0_isr_falling		; RXD a 0
 
 pcint0_isr_rising:
-
 	; Detection du front montant sur RXD __/--
 	; => Arret du timer 'TIMER_APPUI_BOUTON_DETECT'
 	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_DETECT
@@ -403,7 +523,7 @@ pcint0_isr_falling:
 	;    => Revient a ne pas generer la Pulse --\_/----
 	sbrs		REG_FLAGS_1, FLG_1_LED_RED_ON_IDX
 	cbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
-	out		PORTB, REG_PORTB_OUT						; Raffraichissement du PORTB
+	rcall		refresh_portb
 
 pcint0_isr_falling_more:
 	; Raz erreurs Bits Start et Bit Stop
@@ -451,7 +571,7 @@ pcint0_isr_falling_more:
 	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
 
 pcint0_isr_ignore_pulse:
-	out		PORTB, REG_PORTB_OUT						; Raffraichissement du PORTB
+	rcall		refresh_portb
 
 pcint0_isr_rtn:
 	pop		REG_TEMP_R19
@@ -466,7 +586,183 @@ pcint0_isr_rtn:
 	out		SREG, REG_SAVE_SREG
 	pop		REG_SAVE_SREG
 
+	reti
+#endif		; ]
+; ---------
+#endif		; ]
+
+; ---------
+; tim0_compa_isr
+; ---------
+#if USE_USI
+tim0_compa_isr:
+	; Sauvegarde registres
+	push		REG_SAVE_SREG
+	in			REG_SAVE_SREG, SREG
+
+	push		REG_TEMP_R16
+
+#if 0
+	; Pulse de 10uS pour qualifier la vitesse de UART/USI
+	cbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	rcall		refresh_portb
+
+	rcall		uos_delay_10uS
+
+	sbr		REG_PORTB_OUT, MSK_BIT_PULSE_IT
+	rcall		refresh_portb
+	; Fin: Pulse de 10uS pour qualifier la vitesse de UART/USI
 #endif
 
+	; OCR0A = (uint8_t)TIMER_TICK;  // Fournit la vitesse d'emission et reception
+	ldi		REG_TEMP_R16, 0x1A
+	out		OCR0A, REG_TEMP_R16
+
+	; Restauration registres
+	pop		REG_TEMP_R16	
+
+	out		SREG, REG_SAVE_SREG
+	pop		REG_SAVE_SREG
+
 	reti
+
 ; ---------
+; usi_ovf_isr
+; ---------
+usi_ovf_isr:
+	; Sauvegarde registres
+	push		REG_SAVE_SREG
+	in			REG_SAVE_SREG, SREG
+
+	push		REG_R1
+	push		REG_X_MSB
+	push		REG_X_LSB
+	push		REG_Y_MSB
+	push		REG_Y_LSB
+	push		REG_TEMP_R16
+	push		REG_TEMP_R17
+	push		REG_TEMP_R18
+	push		REG_TEMP_R19
+	push		REG_TEMP_R20
+	push		REG_TEMP_R21
+
+	eor		REG_R1, REG_R1
+
+	lds		REG_TEMP_R17, G_STATE_USI
+
+	; Handle RX ?
+	cpi		REG_TEMP_R17, STATE_USI_RX
+	brne		usi_ovf_isr_no_handle_rx
+
+	; Yes -> Disable USI
+	; USICR = 0;
+	out		USICR, REG_R1
+
+	; data = USIDR;
+	in			REG_R1, USIDR
+
+	; TEST de reception caractere ET d'appui bouton
+	mov		REG_TEMP_R16, REG_R1			; Reprise du caractere recu
+	rcall		bit_reverse						; Inversion des bits
+
+	; Test du caractere dans la plage [0x20, 0x21, ..., 0x7F] ou '\n'
+	rcall		test_char_valid
+	brts		usi_ovf_isr_char_valid
+
+	; Caractere invalide
+	; => Armement ou rearmement timer appui bouton a chaque reception
+	;    => Action a l'expiration du timer
+	ldi		REG_TEMP_R17, TIMER_APPUI_BOUTON_DETECT
+	ldi		REG_TEMP_R18, (100 % 256)
+	ldi		REG_TEMP_R19, (100 / 256)
+	ldi		REG_TEMP_R20, low(exec_timer_push_button_detect)
+	ldi		REG_TEMP_R21, high(exec_timer_push_button_detect)
+	rcall		start_timer
+	rjmp		usi_ovf_isr_cont_d
+
+usi_ovf_isr_char_valid:	
+#if !USE_MINIMALIST_UOS
+	mov		REG_R1, REG_TEMP_R16
+	rcall		uart_fifo_rx_write
+
+	sbr      REG_FLAGS_0, FLG_0_UART_RX_BYTE_RECEIVED_MSK    ; Donnee recue valide
+#endif
+
+usi_ovf_isr_cont_d:
+	; PCMSK |= _BV(PCINT0);
+	sbi		PCMSK, PCINT0
+
+	rjmp		usi_ovf_isr_end
+
+usi_ovf_isr_no_handle_rx:
+
+	; Handle TX ?
+	cpi		REG_TEMP_R17, STATE_USI_TX
+	brne		usi_ovf_isr_no_handle_tx
+
+	; Yes -> Caractere a emettre dans 'G_TEMP_TX_CHAR'
+	; USIDR = (tempTxChar << 1) | _BV(0);
+	lds	REG_TEMP_R16, G_TEMP_TX_CHAR
+	add	REG_TEMP_R16, REG_TEMP_R16
+	ori	REG_TEMP_R16, 0x01
+	out	USIDR, REG_TEMP_R16
+
+	; USISR = _BV(USIOIF) | _BV(USICNT3);
+	ldi	REG_TEMP_R16, ((1 << USIOIF) | (1 << USICNT3))
+	out 	USISR, REG_TEMP_R16
+
+	; USICR = _BV(USICS0) | _BV(USIOIE) | _BV(USIWM0);
+	ldi	REG_TEMP_R16, ((1 << USICS0) | (1 << USIOIE) | (1 << USIWM0))
+	out	USICR, REG_TEMP_R16
+
+	; state = TX_IN_PROGRESS;
+	ldi 		REG_TEMP_R17, STATE_USI_TX_IN_PROGRESS
+	sts		G_STATE_USI, REG_TEMP_R17
+
+	rjmp		usi_ovf_isr_end
+
+usi_ovf_isr_no_handle_tx:
+	; Handle 'TX_IN_PROGRESS' ?
+	cpi		REG_TEMP_R17, STATE_USI_TX_IN_PROGRESS
+	brne		usi_ovf_isr_error
+
+	; Yes
+	ldi		REG_TEMP_R17, STATE_USI_END_OF_TX
+	sts		G_STATE_USI, REG_TEMP_R17
+
+	; Forcage etat haut sur TX
+	sbi		PORTB, IDX_BIT_TXD
+
+	rjmp		usi_ovf_isr_end
+
+; Internal error (No such Handle)
+usi_ovf_isr_error:
+	nop					; TODO: Gestion erreur
+
+usi_ovf_isr_end:
+
+	; Restauration registres
+	pop		REG_TEMP_R21
+	pop		REG_TEMP_R20
+	pop		REG_TEMP_R19
+	pop		REG_TEMP_R18
+	pop		REG_TEMP_R17
+	pop		REG_TEMP_R16
+	pop		REG_Y_LSB
+	pop		REG_Y_MSB
+	pop		REG_X_LSB
+	pop		REG_X_MSB
+	pop		REG_R1
+
+	out		SREG, REG_SAVE_SREG
+	pop		REG_SAVE_SREG
+
+	reti
+
+.dseg
+G_STATE_USI:				.byte		1
+G_TEMP_TX_CHAR:			.byte		1
+#endif
+
+; End of file
+

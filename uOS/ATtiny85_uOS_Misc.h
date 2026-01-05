@@ -1,10 +1,10 @@
-; "$Id: ATtiny85_uOS_Misc.h,v 1.3 2025/12/14 17:28:44 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.h,v 1.4 2026/01/02 18:28:56 administrateur Exp $"
 
 ; Forcage des 'call' en 'rcall' dans la cas de la generation "minimaliste"
 ; => '_CALL' force un "rcall" (appel relatif)
 ;    => 
 
-#ifdef USE_MINIMALIST_UOS
+#if USE_MINIMALIST_UOS
 .macro _CALL
 rcall		@0
 .endm

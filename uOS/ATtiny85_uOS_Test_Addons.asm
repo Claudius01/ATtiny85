@@ -1,8 +1,8 @@
-; "$Id: ATtiny85_uOS_Test_Addons.asm,v 1.6 2025/12/17 22:16:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Test_Addons.asm,v 1.14 2026/01/02 18:28:56 administrateur Exp $"
 
 ; Test d'addons dans uOS
 
-#define TIMER_UOS_TEST								6
+#define TIMER_UOS_TEST								5	; Timer #5
 
 .dseg
 G_TEST_ADDON_CPT_BACKGROUND_3:		.byte		1
@@ -98,7 +98,7 @@ uos_test_1_ms_contd:
 	push		REG_X_MSB		; Sauvegarde compteur avant test
 	push		REG_X_LSB
 
-	; Test si 1 Sec ecoulee...
+	; Test si 500 mS ecoulee...
 	cpi		REG_X_MSB, (1000 / 256)
 	brne		uos_test_1_ms_end
 	cpi		REG_X_LSB, (1000 % 256)
@@ -168,13 +168,20 @@ uos_test_commands_contd:
 	ldi      REG_Z_LSB, low(text_test_commands << 1)
 	rcall    push_text_in_fifo_tx
 
-	;rcall		uos_print_command_ok				; Commande reconnue
+#if !USE_MINIMALIST_UOS
+	rcall		uos_print_command_ok				; Commande reconnue
+#endif
 
 	sbr		REG_FLAGS_1, FLG_1_UART_FIFO_TX_TO_SEND_MSK
+
+#if !USE_MINIMALIST_UOS
 	rjmp		uos_test_commands_contd_end
+#endif
 
 uos_test_commands_contd_ko:
-	;rcall		uos_print_command_ko				; Commande non reconnue
+#if !USE_MINIMALIST_UOS
+	rcall		uos_print_command_ko				; Commande non reconnue
+#endif
 
 uos_test_commands_contd_end:
 	ret
@@ -223,6 +230,9 @@ text_test_button:
 
 text_test_timer:
 .db   "uOS: Test timer (10 Sec.)", CHAR_LF, CHAR_NULL, CHAR_NULL
+
+text_bit_reverse:
+.db   "Bit Reverse ", CHAR_NULL, CHAR_NULL
 
 ; Fin: Definitions de la table de vecteurs de "prolongation" des traitements
 

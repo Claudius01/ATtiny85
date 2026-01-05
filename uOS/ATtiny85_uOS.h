@@ -1,27 +1,32 @@
-; "$Id: ATtiny85_uOS.h,v 1.13 2025/12/17 22:16:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS.h,v 1.26 2026/01/03 15:44:35 administrateur Exp $"
 
 ; Definition de la 'RAMEND'
-#define ATTINY85_RAMEND		0x25F
-#define ATTINY45_RAMEND		0x15F
+#define ATTINY85_RAMEND		0x25F		; Last address for ATtiny85
+#define ATTINY45_RAMEND		0x15F		; Last address for ATtiny45
 
-; Implementation sur 'ATtiny45' si uOS et ADDONS compiles en mode 'Minimaliste'
-; => Sinon: Implementation sur 'ATtiny85'
-#ifdef USE_MINIMALIST_UOS
-#ifdef USE_MINIMALIST_ADDONS
+; Implementation sur 'ATtiny45' si uOS ou ADDONS assembles en mode 'Minimaliste'
+; => Attention: La derniere adresse de la SRAM 'G_SRAM_END_OF_USE' peut chevaucher la pile l'appel
+;               => Editer le fichier 'xxx.lst' pour s'en assurer ;-)
+;
+; Les 2 configurations "normales" sont:
+; - 'USE_MINIMALIST_UOS' et 'USE_MINIMALIST_ADDONS' a 0
+; - 'USE_MINIMALIST_UOS' et 'USE_MINIMALIST_ADDONS' a 1
+;
+#if USE_MINIMALIST_ADDONS
+#if USE_MINIMALIST_UOS
 #define ATTINY_RAMEND		ATTINY45_RAMEND
 #endif
 #endif
 
-#ifndef USE_MINIMALIST_UOS
-#define ATTINY_RAMEND		ATTINY85_RAMEND
-#else
-#ifndef USE_MINIMALIST_ADDONS
+; Implementation sur 'ATtiny85' si uOS et ADDONS non assembles en mode 'Minimaliste'
+#if !USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_ADDONS
 #define ATTINY_RAMEND		ATTINY85_RAMEND
 #endif
 #endif
 ; Fin: Definition de la 'RAMEND'
 
-#ifdef USE_MINIMALIST_UOS
+#if USE_MINIMALIST_UOS
 #define USE_DUMP_SRAM			1
 #else
 #define USE_DUMP_SRAM			0
@@ -118,10 +123,15 @@
 #define	MSK_BIT_LED_RED_INT		MSK_BIT1
 
 #define	MSK_BIT_TXD					MSK_BIT1		; Emission sur RXD du FT232R (Meme sortie que la Led RED Interne)
+#define	IDX_BIT_TXD					IDX_BIT1
+
 #define	MSK_BIT_PULSE_IT			MSK_BIT4		; Remarque: Meme sortie que la Led RED Externe
+#define	IDX_BIT_PULSE_IT			IDX_BIT4
 
 #define	IDX_BIT_LED_RED			IDX_BIT4
 #define	IDX_BIT_LED_GREEN			IDX_BIT3
+#define	IDX_BIT_LED_YELLOW		IDX_BIT2
+#define	IDX_BIT_LED_RED_INT		IDX_BIT1
 
 ; Definitions pour ajout comportemental:
 #define	FLG_BEHAVIOR_MARK_IN_TIM1_COMPA_IDX		IDX_BIT0	; Pulse --\__/--... en entree/sortie de l'It 'tim1_compa_isr'

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.9 2025/12/15 17:19:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Eeprom.asm,v 1.12 2026/01/03 15:44:35 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Eeprom.h"
 
@@ -24,7 +24,7 @@ eeprom_read_byte_wait:
 	ret
 ; ---------
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 ; ---------
 ; Ecriture d'un byte contenu dans 'REG_TEMP_R16' a l'adresse 'REG_X_MSB:REG_X_LSB' de l'EEPROM
 ; ---------
@@ -56,13 +56,11 @@ eeprom_write_byte_wait:
 ; ---------
 #endif
 
-;#ifndef USE_MINIMALIST_UOS
 ;--------------------
 ; Lecture et impression des informations de l'EEPROM
 ;--------------------
 set_infos_from_eeprom:
 	; => Prompt "### EEPROM..."
-	ldi		REG_TEMP_R18, 8
 	ldi		REG_Z_MSB, ((text_prompt_eeprom_version << 1) / 256)
 	ldi		REG_Z_LSB, ((text_prompt_eeprom_version << 1) % 256)
 	rcall		push_text_in_fifo_tx
@@ -103,7 +101,7 @@ set_infos_from_eeprom:
 	rcall		convert_and_put_fifo_tx
 	rcall		print_line_feed
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 	ldi		REG_Z_MSB, ((text_osccal << 1) / 256)
 	ldi		REG_Z_LSB, ((text_osccal << 1) % 256)
 	rcall		push_text_in_fifo_tx
@@ -111,23 +109,22 @@ set_infos_from_eeprom:
 	in			REG_TEMP_R16, OSCCAL
 	rcall		convert_and_put_fifo_tx
 	rcall		print_line_feed
-	; Fin: Preparation emission des prompts d'accueil
 #endif
+	; Fin: Preparation emission des prompts d'accueil
 
 	ret
 ; ---------
-;#endif
 
 text_prompt_eeprom_version:
-.db	"### EEPROM: ", CHAR_NULL, CHAR_NULL
+.db	"### EEPROM ", CHAR_NULL
 
 text_prompt_type:
-.db	"### Type: ", CHAR_NULL, CHAR_NULL
+.db	"### Type ", CHAR_NULL
 
 text_prompt_id:
-.db	"### Id: ", CHAR_NULL, CHAR_NULL
+.db	"### Id ", CHAR_NULL
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 text_eeprom_error:
 .db	"Err: EEPROM at ", CHAR_NULL
 

@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.13 2025/12/17 12:45:46 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.25 2026/01/03 15:44:35 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Misc.h"
 
@@ -63,7 +63,7 @@ init_sram_values:
 	sts		G_CHENILLARD_MSB, REG_TEMP_R16
 	sts		G_CHENILLARD_LSB, REG_TEMP_R16
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 	; Preparation reception bit RXD
 	lds		REG_TEMP_R16, G_DURATION_DETECT_LINE_IDLE_MSB
 	lds		REG_TEMP_R17, G_DURATION_DETECT_LINE_IDLE_LSB
@@ -82,6 +82,7 @@ init_sram_values:
 	ldi		REG_X_LSB, low(EEPROM_ADDR_BAUDS_IDX);
 	rcall		eeprom_read_byte
 
+#if !USE_USI
 	; Test dans la plage [0, 1, ..., 6]
 	; => Forcage a 1 pour 9600 bauds si pas dans la plage
 	cpi		REG_TEMP_R16, (6 + 1)
@@ -106,13 +107,14 @@ init_sram_values_set_bauds_index:
 	lpm		REG_TEMP_R17, Z+
 	sts		G_BAUDS_VALUE, REG_TEMP_R17
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 	lpm		REG_TEMP_R17, Z+
 	sts		G_DURATION_DETECT_LINE_IDLE_MSB, REG_TEMP_R17
 	lpm		REG_TEMP_R17, Z+
 	sts		G_DURATION_DETECT_LINE_IDLE_LSB, REG_TEMP_R17
 	lpm		REG_TEMP_R17, Z+
 	sts		G_DURATION_WAIT_READ_BIT_START, REG_TEMP_R17
+#endif
 #endif
 	; Fin: Initialisation des definitions pour la vitesse UART/Rx et UART/Tx
 
@@ -145,6 +147,7 @@ init_sram_values_set_bauds_index:
 ; ---------
 init_hard:
 	; Configuration du timer materiel #1 pour une It toutes les 26uS
+	; Remarque: 'MSK_BIT_LED_RED_INT' correspond egalement a 'MSK_BIT_TXD'
 	ldi		REG_TEMP_R16, (MSK_BIT_PULSE_IT | MSK_BIT_LED_RED | MSK_BIT_LED_GREEN | MSK_BIT_LED_YELLOW | MSK_BIT_LED_RED_INT)
 	out		DDRB, REG_TEMP_R16
 
@@ -197,8 +200,53 @@ init_hard:
 	out		GIMSK, REG_TEMP_R16
 
    ; Configuration du PULLUP sur PORTB<0> (RXD et Button)
+	; TODO: Change with 'sbi  PORTB, IDX_BIT_RXD
    ldi      REG_TEMP_R16, 0x01
    out      PORTB, REG_TEMP_R16
+
+	; Mise a l'etat haut de UART/Tx
+	sbi		PORTB, IDX_BIT_TXD
+
+#if USE_USI
+	; Initialisations des registres pour generer une periode de ~104 uS (9600 bauds)
+	; => Utilisation par le USI/UART/Tx et Rx
+	; TCCR0A |= _BV(WGM01);
+ 	in		REG_TEMP_R16, TCCR0A
+ 	ori	REG_TEMP_R16, (1 << WGM01)
+ 	out	TCCR0A, REG_TEMP_R16
+
+	; TCCR0B |= _BV(CS01) | _BV(CS00);
+ 	in		REG_TEMP_R16, TCCR0B
+ 	ori	REG_TEMP_R16, ((1 << CS01) | (1 << CS00))
+ 	out	TCCR0B, REG_TEMP_R16
+
+	; TIMSK |= _BV(OCIE0A);
+ 	in		REG_TEMP_R16, TIMSK
+ 	ori	REG_TEMP_R16, (1 << OCIE0A)
+	out	TIMSK, REG_TEMP_R16
+
+	; OCR0A = (uint8_t)(TIMER_TICK + TIMER_TICK / 2);
+	ldi	REG_TEMP_R16, 0x27
+	out	OCR0A, REG_TEMP_R16
+	; Fin: Initialisations des registres pour generer une periode de ~104 uS (9600 bauds)
+
+	; Initialisation etat de l'USI
+	ldi	REG_TEMP_R16, STATE_USI_RX
+	sts	G_STATE_USI, REG_TEMP_R16
+
+	; Enable PCINT0
+	; GIFR = _BV(PCIF);
+	ldi	REG_TEMP_R16, 0x20
+	out	GIFR, REG_TEMP_R16
+
+	; PCMSK |= _BV(PCINT0);
+	sbi	PCMSK, PCINT0
+
+	; GIMSK |= _BV(PCIE);
+	in		REG_TEMP_R16, GIMSK
+	ori	REG_TEMP_R16, 0x20
+	out	GIMSK, REG_TEMP_R16
+#endif
 
 	ret
 ; ---------
@@ -319,6 +367,7 @@ test_leds:
 	ret
 ; ---------
 
+#if !USE_USI
 ; ---------
 ; Trace par un double creneau --\__/--\__/------ sur la Pulse It
 ; ---------
@@ -338,6 +387,7 @@ trace_in_it_double_1uS:
 
 	ret
 ; ---------
+#endif
 
 ; ---------
 ; Maj du compteur d'erreurs
@@ -435,6 +485,10 @@ calc_crc8_maxim_b:
 ;    => Inspire de la methode 'exec_command_type_s_read'
 ; ---------
 dump_sram_read:
+	ldi		REG_Z_MSB, high(text_dump_sram << 1)
+	ldi		REG_Z_LSB, low(text_dump_sram << 1)
+	rcall		push_text_in_fifo_tx
+
 	ldi		REG_X_MSB, (SRAM_START / 256)
 	ldi		REG_X_LSB, (SRAM_START % 256)
 
@@ -490,6 +544,80 @@ dump_sram_read_more2:
 	ret
 ; ---------
 #endif
+
+
+; ---------
+; Inversion de bits
+;
+; Input : x = REG_TEMP_R16 (non sauvegarde)
+; Output: REG_TEMP_R16 
+; ---------
+bit_reverse:
+	; x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
+	mov   REG_TEMP_R17, REG_TEMP_R16
+	lsr   REG_TEMP_R17
+	andi  REG_TEMP_R17, 0x55
+	add   REG_TEMP_R16, REG_TEMP_R16
+	andi  REG_TEMP_R16, 0xAA
+	or REG_TEMP_R17, REG_TEMP_R16
+
+	; x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
+	mov   REG_TEMP_R16, REG_TEMP_R17
+	lsr   REG_TEMP_R16
+	lsr   REG_TEMP_R16
+	andi  REG_TEMP_R16, 0x33
+	add   REG_TEMP_R17, REG_TEMP_R17
+	add   REG_TEMP_R17, REG_TEMP_R17
+	andi  REG_TEMP_R17, 0xCC
+	or REG_TEMP_R16, REG_TEMP_R17
+
+	; x = ((x >> 4) & 0x0f) | ((x << 4) & 0xf0);
+	swap  REG_TEMP_R16
+
+	ret
+; ---------
+
+; ---------
+; Raffraichissement du PORTB
+; ---------
+refresh_portb:
+	; Allumages des Leds ?
+	sbrs		REG_PORTB_OUT, IDX_BIT_LED_RED
+	cbi		PORTB, IDX_BIT_LED_RED
+	sbrs		REG_PORTB_OUT, IDX_BIT_LED_GREEN
+	cbi		PORTB, IDX_BIT_LED_GREEN
+	sbrs		REG_PORTB_OUT, IDX_BIT_LED_YELLOW
+	cbi		PORTB, IDX_BIT_LED_YELLOW
+
+	; Extinction des Leds ?
+	sbrc		REG_PORTB_OUT, IDX_BIT_LED_RED
+	sbi		PORTB, IDX_BIT_LED_RED
+	sbrc		REG_PORTB_OUT, IDX_BIT_LED_GREEN
+	sbi		PORTB, IDX_BIT_LED_GREEN
+	sbrc		REG_PORTB_OUT, IDX_BIT_LED_YELLOW
+	sbi		PORTB, IDX_BIT_LED_YELLOW
+
+	ret
+; ---------
+
+; ---------
+; Test du caractere contenu dans 'REG_TEMP_R16'
+; dans la plage [0x20, 0x21, ..., 0x7F] ou '\n'
+; ---------
+test_char_valid:
+	set											; A priori valide ...
+
+	cpi		REG_TEMP_R16, CHAR_LF
+	breq		test_char_valid_rtn
+
+	cpi		REG_TEMP_R16, 0x20
+	brge		test_char_valid_rtn			; Comparaison signee ;-)
+
+	clt											; ... et non -> Invalide
+
+test_char_valid_rtn:
+	ret
+; ---------
 
 ; End of file
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.15 2025/12/17 22:16:43 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.21 2026/01/05 15:48:31 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
-#   $ ./goGenerate.sh ATtiny85_uOS.asm              -> Production 'ATtiny85_uOS.asm'
+#   $ ./goGenerateProject.sh ATtiny85_uOS              -> Production du projet 'ATtiny85_uOS'
 
 #set -x
 set -e
@@ -60,11 +60,23 @@ rm -f ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_MAP} ${PROJECTS_FILE}.$
 echo
 echo "################## Production of '${PROJECTS_FILE}' ##################"
 # Directives d'assemblage:
-# - USE_MINIMALIST_UOS -> Production de la version minimaliste
+# - USE_USI=0               -> Non utilisation de l'Universal Serial Interface
+# - USE_USI=1               -> Utilisation de l'Universal Serial Interface
+# - USE_MINIMALIST_UOS=0    -> Production de la version non minimaliste (ATtiny85)
+# - USE_MINIMALIST_UOS=1    -> Production de la version minimaliste (ATtiny45)
+# - USE_MINIMALIST_ADDONS=0 -> Production des ADDONS mode non minimaliste (ATtiny85)
+# - USE_MINIMALIST_ADDONS=1 -> Production des ADDONS mode minimaliste (ATtiny45)
+#   => Configuration attendue:
+#      - "USE_MINIMALIST_UOS=0" ET "USE_MINIMALIST_ADDONS=0" => La pile d'appel est 0x25F (ATtiny85)
+#      - "USE_MINIMALIST_UOS=1" ET "USE_MINIMALIST_ADDONS=1" => La pile d'appel est 0x15F (ATtiny45)
+#      => Les autres combinaisons produiront l'erreur "Found no label/variable/constant named ATTINY_RAMEND"
 
-#${AVRA_BIN} -D USE_MINIMALIST_UOS -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+_USE_USI="USE_USI=0"
+_USE_MINIMALIST_UOS="USE_MINIMALIST_UOS=0"
+_USE_MINIMALIST_ADDONS="USE_MINIMALIST_ADDONS=0"
 
-${AVRA_BIN} -I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
+${AVRA_BIN} -D ${_USE_MINIMALIST_UOS} -D ${_USE_USI} -D ${_USE_MINIMALIST_ADDONS} \
+	-I ${PROJECTS} -I ${AVRA_INC} -m ${PROJECTS_FILE}.${EXT_MAP} -l ${PROJECTS_FILE}.${EXT_LST} ${PROJECTS_FILE}.${EXT_ASM}
 
 if [ ! -f ${PROJECTS_FILE}.${EXT_LST} ]; then
 	echo "Error: No build ;-("	

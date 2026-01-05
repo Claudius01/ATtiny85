@@ -1,8 +1,10 @@
-; "$Id: ATtiny85_uOS_Print.asm,v 1.16 2025/12/17 22:16:43 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Print.asm,v 1.21 2026/01/03 15:44:35 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Print.h"
 
 .cseg
+
+#if !USE_MINIMALIST_UOS
 ; ---------
 ; Allumage fugitif Led RED Externe si erreur
 ; => L'effacement des 2 'FLG_0_UART_RX_BYTE_START_ERROR' et 'FLG_0_UART_RX_BYTE_STOP_ERROR'
@@ -16,16 +18,21 @@
 ;    => Des carateres peuvent avoir ete perdus dans l'empilement dans la FIFO
 ;
 presentation_error:
+#if !USE_USI
+	; Pas de gestion de l'UART/Rx soft en mode 'USE_USI'
 	sbrc		REG_FLAGS_0, FLG_0_UART_RX_BYTE_START_ERROR_IDX
 	rjmp		presentation_error_reinit
 	sbrc		REG_FLAGS_0, FLG_0_UART_RX_BYTE_STOP_ERROR_IDX
 	rjmp		presentation_error_reinit
+#endif
+
 	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_RX_FULL_IDX
 	rjmp		presentation_error_reinit
+
 	sbrc		REG_FLAGS_1, FLG_1_UART_FIFO_TX_FULL_IDX
 	rjmp		presentation_error_reinit
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 	lds		REG_TEMP_R16, G_TEST_FLAGS			; Prise des flags 'G_TEST_FLAGS'
 
 	sbrc		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_IDX
@@ -46,7 +53,7 @@ presentation_error_reinit:
 	ldi		REG_TEMP_R21, high(exec_timer_error)
 	rcall		start_timer
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 	; Effacement de certaines erreurs non fugitives
 	lds		REG_TEMP_R16, G_TEST_FLAGS 
 	cbr		REG_TEMP_R16, FLG_TEST_COMMAND_ERROR_MSK
@@ -60,6 +67,7 @@ presentation_error_reinit:
 presentation_error_rtn:
 	ret
 ; ---------
+#endif
 
 ; ---------
 ; Conversion en minuscule si 'text_convert_hex_to_min_ascii_table' utilisee
@@ -100,7 +108,7 @@ convert_and_put_fifo_tx:
 	ret
 ; ---------
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 ; ---------
 ; Presentation de l'etat de connexion
 ; ---------
@@ -141,7 +149,7 @@ presentation_connexion_rtn:
 ; ---------
 #endif
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 ; ---------
 uos_print_line_feed_skip:
 print_line_feed_skip:
@@ -258,7 +266,7 @@ print_mark_loop_b:
 	ret
 ; ---------
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 ; ---------
 ; Print du registre X
 ; ---------
@@ -284,7 +292,7 @@ print_x_reg:
 	ret
 ; ---------
 
-#ifndef USE_MINIMALIST_UOS
+#if !USE_MINIMALIST_UOS
 ; ---------
 ; Print du registre Y
 ; ---------
