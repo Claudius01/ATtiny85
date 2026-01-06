@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.19 2026/01/05 15:48:38 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.20 2026/01/06 12:27:07 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
-#   $ ./goGenerate.sh ATtiny85_uOS+DS18B20.asm     -> Production pour DS18B20 au dessus de ATtiny85_uOS
+#   $ ./goGenerateProject.sh ATtiny85_uOS+DS18B20     -> Production du projet DS18B20 au dessus de ATtiny85_uOS
 
 #set -x
 set -e
@@ -20,8 +20,8 @@ if [ -z ${1} ]; then
 
 	echo "Usage:"
 	echo "${0} <project_name> [clean]"
-	echo "Ex: ${0} ATtiny85_uOS"
-	echo "    ${0} ATtiny85_uOS clean"
+	echo "Ex: ${0} ATtiny85_uOS+DS18B20"
+	echo "    ${0} ATtiny85_uOS+DS18B20 clean"
 
 	exit 2
 else
@@ -101,6 +101,9 @@ if [ $? -eq 0 ]; then
 	echo
 	genHexFile -o ./eeprom_4xds18b20.hex -T 1 -t BYTE
 fi
+
+# Creation eventuelle de './Products'
+test -d Products || mkdir Products
 
 cp -p ${PROJECTS_FILE}.hex ${PROJECTS_FILE}.lst ${PROJECTS_FILE}.map eeprom*.hex Products
 echo
