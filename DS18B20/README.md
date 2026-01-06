@@ -74,15 +74,21 @@ DS18B20 utilise les 32 premiers octets l'EEPROM de l'ATtiny85 dont la structure 
 
 Le contenu peut-être programmé depuis un fichier au format Hex (Intel) au moyen de la commande d'écriture offert par uOS "`<E0+data0+data1+data2+...`" (cf. [eeprom_4xds18b20.hex](Products/eeprom_4xds18b20.hex))
 
-## ⚓ Occupation mémoires
-DS18B20 occupe environ 81% de la mémoire *flash* et 73% de la mémoire SRAM de l'**ATtiny85**
-* 📔 Une version "minimaliste" est implémentée sur un **ATtiny45** utilisant la version "minimaliste" de uOS occupant 99% de la mémoire *flash* et 90% de la mémoire SRAM (l'ATtiny45 est utilisé au maximum):
-     * La gestion de 2 capteurs au lieu de 4
-     * La suppression des commandes qui ne permet plus de configurer dynamiquement la vitesse de l'UART/Tx ni les seuils de température haute et basse:
-     * La vitesse de l'UART/Tx est lue depuis l'EEPROM
-     * les seuils de température haute Th et basse Tl devront être configurés avec la version "non minimaliste"
-     * la résolution devra être configurée avec la version "non minimaliste"
-     * l'absence de la gestion UART/Rx (seul l'UART/Tx est conservé)
+## ⚓ Occupations mémoires
+| Mode USI | Mode Minimaliste | Cible | Taille *flash* | Taille *SRAM* dont la *stack*|
+| :---: | :---: | :---: | :---: | :---: |
+| 0 | 0 | ATtiny85 |  86% | 93% |
+| 0 | 1 | ATtiny45 |  98% | 91% |
+| 1 | 0 | ATtiny85 |  86% | 94% |
+| 1 | 1 | ATtiny45 |  99% | 90% |
+
+* 📔 Une version "minimaliste" est implémentée sur un **ATtiny45**:
+     * La gestion de 2 capteurs DS18B20 au lieu de 4
+     * La suppression des commandes qui ne permet plus de configurer dynamiquement la vitesse de l'UART ni les seuils de température haute et basse qui devront être programmés au moyen de la version "non minimaliste"
+     * La vitesse de l'UART est fixée à 9600 bauds
+     * Les seuils de température haute Th et basse Tl devront être configurés avec la version "non minimaliste"
+     * La résolution devra être configurée avec la version "non minimaliste"
+     * L'absence de la gestion UART/Rx (seul l'UART/Tx est conservé)
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
