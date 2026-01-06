@@ -44,7 +44,14 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
           * Test Leds
           * etc. 
 * **ATtiny85_uOS_Interrupts.asm** et **ATtiny85_uOS_Interrupts.h**
-     * Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
+     * Prise en charge des 2 interruptions dans l'implémentation logicielle de l'UART
+          * *TIMER1_COMPA* pour le cadencement matériel et gestion de l'UART
+          * *PCINT0* pour la gestion des changements de UART/Rx et du bouton
+     * Prise en charge des 4 interruptions dans l'implémentation matérielle de l'UART
+          * *TIMER1_COMPA* pour le cadencement matériel
+          * *PCINT0* pour la gestion des changements de UART/Rx et du bouton + gestion de l'USI
+          * *TIMER0_COMPA* pour la vitesse de transmission de l'UART vs USI
+          * *USI_OVF* pour l'émission et la réception des caractères sur l'UART vs USI
 * **ATtiny85_uOS_Software_Uart.asm** et **ATtiny85_uOS_Software_Uart.h**
      * Gestion de l'UART/Rx et UART/Tx *full duplex* en logiciel au travers de 2 FIFO/Rx et FIFO/Tx (mode 'USE_USI' à 0)
 * **ATtiny85_uOS_Hardware_Uart.asm** et **ATtiny85_uOS_Hardware_Uart.h**
@@ -85,11 +92,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
     * La création d'une branche sur le projet
     * etc.
 * Développements sous Linux (distribution Ubuntu 24.04.3 LTS)
-* *Á compléter*
 
 ## ⏳ Évolutions envisagées
-- Implémentation pour un **ATtiny45**
 - Mise en veille du µC pour limiter la consommation dans le cas d'une alimentation au moyen de piles
-- Utilisation de l'USI *2 Wire* (Universal Serial Interface) pour la gestion de l'UART *half duplex* de 300 bauds à 19200 bauds en remplacement de la solution logicielle
-    - De plus, cela permettra d'accueillir dans le futur la gestion d'un bus I2C
 - *Á compléter*
