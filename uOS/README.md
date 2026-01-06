@@ -57,12 +57,18 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * **ATtiny85_uOS_Print.asm** et **ATtiny85_uOS_Print.h**
      * Formatage des émissions (textes, données décimales et hexadécimales, ...)
 
-## ⚓ Occupation mémoires
-uOS occupe environ 44% de la mémoire *flash* et 60% de la mémoire SRAM de l'**ATtiny85**
-* 📔 Une version "minimaliste" permet d'être implémentée sur un **ATtiny45** avec 41% de la mémoire *flash* et xx% de la mémoire SRAM:
+## ⚓ Occupations mémoires
+| Mode USI | Mode Minimaliste | Cible | Taille *flash* | Taille *SRAM* dont la *stack*|
+| :---: | :---: | :---: | :---: | :---: |
+| 0 | 0 | ATtiny85 |  46% | 60% |
+| 0 | 1 | ATtiny45 |  47% | 47% |
+| 1 | 0 | ATtiny85 |  45% | 61% |
+| 1 | 1 | ATtiny45 |  51% | 48% |
+
+* 📔 La version "minimaliste" permet d'être implémentée sur un **ATtiny45**:
      * La gestion de 8 *timers* au lieu de 16
-     * La suppression des commandes
      * La suppression de la gestion de l'UART/Rx
+     * La suppression des commandes ne permettant plus d'examiner la mémoire *flash*, la mémoire SRAM ni de programmer l'EEPROM
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
