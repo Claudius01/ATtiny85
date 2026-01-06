@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.21 2026/01/05 15:48:31 administrateur Exp $"
+#ident "@(#) micro-infos $Id: goGenerateProject.sh,v 1.22 2026/01/06 11:02:39 administrateur Exp $"
 
 # Script de production d'un projet passe en argument
 # Exemples:
@@ -100,6 +100,9 @@ if [ $? -eq 0 ]; then
 	echo
 	genHexFile -o ./eeprom_uOS.hex -T 1 -t BYTE
 fi
+
+# Creation eventuelle de './Products'
+test -d Products || mkdir Products
 
 cp -p ${PROJECTS_FILE}.hex ${PROJECTS_FILE}.lst ${PROJECTS_FILE}.map eeprom*.hex Products
 echo
