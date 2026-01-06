@@ -46,10 +46,10 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * **ATtiny85_uOS_Interrupts.asm** et **ATtiny85_uOS_Interrupts.h**
      * Prise en charge des 2 interruptions dans l'implémentation logicielle de l'UART
           * *TIMER1_COMPA* pour le cadencement matériel et gestion de l'UART
-          * *PCINT0* pour la gestion des changements de UART/Rx et du bouton
+          * *PCINT0* pour la gestion des changements d'états de l'UART/Rx et du bouton
      * Prise en charge des 4 interruptions dans l'implémentation matérielle de l'UART
           * *TIMER1_COMPA* pour le cadencement matériel
-          * *PCINT0* pour la gestion des changements de UART/Rx et du bouton + gestion de l'USI
+          * *PCINT0* pour la gestion des changements d'états de l'UART/Rx et du bouton + gestion de l'USI
           * *TIMER0_COMPA* pour la vitesse de transmission de l'UART vs USI
           * *USI_OVF* pour l'émission et la réception des caractères sur l'UART vs USI
 * **ATtiny85_uOS_Software_Uart.asm** et **ATtiny85_uOS_Software_Uart.h**
