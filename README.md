@@ -12,4 +12,4 @@ Projets basés sur une platine d'essais autour d'un [ATtiny85](https://ww1.micro
 
 - Projets utilisant la platine d'essais:
      - [uOS](uOS): Micro OS
-     - [DS18B20](DS18B20): Gestion de 4 capteurs de température sur un bus 1-Wire
+     - [DS18B20](DS18B20): Gestion complète de 4 capteurs de température (lecture, configuration et détection des alarmes de seuils) sur un bus 1-Wire
