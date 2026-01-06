@@ -45,8 +45,11 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
           * etc. 
 * **ATtiny85_uOS_Interrupts.asm** et **ATtiny85_uOS_Interrupts.h**
      * Prise en charge des 2 interruptions *TIMER1_COMPA* (cadencement matériel et gestion de l'UART) et *PCINT0* (gestion des changements de UART/Rx et du bouton)
-* **ATtiny85_uOS_Uart.asm** et **ATtiny85_uOS_Uart.h**
-     * Gestion de l'UART au travers de 2 FIFO/Rx et FIFO/Tx
+* **ATtiny85_uOS_Software_Uart.asm** et **ATtiny85_uOS_Software_Uart.h**
+     * Gestion de l'UART/Rx et UART/Tx *full duplex* en logiciel au travers de 2 FIFO/Rx et FIFO/Tx (mode 'USE_USI' à 0)
+* **ATtiny85_uOS_Hardware_Uart.asm** et **ATtiny85_uOS_Hardware_Uart.h**
+     * Gestion de l'UART/Rx et UART/Tx *half duplex* en matériel au travers de 2 FIFO/Rx et FIFO/Tx (mode 'USE_USI' à 1)
+     * A noter que l'implémentation de l'*Universal Serial Interface* est un peu plus coûteuse en terme de code exécuté
 * **ATtiny85_uOS_Eeprom.asm** et **ATtiny85_uOS_Eeprom.h**
      * Gestion de l'EEPROM en lecture et écriture
 * **ATtiny85_uOS_Commands.asm** et **ATtiny85_uOS_Commands.h**
