@@ -25,7 +25,7 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les fonctionnali
          * La température Tc mesurée sur 12 bits signées
          * La température Th du seuil haut sur 8 bits signés
          * La température Tl du seuil bas sur 8 bits signés
-         * La résolution de la mesure
+         * La résolution de la mesure (9, 10, 11 ou 12 bits)
          * L'état de l'alarme (Tc ≤ Tl ou Tc ≥ Th)
          * Un CRC8-MAXIM pour garantir l'intégrité des informations de chaque cpateur et de l'ensemble de la trame émise        
      * Cf. le fichier [Commandes/Réponses](Tests/Commands+Responses.txt) pour l'interprétation de la trame
