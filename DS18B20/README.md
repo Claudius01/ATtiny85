@@ -47,9 +47,10 @@ DS18B20 est organisé au sein des fichiers suivants dont les sources sont fourni
      * Gestion de l'acquisition toutes les secondes et de l'émission de la trame de mesure
 * **ATtiny85_uOS+DS18B20_Commands.asm**
      * Gestion de la commande "<C" pour la configuration des seuils et de la résolution
-     * Gestion de la commande "<T" pour l'activation/déactivation des traces 
+     * Gestion de la commande "<T" pour l'activation/déactivation des traces
+     * A noter que l'inclusion de ce fichier n'est pas faite dans le mode `USE_MINIMALIST_ADDONS=1`
 * **ATtiny85_uOS+DS18B20_1_Wire.asm**
-     * Gestion du protocole 1-Wire
+     * Gestion du protocole 1-Wire avec les commandes standard et celles propres au DS18B20
 * **ATtiny85_DS18B20_1_Wire_Commands.asm**
      * Gestion des commandes du monde 1-Wire:
           * Commandes ROM standards (Read Rom [0x33], Match Rom [0x55] et Search ROM [0xF0])
@@ -75,6 +76,8 @@ DS18B20 utilise les 32 premiers octets l'EEPROM de l'ATtiny85 dont la structure 
 Le contenu peut-être programmé depuis un fichier au format Hex (Intel) au moyen de la commande d'écriture offert par uOS "`<E0+data0+data1+data2+...`" (cf. [eeprom_4xds18b20.hex](Products/eeprom_4xds18b20.hex))
 
 ## ⚓ Occupations mémoires
+La production du programme est conditionnée aux 2 définitions `USE_USI=0|1` et `USE_MINIMALIST_ADDONS=0|1`
+
 | Mode USI | Mode Minimaliste | Cible | Taille *flash* | Taille *SRAM* dont la *stack*|
 | :---: | :---: | :---: | :---: | :---: |
 | 0 | 0 | ATtiny85 |  86% | 93% |
@@ -88,7 +91,7 @@ Le contenu peut-être programmé depuis un fichier au format Hex (Intel) au moye
      * La vitesse de l'UART est fixée à 9600 bauds
      * Les seuils de température haute Th et basse Tl devront être configurés avec la version "non minimaliste"
      * La résolution devra être configurée avec la version "non minimaliste"
-     * L'absence de la gestion UART/Rx (seul l'UART/Tx est conservé)
+     * L'absence de la gestion UART/Rx (seul l'UART/Tx est suppotée)
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
@@ -98,6 +101,7 @@ Le contenu peut-être programmé depuis un fichier au format Hex (Intel) au moye
         * "*ATtiny85_uOS.asm(80) : Warning : Improve: Skip equal to 0*"
     * *Á compléter*
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel)) ainsi que les fichiers '.lst' et '.map'
+* Script *shell* [goGenerateProjectAllModes.sh](goGenerateProjectAllModes.sh) fourni pour l'assemblage du projet dans les 2 modes `USE_USI` et/ou `USE_MINIMALIST_ADDONS`
 * Gestion des sources sous [CVS](https://tuteurs.ens.fr/logiciels/cvs/) permettant de faire évoluer le programme "prudemment" avec notamment:
     * Un retour arrière facilité
     * La différence entre différents développements versionnés
