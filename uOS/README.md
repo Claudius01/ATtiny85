@@ -54,9 +54,10 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
           * *USI_OVF* pour l'émission et la réception des caractères sur l'UART vs USI
 * **ATtiny85_uOS_Software_Uart.asm** et **ATtiny85_uOS_Software_Uart.h**
      * Gestion de l'UART/Rx et UART/Tx *full duplex* en logiciel au travers de 2 FIFO/Rx et FIFO/Tx (mode 'USE_USI' à 0)
+     * A noter que l'utilisation de ce fichier est exclusive de **ATtiny85_uOS_Hardware_Uart.asm**
 * **ATtiny85_uOS_Hardware_Uart.asm** et **ATtiny85_uOS_Hardware_Uart.h**
      * Gestion de l'UART/Rx et UART/Tx *half duplex* en matériel au travers de 2 FIFO/Rx et FIFO/Tx (mode 'USE_USI' à 1)
-     * A noter que l'implémentation de l'*Universal Serial Interface* est un peu plus coûteuse en terme de code exécuté
+     * A noter que l'implémentation de l'*Universal Serial Interface* est un peu plus coûteuse en terme de code exécuté et que que l'utilisation de ce fichier est exclusive de **ATtiny85_uOS_Software_Uart.asm**
 * **ATtiny85_uOS_Eeprom.asm** et **ATtiny85_uOS_Eeprom.h**
      * Gestion de l'EEPROM en lecture et écriture
 * **ATtiny85_uOS_Commands.asm** et **ATtiny85_uOS_Commands.h**
@@ -65,6 +66,8 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
      * Formatage des émissions (textes, données décimales et hexadécimales, ...)
 
 ## ⚓ Occupations mémoires
+La production du programme est conditionnée aux 2 définitions `USE_USI=0|1` et `USE_MINIMALIST_ADDONS=0|1`
+
 | Mode USI | Mode Minimaliste | Cible | Taille *flash* | Taille *SRAM* dont la *stack*|
 | :---: | :---: | :---: | :---: | :---: |
 | 0 | 0 | ATtiny85 |  46% | 60% |
@@ -72,10 +75,10 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 | 1 | 0 | ATtiny85 |  45% | 61% |
 | 1 | 1 | ATtiny45 |  51% | 48% |
 
-* 📔 La version "minimaliste" permet d'être implémentée sur un **ATtiny45**:
-     * La gestion de 8 *timers* au lieu de 16
-     * La suppression de la gestion de l'UART/Rx
-     * La suppression des commandes ne permettant plus d'examiner la mémoire *flash*, la mémoire SRAM ni de programmer l'EEPROM
+* 📔 La version "minimaliste" permet d'être implémentée sur un **ATtiny45** avec les limitations:
+     * Gestion de 8 *timers* au lieu de 16
+     * Suppression de la gestion de l'UART/Rx
+     * Suppression des commandes ne permettant plus d'examiner la mémoire *flash*, de lire et écrire dans la mémoire SRAM ni de programmer l'EEPROM
 
 ## 🛠️ Environnement de développement
 * [Assembler for the Atmel AVR microcontroller family](https://github.com/Ro5bert/avra) légèrement modifié pour:
