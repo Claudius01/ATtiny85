@@ -22,9 +22,9 @@ La gestion est faite au dessus de ![uOS](../uOS/README.md) avec les fonctionnali
      * Les informations propres à chaque capteur:
          * Son *Id* dans la liste
          * Son numéro de famille dans le monde 1-Wire (ici 0x28)
-         * La température Tc mesurée
-         * La température Th du seuil haut
-         * La température Tl du seuil bas
+         * La température Tc mesurée sur 12 bits signées
+         * La température Th du seuil haut sur 8 bits signés
+         * La température Tl du seuil bas sur 8 bits signés
          * La résolution de la mesure
          * L'état de l'alarme (Tc ≤ Tl ou Tc ≥ Th)
          * Un CRC8-MAXIM pour garantir l'intégrité des informations de chaque cpateur et de l'ensemble de la trame émise        
