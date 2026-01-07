@@ -88,6 +88,7 @@ La production du programme est conditionnée aux 2 définitions `USE_USI=0|1` et
         * "*ATtiny85_uOS.asm(80) : Warning : Improve: Skip equal to 0*"
     * *Á compléter*
 * Script *shell* [goGenerateProject.sh](goGenerateProject.sh) fourni pour l'assemblage et la génération du fichier '.hex' au format [HEX Intel](https://fr.wikipedia.org/wiki/HEX_(Intel))
+* Script *shell* [goGenerateProjectAllModes.sh](goGenerateProjectAllModes.sh) fourni pour l'assemblage du projet dans les 2 modes `USE_USI` et/ou `USE_MINIMALIST_ADDONS`
 * Gestion des sources sous [CVS](https://tuteurs.ens.fr/logiciels/cvs/) permettant de faire évoluer le programme "prudemment" avec notamment:
     * Un retour arrière facilité
     * La différence entre différents développements versionnés
