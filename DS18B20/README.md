@@ -88,9 +88,9 @@ La production du programme est conditionnée aux 2 définitions `USE_USI=0|1` et
 * 📔 Une version "minimaliste" est implémentée sur un **ATtiny45** avec les limitations:
      * Gestion de 2 capteurs DS18B20 au lieu de 4
      * Suppression des commandes qui ne permet plus de configurer dynamiquement la vitesse de l'UART ni les seuils de température haute et basse qui devront être programmés au moyen de la version "non minimaliste"
-     * Vitesse de l'UART fixée à 9600 bauds
-     * Seuils de température haute Th et basse Tl devant être configurés avec la version "non minimaliste"
-     * Résolution devant être configurée avec la version "non minimaliste"
+     * Vitesse de l'UART non configurable et fixée à 9600 bauds
+     * Seuils de température haute Th et basse Tl de chaque capteur devant être configurés avec la version "non minimaliste"
+     * Résolution de chaque capteur devant être configurée avec la version "non minimaliste"
      * Absence de la gestion UART/Rx (seul l'UART/Tx est suppotée)
 
 ## 🛠️ Environnement de développement
