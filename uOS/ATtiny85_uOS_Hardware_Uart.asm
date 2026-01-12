@@ -1,7 +1,8 @@
-; "$Id: ATtiny85_uOS_Hardware_Uart.asm,v 1.8 2026/01/03 15:44:35 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Hardware_Uart.asm,v 1.9 2026/01/12 10:41:21 administrateur Exp $"
 
 ; Implementation de la version hardware avec l'USI
-; Cf. Le projet 'https://github.com/flo90/USIUART/tree/master'
+; Cf. La note d'application de Atmel
+;     'https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/doc4300.pdf'
 
 .include    "ATtiny85_uOS_Hardware_Uart.h"
 

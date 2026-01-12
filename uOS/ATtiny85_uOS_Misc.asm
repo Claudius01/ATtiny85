@@ -1,4 +1,4 @@
-; "$Id: ATtiny85_uOS_Misc.asm,v 1.25 2026/01/03 15:44:35 administrateur Exp $"
+; "$Id: ATtiny85_uOS_Misc.asm,v 1.26 2026/01/12 10:41:21 administrateur Exp $"
 
 .include		"ATtiny85_uOS_Misc.h"
 
@@ -225,8 +225,15 @@ init_hard:
  	ori	REG_TEMP_R16, (1 << OCIE0A)
 	out	TIMSK, REG_TEMP_R16
 
+	; OCR0A fournit la vitesse d'emission et reception
+#if 0
 	; OCR0A = (uint8_t)(TIMER_TICK + TIMER_TICK / 2);
-	ldi	REG_TEMP_R16, 0x27
+	ldi		REG_TEMP_R16, 0x27
+#else
+	; OCR0A = (uint8_t)TIMER_TICK;
+	ldi		REG_TEMP_R16, 0x1A
+#endif  
+
 	out	OCR0A, REG_TEMP_R16
 	; Fin: Initialisations des registres pour generer une periode de ~104 uS (9600 bauds)
 
