@@ -58,6 +58,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * **ATtiny85_uOS_Hardware_Uart.asm** et **ATtiny85_uOS_Hardware_Uart.h**
      * Gestion de l'UART/Rx et UART/Tx *half duplex* en matériel au travers de 2 FIFO/Rx et FIFO/Tx (mode 'USE_USI' à 1)
      * A noter que l'implémentation de l'*Universal Serial Interface* est un peu plus coûteuse en terme de code exécuté et que que l'utilisation de ce fichier est exclusive de **ATtiny85_uOS_Software_Uart.asm**
+     * Pour plus de détails dans l'implémentation de l'USI, se reporter à la note d'application [AVR307: Half Duplex UART Using the USI Module](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/doc4300.pdf) 
 * **ATtiny85_uOS_Eeprom.asm** et **ATtiny85_uOS_Eeprom.h**
      * Gestion de l'EEPROM en lecture et écriture
 * **ATtiny85_uOS_Commands.asm** et **ATtiny85_uOS_Commands.h**
