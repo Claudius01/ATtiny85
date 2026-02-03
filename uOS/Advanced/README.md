@@ -74,7 +74,7 @@ Le format et les vitesses des données transmises et reçues par l'UART sont:
    - 7 vitesses de 300 bauds à 19200 bauds configurées dans l'EEPROM
 
 ## 3. Utilisation de l'EEPROM
-uOS utilise l'octet à l'adresse `0x00A` pour déterminer la vitesse de l'UART parmi les 7 valeurs suivantes:
+uOS utilise l'octet à l'adresse `0x0A` pour déterminer la vitesse de l'UART parmi les 7 valeurs suivantes:
 
 1. `0x00` pour 19200 bauds
 2. `0x01` pour 9600 bauds 
@@ -87,6 +87,7 @@ uOS utilise l'octet à l'adresse `0x00A` pour déterminer la vitesse de l'UART p
 Toute autre valeur sera interprétée comme 9600 bauds (`0xFF` étant la valeur après un effacement de l'EEPROM)
 
 ## 4. Mise en oeuvre de uOS
+*à compléter*
 
 ## 5. Accueil du programme de test **ATtiny85_uOS_Test_Addons.asm**
 - **ATtiny85_uOS_Test_Addons.asm** est un exemple de prolongement des appels hors de uOS pour accueillir un programme *addon* comme [DS18B20](../../DS18B20) sans avoir à le modifier et ajouter pour ce programme les 5 traitements:
