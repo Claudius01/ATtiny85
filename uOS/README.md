@@ -39,7 +39,7 @@ uOS est organisé au sein des fichiers suivants dont les sources sont fournis:
 * **ATtiny85_uOS_Misc.asm** et **ATtiny85_uOS_Misc.h**
      * Méthodes diverses
           * Initialisation de la SRAM
-          * Initialisation des registres
+          * Initialisation matérielle
           * Calcul du CRC8-MAXIM
           * Test Leds
           * etc. 
