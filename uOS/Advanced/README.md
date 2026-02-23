@@ -1,7 +1,7 @@
 Ci-après des informations avancées sur la mise en oeuvre de uOS dans un ATtiny85 cadencé à 16 MHz
 
 1. Valeurs des fusibles
-2. Caracréristiques de l'UART
+2. Configuration de l'UART
 3. Utilisation de l'EEPROM
 4. Mise en oeuvre de uOS
 5. Accueil du programme de test **ATtiny85_uOS_Test_Addons.asm**
